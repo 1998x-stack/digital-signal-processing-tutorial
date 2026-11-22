@@ -18,7 +18,10 @@ def check(path, width, out, browser):
     page.on("pageerror", lambda exc: errors.append("JS " + str(exc)))
     page.on("console", lambda msg: errors.append("console " + msg.text) if msg.type == "error" else None)
     page.goto((ROOT / path).as_uri(), wait_until="load")
-    page.wait_for_timeout(100)
+    page.locator("img").evaluate_all("els => els.forEach(img => { img.loading = 'eager'; })")
+    page.evaluate("""async () => {
+      await Promise.all([...document.images].map(img => img.decode().catch(() => null)));
+    }""")
     state = page.evaluate("""() => ({
       docWidth: document.documentElement.scrollWidth,
       viewport: innerWidth,
