@@ -71,6 +71,28 @@ const registry={
  add(svg,"path",{d:pts.map((v,i)=>(i?"L":"M")+(left+i*(right-left)/H).toFixed(1)+" "+py(v).toFixed(1)).join(" "),fill:"none",stroke:"#7461ba","stroke-width":2.4});
  text(svg,300,200,"ω：0 → π");
  out.textContent="N="+N+" 级：直流增益 "+(N*20*Math.log10(M)).toFixed(1)+" dB（=M^N，M=8）；第一零点 ω=2π/8≈0.785 rad；第一旁瓣约 "+db(3*PI/M).toFixed(1)+" dB（相对直流）。N 越大阻带压得越低，但通带滚降也更明显。";
+ },
+ psd(K,svg,out){
+ const N=1024;let seed=12345;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647*2-1};
+ const x=Array.from({length:N},rnd);
+ const L=Math.floor(N/K);
+ const win=Array.from({length:L},(_,n)=>.5-.5*Math.cos(2*PI*n/(L-1)));
+ const psum=new Array(L).fill(0);
+ for(let s=0;s<K;s++){const seg=x.slice(s*L,s*L+L).map((v,i)=>v*win[i]);const X=dft(seg).map(z=>z.re*z.re+z.im*z.im);for(let i=0;i<L;i++)psum[i]+=X[i]/K;}
+ const H=Math.floor(L/2);
+ const one=dft(x.slice(0,L).map((v,i)=>v*win[i])).map(z=>z.re*z.re+z.im*z.im);
+ const norm=a=>{const m=a.slice(0,H).reduce((s,v)=>s+v,0)/H;return a.slice(0,H).map(v=>v/m)};
+ const np=norm(psum),no=norm(one);
+ const cv=Math.sqrt(np.reduce((s,v)=>s+(v-1)*(v-1),0)/np.length);
+ svg.replaceChildren();svg.setAttribute("viewBox","0 0 560 215");
+ const left=44,right=536,top=29,bottom=173,hi=3.5,py=v=>bottom-Math.max(0,Math.min(hi,v))/hi*144;
+ line(svg,left,bottom,right,bottom);line(svg,left,top,left,bottom);
+ [1,2,3].forEach(g=>{const y=py(g);line(svg,left,y,right,y,"#eef3f1",1);text(svg,6,y+4,String(g))});
+ text(svg,4,20,"×均值");
+ const draw=(a,c)=>{add(svg,"path",{d:a.map((v,i)=>(i?"L":"M")+(left+i*(right-left)/(a.length-1)).toFixed(1)+" "+py(v).toFixed(1)).join(" "),fill:"none",stroke:c,"stroke-width":2.2})};
+ draw(no,"#d06d4d");draw(np,"#147f80");
+ text(svg,330,200,"归一化频率（0–0.5）→");
+ out.textContent="K="+K+"，每段 "+L+" 点：K 段平均估计的变异系数（跨频点 std/mean）≈ "+cv.toFixed(3)+"，理论约 1/√K = "+(1/Math.sqrt(K)).toFixed(3)+"。青线越平说明方差越小，代价是频率分辨率下降。";
  }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});

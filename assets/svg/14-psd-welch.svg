@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t14f2 d14f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t14f2">单段周期图与八段 Welch 估计的方差对比</title>
+<desc id="d14f2">对同一段 1024 点白噪声：左图为单段周期图，跨频点波动很大（变异系数约 0.95）；右图为 8 段平均的 Welch 估计，曲线明显更平坦（变异系数约 0.35，接近 1/sqrt(8)=0.354）。两者频谱整体均值相同，差异只在方差。</desc>
+<rect x="0" y="0" width="920" height="400" fill="#fffdf9"/>
+<text x="30" y="36" font-size="15" font-weight="700" fill="#203035">① 单段周期图：近似无偏但方差大</text>
+<line x1="80" y1="300" x2="430" y2="300" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="80" y1="90" x2="80" y2="300" stroke="#9fb8b2" stroke-width="1.6"/>
+<g font-size="13" fill="#53676d"><text x="52" y="304">0</text><text x="52" y="242">1</text><text x="52" y="180">2</text><text x="52" y="118">3</text></g>
+<g stroke="#eef3f1"><line x1="80" y1="238" x2="430" y2="238"/><line x1="80" y1="176" x2="430" y2="176"/><line x1="80" y1="114" x2="430" y2="114"/></g>
+<path d="M80 255 L95 172 L110 133 L126 260 L141 187 L156 298 L171 266 L187 289 L202 280 L217 300 L232 297 L247 288 L263 131 L278 270 L293 267 L308 185 L323 171 L339 245 L354 280 L369 293 L384 106 L400 252 L415 139 L430 299" fill="none" stroke="#d06d4d" stroke-width="2.4"/>
+<text x="88" y="328" font-size="13" fill="#b55c3e">变异系数 ≈ 0.95（≈ 1）</text>
+<text x="30" y="216" font-size="15" font-weight="700" fill="#203035">② Welch（K=8 段平均）：曲线明显变平</text>
+<line x1="500" y1="300" x2="880" y2="300" stroke="#9fb8b2" stroke-width="1.6"/>
+<g stroke="#eef3f1"><line x1="500" y1="238" x2="880" y2="238"/><line x1="500" y1="176" x2="880" y2="176"/></g>
+<path d="M500 213 L517 247 L533 250 L550 270 L566 209 L583 253 L599 247 L616 274 L632 238 L649 216 L665 253 L682 270 L698 227 L715 234 L731 271 L748 232 L764 229 L781 264 L797 252 L814 226 L830 211 L847 218 L863 228 L880 202" fill="none" stroke="#147f80" stroke-width="2.4"/>
+<line x1="500" y1="238" x2="880" y2="238" stroke="#7461ba" stroke-dasharray="6 5"/>
+<text x="700" y="232" font-size="13" fill="#7461ba">均值归一化为 1</text>
+<text x="508" y="328" font-size="13" fill="#0d7779">变异系数 ≈ 0.35 ≈ 1/√8</text>
+<text x="30" y="376" font-size="13" fill="#53676d">同一段 1024 点伪随机噪声；两图整体均值相同，差异只在跨频点的方差。</text>
+</svg>
