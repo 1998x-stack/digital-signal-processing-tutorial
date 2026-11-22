@@ -1,0 +1,36 @@
+{
+  "chapter": "12",
+  "title": "多速率信号处理（一）：抽取、内插与多相分解",
+  "sources": [
+    {
+      "id": "mit-multirate",
+      "claim": "下采样使频谱展宽并叠加移位副本；上采样压缩频谱产生镜像",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341 多速率信号处理：downsampling/upsampling 频域关系"
+    },
+    {
+      "id": "noble",
+      "claim": "Noble 恒等式允许在特定条件下交换滤波与速率转换的顺序",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "抽取侧 H(z)→↓M ≡ ↓M→H(z^M)；内插侧 ↑L→H(z) ≡ H(z^L)→↑L"
+    },
+    {
+      "id": "polyphase",
+      "claim": "多相分解把 FIR 分成 M 个子滤波器，H(z)=Σ z^-k E_k(z^M)",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "E_k(z)=Σ h[k+nM] z^-n；examples/12_multirate.py 数值校验与直接抽取等价"
+    },
+    {
+      "id": "resample-poly",
+      "claim": "resample_poly 用多相滤波实现有理数重采样",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.resample_poly.html",
+      "scope": "SciPy 官方文档；up/down 因子与多相实现"
+    }
+  ],
+  "notes": [
+    "44.1 kHz→48 kHz 取 L=160、M=147 来自 44100×160=48000×147；中间速率 7.056 MHz。",
+    "“节省约 90%”是基于 256 阶、M=10 的乘加速率一阶估算，页面已标注为教学示意，未计入流水线与边界开销。",
+    "混叠频率在原始归一化轴与下采样后轴不同：0.30 @ M=3 在原始轴为 0.0333，在新采样率轴为 0.10。"
+  ],
+  "status": "频域关系与 Noble/多相恒等式对照 MIT OCW 权威资料；确定性实验校验抽取等价与混叠频率。浏览器 QA 由工作流记录。"
+}

@@ -39,6 +39,25 @@ const registry={
  P.forEach(p=>add(svg,"circle",{cx:X(p[0]),cy:Y(p[1]),r:5.4,fill:"#147f80"}));
  const rq=Math.hypot(Q[0][0],Q[0][1]),dth=Math.abs(Math.atan2(Q[0][1],Q[0][0])-w0)*180/PI;
  out.textContent="设计半径 0.9800；量化后半径 "+rq.toFixed(4)+"（"+bits+" bit）。"+(rq>=1?"极点已到或越过单位圆：不稳定。":"仍在单位圆内；幅角偏移约 "+dth.toFixed(2)+"°，半径偏移 "+(rq-0.98).toFixed(4)+"。");
+ },
+ decimate(M,svg,out){
+ const N=64*M+1;
+ const x=Array.from({length:N},(_,n)=>Math.cos(2*PI*.10*n)+.7*Math.cos(2*PI*.30*n));
+ const h=hamming(31,PI/M);
+ const conv=(a,b)=>{const y=new Array(a.length+b.length-1).fill(0);a.forEach((av,i)=>b.forEach((bv,j)=>{y[i+j]+=av*bv}));return y};
+ const dec=a=>a.filter((_,i)=>i%M===0);
+ const K=64,H=K/2;
+ const sd=dft(dec(x).slice(0,K)).map(z=>Math.hypot(z.re,z.im));
+ const sf=dft(dec(conv(x,h)).slice(0,K)).map(z=>Math.hypot(z.re,z.im));
+ const max=Math.max(.0001,...sd.slice(0,H),...sf.slice(0,H)),left=34,right=536,top=29,bottom=173;
+ svg.replaceChildren();svg.setAttribute("viewBox","0 0 560 215");
+ line(svg,left,bottom,right,bottom);line(svg,left,top,left,bottom);
+ const px=i=>left+i*(right-left)/(H-1),py=v=>bottom-v/max*132;
+ const draw=(s,c)=>add(svg,"path",{d:s.slice(0,H).map((v,i)=>(i?"L":"M")+px(i).toFixed(1)+" "+py(v).toFixed(1)).join(" "),fill:"none",stroke:c,"stroke-width":2.4});
+ draw(sd,"#d06d4d");draw(sf,"#147f80");
+ text(svg,36,17,"相对幅度（两曲线同一缩放）");text(svg,404,200,"归一化频率（下采样后 0–0.5）→");
+ const alias=(()=>{const f=.30%(1/M);return f>1/(2*M)?1/M-f:f})();
+ out.textContent="M="+M+"：新采样率下 Nyquist=0.5；带内 0.10 分量出现在 "+(0.10*M).toFixed(2)+"，0.30 带外分量混叠到 "+alias.toFixed(3)+"（原始归一化轴）＝"+(alias*M).toFixed(2)+"（新采样率轴）。赭色峰即为混叠。";
  }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});

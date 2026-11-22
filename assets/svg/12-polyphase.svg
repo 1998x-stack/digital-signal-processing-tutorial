@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" role="img" aria-labelledby="t12f2 d12f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t12f2">多相抽取结构：换向器与子滤波器</title>
+<desc id="d12f2">输入 x[n] 先进入换向器，按相位 k=0,1,2 轮流把样本送入三条支路；每条支路配一个子滤波器 E_k(z)，其长度约为原 1/M、运行在 fs/M 的低速率上；三条支路输出在一个加法器汇合得到抽取结果 y[n]。相比先滤波再下采样，滤波整体搬到了低速率。</desc>
+<rect x="0" y="0" width="920" height="420" fill="#fffdf9"/>
+<text x="30" y="38" font-size="15" font-weight="700" fill="#203035">M = 3 的多相抽取：先分相、再在低速率上滤波</text>
+<text x="6" y="204" font-size="14" fill="#53676d">x[n]</text>
+<line x1="44" y1="200" x2="118" y2="200" stroke="#9fb8b2" stroke-width="1.6"/>
+<circle cx="140" cy="200" r="22" fill="#eef8f6" stroke="#7461ba" stroke-width="1.6"/>
+<path d="M140 200 L157 186" stroke="#7461ba" stroke-width="1.6"/><circle cx="140" cy="200" r="3" fill="#7461ba"/>
+<text x="104" y="252" font-size="13" fill="#7461ba">换向器（每样本轮换相位）</text>
+<g stroke="#9fb8b2" stroke-width="1.6" fill="none"><path d="M162 190 H300"/><path d="M162 200 H300"/><path d="M162 210 H300"/><path d="M300 120 V290"/></g>
+<g stroke="#9fb8b2" stroke-width="1.6" fill="none"><path d="M300 120 H400"/><path d="M300 200 H400"/><path d="M300 290 H400"/></g>
+<g fill="#fbf1ec" stroke="#d06d4d"><rect x="400" y="100" width="150" height="40" rx="6"/><rect x="400" y="180" width="150" height="40" rx="6"/><rect x="400" y="270" width="150" height="40" rx="6"/></g>
+<g font-size="14" fill="#b55c3e"><text x="440" y="126">E₀(z) @ fs/M</text><text x="440" y="206">E₁(z) @ fs/M</text><text x="440" y="296">E₂(z) @ fs/M</text></g>
+<g stroke="#9fb8b2" stroke-width="1.6" fill="none"><path d="M550 120 H640"/><path d="M550 200 H640"/><path d="M550 290 H640"/><path d="M640 120 V290"/></g>
+<g fill="#fff" stroke="#147f80" stroke-width="1.6"><circle cx="640" cy="120" r="10"/><circle cx="640" cy="200" r="10"/><circle cx="640" cy="290" r="10"/></g>
+<g font-size="13" fill="#0d7779" text-anchor="middle"><text x="640" y="125">+</text><text x="640" y="205">+</text><text x="640" y="295">+</text></g>
+<g stroke="#9fb8b2" stroke-width="1.6" fill="none"><path d="M640 200 H740"/></g>
+<polygon points="740,194 754,200 740,206" fill="#147f80"/>
+<text x="762" y="205" font-size="14" fill="#203035">y[n] @ fs/M</text>
+<line x1="300" y1="330" x2="700" y2="330" stroke="#bfdcd6" stroke-width="1.4"/>
+<text x="330" y="352" font-size="13" fill="#53676d">每条支路只处理 1/M 的样本，子滤波器长度约为 N/M；总乘加速率降到约 1/M</text>
+<text x="30" y="404" font-size="13" fill="#53676d">多相恒等式：H(z) = Σₖ z⁻ᵏ Eₖ(zᴹ)，其中 Eₖ(z) = Σₙ h[k + nM] z⁻ⁿ。</text>
+</svg>
