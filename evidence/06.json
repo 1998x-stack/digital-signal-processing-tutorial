@@ -1,0 +1,25 @@
+{
+  "chapter": "06",
+  "title": "DTFT 与线性系统频率响应",
+  "sources": [
+    {
+      "id": "dtft",
+      "claim": "DTFT 的连续数字频率与 2π 周期",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "整数 n 导致频率周期性；绝对可和是充分而非必要条件"
+    },
+    {
+      "id": "moving_average",
+      "claim": "长度 M 滑动均值的首个零点",
+      "url": "https://ocw.mit.edu/courses/res-6-008-digital-signal-processing-spring-2011/pages/study-materials/",
+      "scope": "H(ω)=1/M∑exp(-jωn)，可直接导出零点 2π/M"
+    },
+    {
+      "id": "parseval",
+      "claim": "适当条件下 DTFT Parseval 关系",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "能量定义与积分归一化必须一致"
+    }
+  ],
+  "status": "Definitions verified against authoritative course/API references; deterministic experiments check numerical identities. Browser QA assessed by workflow."
+}

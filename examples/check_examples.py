@@ -1,8 +1,10 @@
-"""Run all deterministic DSP examples using Python standard library."""
+"""Run the ten deterministic standard-library numerical experiments."""
 from pathlib import Path
 import runpy
-root = Path(__file__).resolve().parent
-for name in ("01_pipeline.py","02_sequences.py","03_convolution.py","04_sampling_alias.py","05_ztransform.py"):
-    print("Checking", name)
-    runpy.run_path(str(root/name),run_name="__main__")
-print("PASS: five DSP examples")
+root=Path(__file__).resolve().parent
+for i,name in enumerate(("pipeline","sequences","convolution","sampling_alias","ztransform","dtft","dft","fft","fir","iir"),start=1):
+    file=root/f"{i:02d}_{name}.py"
+    assert file.is_file(),file
+    print("Checking",file.name)
+    runpy.run_path(str(file),run_name="__main__")
+print("PASS: all ten numerical experiments")
