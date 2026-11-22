@@ -9,7 +9,7 @@ import sys
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
-PAGES = ["index.html"] + [f"chapters/{i:02d}.html" for i in range(1, 6)]
+PAGES = ["index.html"] + [f"chapters/{i:02d}.html" for i in range(1, 11)]
 WIDTHS = (1440, 768, 390, 360)
 
 def check(path, width, out, browser):
@@ -43,8 +43,8 @@ def check(path, width, out, browser):
         if img["natural"] == 0 or img["width"] == 0 or not img["alt"]:
             errors.append(f"broken/unnamed image: {img['src']}")
     if path != "index.html":
-        if state["figures"] != 2 or state["captions"] != 2:
-            errors.append("Expected two captioned figures")
+        if state["figures"] < 2 or state["captions"] != state["figures"]:
+            errors.append("Expected at least two captioned figures")
         if state["invalidFractions"]:
             errors.append("Invalid MathML mfrac arity")
         if not state["maths"]:

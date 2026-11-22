@@ -19,11 +19,22 @@
 
 ## 工程验收
 
-- 运行 `python scripts/validate_site.py` 和 `python examples/check_examples.py`。
+- 运行 `python scripts/validate_site.py` 和 `python examples/check_examples.py`，目前覆盖 10 个独立例程。
 - 每个新篇至少 2 张独立 SVG、1 个可运行数值实验、1 个可交互浏览器图解和 `evidence/NN.json`。
 - 有可用 Chromium / Playwright 时，逐页检查 1440、768、390、360，截图，键盘交互，禁网可读，MathML 分式几何，SVG 图注和打印。无法执行时明确写“浏览器 QA 未验证”，不可称通过。
 - 质量门禁通过之后才合并 PR；如 Pages 未配置，不得声称上线成功。
 
 ## 下一批待办
 
-先完成 06–08（DTFT、DFT、FFT）的归一化与周期性专题，再处理 09–11 的 FIR、IIR 与数值结构。逐篇增量重构，优先修复科学错误而非视觉装饰。
+下一批从第 11 章滤波器结构开始，依次重构 12–15（多速率抽取、内插、滤波器组、随机信号与自适应滤波）。交叉复核 FFT 归一化、抗混叠、多相实现、滤波器结构、数值稳定性与算法可重复性，逐篇推进。
+
+## 第二批深化约定：频域与滤波器
+
+- DTFT 在数字角频率上连续且 2π 周期；DFT 定义在有限频率索引上；FFT 是计算 DFT 的算法，而不是额外的变换。
+- DFT/IDFT 正反约定必须同时明确：本仓库示例采用正向不除 N、逆向除 N。描述 Parseval 时相应保留 1/N 或 1/(2π)。
+- 频点间距 fₛ/N 是观察网格，不是任意信号的普适分辨率下界；补零只增加频域插值采样密度。
+- FFT radix-2 只是一种实现。解释 N 为 2 的幂时，不能推断现代 FFT 库只支持这种长度。
+- 实系数有限 FIR BIBO 稳定；只有满足适当对称性才有线性相位。严禁把 numtaps 当作阶数。
+- SciPy firwin 的频率边界对应 -6 dB 半幅点，Butterworth 临界点对应 -3 dB 半功率点。
+- scipy.signal.bilinear() 本身不自动预畸变；数字设计高层 API 的 fs、截止约定必须单独核对。
+- IIR 高阶实用实现优先检查 SOS，数值稳健不等于免除溢出、定点与真实输入测试。
