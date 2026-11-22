@@ -1,0 +1,36 @@
+{
+  "chapter": "11",
+  "title": "滤波器结构",
+  "sources": [
+    {
+      "id": "mit-lti-forms",
+      "claim": "直接型、转置型、级联型、并联型与格型实现同一 H(z)，在无限精度下等价",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341 数字信号处理：滤波器结构与状态空间描述"
+    },
+    {
+      "id": "transpose",
+      "claim": "信号流图转置保持传递函数不变",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "转置定理；转置改变数据流与寄存器位置，不改变 H(z)"
+    },
+    {
+      "id": "scipy-sos",
+      "claim": "tf2sos/sosfilt 用二阶节级联表示与实现高阶 IIR",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfilt.html",
+      "scope": "SciPy 官方文档；sos 每行 [b0,b1,b2,a0,a1,a2]"
+    },
+    {
+      "id": "pole-radius",
+      "claim": "二阶节极点为 r e^{±jθ}，a2=r²，故复极点半径等于 sqrt(a2)",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "分母多项式因式分解；本仓库 examples/11_structures.py 数值核验"
+    }
+  ],
+  "notes": [
+    "极限环为零输入/颗粒极限环，是定点舍入非线性现象，不能由线性稳定性分析预测；页面表述为定性结论。",
+    "式(6) δr≈δa2/(2r) 是 r=sqrt(a2) 的一阶泰勒近似；examples/11_structures.py 断言其与精确偏移的相对差小于 5%。",
+    "g 增益分配、内部溢出与缩放是工程细节，页面标注为需定点仿真单独验证。"
+  ],
+  "status": "定义与公式对照 MIT OCW/scipy 权威资料；确定性实验校验结构等价与极点半径关系。浏览器 QA 由工作流记录。"
+}

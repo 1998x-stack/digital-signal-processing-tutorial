@@ -1,247 +1,138 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第11章 滤波器结构</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="同一组 b、a 系数为什么换一种信号流图就会在定点实现中失稳：直接型、转置型、典范型、级联二阶节、格型与系数量化、极限环。">
+<title>第 11 章 · 滤波器结构：同一组系数的不同实现</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/spectrum-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🎛️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数字信号处理导论</a></li>
-            <li><a href="02.html">第2章 离散时间信号</a></li>
-            <li><a href="03.html">第3章 离散时间系统</a></li>
-            <li><a href="04.html">第4章 采样定理</a></li>
-            <li><a href="05.html">第5章 Z变换</a></li>
-            <li><a href="06.html">第6章 频域分析</a></li>
-            <li><a href="07.html">第7章 离散傅里叶变换 (DFT)</a></li>
-            <li><a href="08.html">第8章 快速傅里叶变换 (FFT)</a></li>
-            <li><a href="09.html">第9章 FIR滤波器设计</a></li>
-            <li><a href="10.html">第10章 IIR滤波器设计</a></li>
-            <li><a href="11.html" class="active">第11章 滤波器结构</a></li>
-            <li><a href="12.html">第12章 多速率信号处理 (一)</a></li>
-            <li><a href="13.html">第13章 多速率信号处理 (二)</a></li>
-            <li><a href="14.html">第14章 统计信号处理基础</a></li>
-            <li><a href="15.html">第15章 自适应滤波器</a></li>
-            <li><a href="16.html">第16章 高级自适应算法</a></li>
-            <li><a href="17.html">第17章 谱估计进阶</a></li>
-            <li><a href="18.html">第18章 时频分析</a></li>
-            <li><a href="19.html">第19章 MATLAB/Python DSP仿真</a></li>
-            <li><a href="20.html">第20章 定点DSP实现</a></li>
-            <li><a href="21.html">第21章 嵌入式DSP芯片开发</a></li>
-            <li><a href="22.html">第22章 FPGA上的DSP</a></li>
-            <li><a href="23.html">第23章 音频信号处理</a></li>
-            <li><a href="24.html">第24章 通信数字信号处理</a></li>
-            <li><a href="25.html">第25章 图像信号处理</a></li>
-            <li><a href="26.html">第26章 AI+DSP融合</a></li>
-            <li><a href="27.html">第27章 软件无线电 (SDR)</a></li>
-            <li><a href="28.html">第28章 综合项目：实时音频处理器</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-
-        <h2>第11章 滤波器结构</h2>
-
-        <p>前面的两章，我们分别学会了如何设计FIR和IIR滤波器的系数。但得到了一组b和a系数之后，事情并没有结束——甚至可以说，真正精彩的工程问题才刚刚开始。</p>
-
-        <p>想象一个具体的场景：你在MATLAB中用双精度浮点设计了一个8阶椭圆低通滤波器，频率响应完美。然后你把系数下载到一颗16位定点DSP芯片上，结果滤波器的输出和仿真结果差了十万八千里。你没有改任何系数，没有改任何算法——只是把"精度"从64位降到了16位。为什么结果就完全不一样了？</p>
-
-        <p>答案藏在<strong>滤波器结构</strong>中。同样的系统函数H(z)，用不同的信号流图（结构）去实现，在无限精度下结果是完全等价的，但在有限精度（定点数、有限字长）下，不同结构对量化误差、乘法舍入噪声和稳定性有着天壤之别的影响。</p>
-
-        <div class="highlight">
-            <strong>💡 核心认知：</strong>滤波器结构是连接"理论设计"和"工程实现"的桥梁。同样一组系数，选对结构可以让你在16位定点DSP上跑出接近浮点的性能；选错结构，即使是32位定点也可能出现极限环振荡或极点漂移到单位圆外。这一章的内容，对于你将来的嵌入式DSP开发至关重要。
-        </div>
-
-        <h3>11.1 FIR结构：直接型与转置</h3>
-
-        <p>FIR滤波器的差分方程非常简单：</p>
-
-        <pre><code>y[n] = b₀·x[n] + b₁·x[n-1] + b₂·x[n-2] + ... + b_{N-1}·x[n-N+1]</code></pre>
-
-        <p>这就是"延迟线→乘系数→累加"的结构，也叫<strong>直接型</strong>或<strong>抽头延迟线</strong>。信号流图可以画成一个横向排列的链：每个延迟单元的输出乘以对应的滤波器系数b_k，然后全部加起来。</p>
-
-        <p>直接型还有一个神奇的变体叫<strong>转置结构</strong>（Transposed Form）。转置规则很简单：把信号流图中所有箭头反向、把分叉点变成汇合点、把汇合点变成分叉点。转置后的结构在数学上完全等价，但在硬件实现上有一个巨大的好处——<strong>不需要输入数据的移位寄存器，只需要输出端的累加器</strong>。对FPGA实现来说，转置结构通常能达到更高的时钟频率（因为关键路径更短）。</p>
-
-        <pre><code># 直接型FIR实现（C语言风格）
-for (int n = 0; n &lt; N; n++) {
-    y[n] = 0;
-    for (int k = 0; k &lt; L; k++) {
-        y[n] += b[k] * x[n - k];
-    }
-}
-
-# 转置型FIR实现（乘法结果直接累加到输出端）
-for (int n = 0; n &lt; N; n++) {
-    for (int k = 0; k &lt; L; k++) {
-        z[k] = b[k] * x[n] + z[k+1];  // 流水线结构
-    }
-    y[n] = z[0];
-}</code></pre>
-
-        <h3>11.2 IIR直接I型与直接II型</h3>
-
-        <p>IIR滤波器的差分方程比FIR多了反馈项：</p>
-
-        <pre><code>y[n] = Σ b_k·x[n-k] - Σ a_k·y[n-k]</code></pre>
-
-        <p>直接I型是最"暴力"的实现：直接把分子部分（前向通路）和分母部分（反馈通路）分别用延迟线实现，然后串联。它需要<strong>2N个延迟单元</strong>（N为滤波器阶数）。</p>
-
-        <p>直接II型（也叫<strong>典范型</strong>）更聪明——它利用了一个事实：前向和反馈通路的延迟线可以<strong>共享</strong>。因为x[n]经过前向系数后的结果和y[n]经过反馈系数的结果是在同一个节点相加的，我们可以先把输入通过反馈部分（分母），再把中间结果通过前向部分（分子），这样延迟单元只需要<strong>N个</strong>，节省了一半。</p>
-
-        <pre><code># 直接II型实现（典范型）
-w[n] = x[n] - a₁·w[n-1] - a₂·w[n-2] - ... - a_N·w[n-N]
-y[n] = b₀·w[n] + b₁·w[n-1] + ... + b_N·w[n-N]</code></pre>
-
-        <p>直接II型在存储空间有限的嵌入式系统中非常有用——少N个延迟单元意味着少N个RAM字和少N次内存访问。但要注意，直接型（无论I型还是II型）对系数量化误差比较敏感，尤其是高阶滤波器。</p>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑实录：</strong>某次我在一个工业变频器项目中，需要在TI TMS320F28335 DSP上实现一个8阶Butterworth带通滤波器。直接用了MATLAB生成的直接II型系数，结果在电机启动瞬间滤波器输出产生了持续的自激振荡，差点导致过流保护跳闸。后来分析发现：高阶直接型的极点对系数量化极其敏感——MATLAB中双精度的极点位置在定点化后发生了偏移，其中一对共轭极点恰好移到了单位圆外！解决方法很简单：把8阶滤波器分解为4个二阶节（Biquad）级联，每个二阶节的极点对数量化不敏感，问题立刻消失。
-        </div>
-
-        <h3>11.3 级联型（二阶节级联）</h3>
-
-        <p>级联型（Cascade Form）将高阶H(z)分解为若干个<strong>二阶节</strong>（Biquad）的乘积。一个二阶节的系统函数是：</p>
-
-        <pre><code>H_k(z) = (b₀k + b₁k·z^{-1} + b₂k·z^{-2}) / (1 + a₁k·z^{-1} + a₂k·z^{-2})</code></pre>
-
-        <p>整个高阶滤波器就是这些二阶节的串联：H(z) = H₁(z) · H₂(z) · ... · H_M(z)。</p>
-
-        <p>为什么二阶节级联是<strong>工程首选</strong>？原因有以下几点：</p>
-
-        <ul>
-            <li><strong>量化灵敏度最低。</strong>每个二阶节的极点都是独立的，系数量化只影响该节的极点位置，不会"传播"到其他节。对比直接型，一个系数量化会影响所有极点。</li>
-            <li><strong>易于调试。</strong>你可以单独测试每个二阶节的频率响应，逐个排查问题。</li>
-            <li><strong>数值稳定性最好。</strong>只要保证每个二阶节的极点都在单位圆内，整个系统就一定稳定。</li>
-            <li><strong>可复用。</strong>所有二阶节可以用同一段代码实现，只是系数不同。在实时音频处理中，这种"Biquad链"是标准架构。</li>
-        </ul>
-
-        <p>在Python中，scipy.signal.sosfreqz就是基于二阶节级联的频率响应计算函数。把高阶IIR转换为二阶节级联也非常简单：</p>
-
-        <pre><code>from scipy import signal
-
-# 设计一个6阶Chebyshev低通
-b, a = signal.cheby1(6, 1, 1000, btype='low', fs=44100)
-
-# 转换为二阶节级联（SOS格式）
-sos = signal.tf2sos(b, a)
-# sos 是一个 (3, 6) 的矩阵，每行是一个二阶节的 [b0,b1,b2, a0,a1,a2]
-
-# 直接用SOS格式滤波
-y = signal.sosfilt(sos, x)</code></pre>
-
-        <h3>11.4 并联型与格型结构</h3>
-
-        <p>除了级联，<strong>并联型</strong>是另一种分解方式：将H(z)展开为部分分式之和——每个分式对应一个一阶或二阶节，所有分式<strong>并联</strong>后求和：</p>
-
-        <pre><code>H(z) = C + Σ H_k(z)    （所有节的输入相同，输出相加）</code></pre>
-
-        <p>并联型的优点：每个二阶节<strong>完全不互相影响</strong>，一个节的量化误差不会传递到其他节（对比级联型，误差会逐级放大）。但并联型实现起来比级联型稍微复杂一些，因为需要做部分分式展开。</p>
-
-        <p><strong>格型结构</strong>（Lattice Structure）是一种更"高级"的结构，最早起源于线性预测（LPC）领域。它的特点是：</p>
-
-        <ul>
-            <li>用<strong>反射系数</strong>（reflection coefficients）而不是直接系数来表征滤波器；</li>
-            <li>对系数量化非常不敏感（比级联型还好）；</li>
-            <li>容易判断稳定性（|k_i| &lt; 1 对所有i）；</li>
-            <li>格型结构在<strong>自适应滤波器</strong>（第15章）中特别有用。</li>
-        </ul>
-
-        <p>格型结构在普通工程应用中不太常见，但在语音编码（LPC）、通道均衡和自适应滤波中是标配。如果你未来做语音编解码（如Opus、Speex编解码器），你会在源码中频繁看到格型结构的实现。</p>
-
-        <h3>11.5 系数量化效应与极限环</h3>
-
-        <p>这是本章最有"工程味"的章节，也是你在课本中不容易学到的知识。</p>
-
-        <p><strong>系数量化效应：</strong>当你把用MATLAB双精度设计的滤波器系数（比如a₂= -1.6180339887...）截断为16位定点数（比如a₂_Q15 = -1.6180），滤波器的实际零极点位置会偏离设计值。对高阶直接型IIR来说，稍微的极点偏移可能导致：</p>
-
-        <ul>
-            <li>截止频率偏移（最轻微的问题）；</li>
-            <li>通带纹波增大（中等严重）；</li>
-            <li>极点漂移到单位圆外导致不稳定（致命问题）。</li>
-        </ul>
-
-        <p><strong>极限环（Limit Cycle）现象：</strong>这是定点IIR滤波器最诡异的特性之一。当输入变为零（或小到一定程度）后，由于量化（舍入/截断）的非线性效应，滤波器的输出可能不会归零，而是持续在一个小幅度的周期性振荡中——这就是极限环。在音频应用中，极限环表现为"死区"中的可闻噪声。</p>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑故事：</strong>团队在做一个16位定点DSP上的双二阶均衡器——很简单的一个低频衰减滤波器。经过严格的仿真验证后，产品进入了试产阶段。但在批量测试中，有大约2%的样机在无信号输入时出现了"嗡嗡"的低频噪声。一开始怀疑是电源噪声耦合，查了三天PCB布局无果。最后用示波器直接量DSP输出——稳定的60Hz正弦波！即便输入悬空，滤波器输出仍然保持了一个约-50dBu的振荡。这就是典型的<strong>极限环：有限字长导致的非线性振荡</strong>。解决方案有两个：一是给滤波器系数增加额外的量化保护位（从16位升级到24位内部精度），二是改用格型结构（它对极限环有天然的抑制能力）。最终我们选择了把内部累加精度提升到32位，解决了这个问题。
-        </div>
-
-        <h3>11.6 结构选型实战指南</h3>
-
-        <p>不同类型的项目需要不同的滤波器结构选择。以下是一份实用的选型参考：</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>场景</th>
-                    <th>推荐结构</th>
-                    <th>原因</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>浮点DSP/CPU上的IIR</td>
-                    <td>二阶节级联（Biquad链）</td>
-                    <td>最稳定、最易调试、足够高效</td>
-                </tr>
-                <tr>
-                    <td>16位定点DSP上的IIR</td>
-                    <td>二阶节级联 + 双精度累加</td>
-                    <td>抗量化、抗极限环</td>
-                </tr>
-                <tr>
-                    <td>FPGA上的FIR</td>
-                    <td>转置直接型</td>
-                    <td>流水线结构关键路径最短</td>
-                </tr>
-                <tr>
-                    <td>窄带高Q值滤波器</td>
-                    <td>格型/梯格型</td>
-                    <td>极点密集时量化不敏感</td>
-                </tr>
-                <tr>
-                    <td>语音LPC分析</td>
-                    <td>格型</td>
-                    <td>保证稳定性、反射系数物理意义明确</td>
-                </tr>
-                <tr>
-                    <td>自适应滤波器</td>
-                    <td>格型或转置</td>
-                    <td>系数更新方便、收敛性好</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h3>11.7 本章小结</h3>
-
-        <p>这一章我们做了以下几件事：</p>
-
-        <ul>
-            <li>介绍了FIR的直接型和转置结构，解释了转置结构的流水线优势；</li>
-            <li>对比了IIR的直接I型和直接II型（典范型），以及延迟单元节省的技巧；</li>
-            <li>重点讲解了级联型（二阶节Biquad级联）——工程首选的IIR实现结构，并给出了一个亲身经历的极点漂移踩坑故事；</li>
-            <li>介绍了并联型和格型结构的原理和各自的应用场景；</li>
-            <li>讨论了系数量化效应和极限环现象，用一个实际的产品问题说明了16位定点IIR的"死区"振荡；</li>
-            <li>给出了不同场景下的滤波器结构选型参考表。</li>
-        </ul>
-
-        <p>掌握了滤波器结构之后，你从具备"设计能力"升级到了具备"工程实现能力"。从下一章开始，我们将进入多速率信号处理的世界。你会发现，在某些场景下，改变采样率比设计更复杂的滤波器要高效得多。</p>
-
-        <p>下一章<strong>多速率信号处理（一）</strong>，我们将深入了解抽取、内插和多相分解这些多速率系统的核心技术。</p>
-
-        <p>我们下一章见。</p>
-
-        <div class="footer-nav">
-            <a href="10.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="12.html">下一章 →</a>
-        </div>
-    </div>
+<a class="skip" href="#main">跳转至正文</a>
+<header class="topbar"><a class="brand" href="../index.html">∿ Digital Signal Processing</a><span>CHAPTER 11 / 28</span><a href="../index.html#curriculum">课程地图</a></header>
+<div class="layout">
+<nav class="toc" aria-label="本章目录">
+<div class="back"><a href="../index.html">← 返回课程首页</a></div>
+<p>本章路径</p>
+<div class="toc-items">
+<a href="#question">同一组 b、a，为什么换一种画法就崩了？</a>
+<a href="#fir">FIR：直接型与转置型</a>
+<a href="#iir">IIR：直接 I 型与直接 II 型</a>
+<a href="#cascade">级联与并联：为什么工程偏爱二阶节</a>
+<a href="#lattice">格型与反射系数</a>
+<a href="#quantization">系数量化、极点漂移与极限环</a>
+<a href="#experiment">交互：量化位数与极点半径</a>
+<a href="#limits">结构选型的边界</a>
+<a href="#sources">参考资料与接口</a>
 </div>
+</nav>
+<main id="main">
+<article class="article">
+<header class="article-header">
+<p class="kicker">Signal · System · Insight / 11</p>
+<h1>滤波器结构：同一个 H(z)，为什么实现方式会决定成败</h1>
+<p class="dek">在无限精度下等价的结构，落到有限字长硬件上会出现完全不同的量化误差与稳定性行为。</p>
+<div class="read-meta"><span>问题 → 流图 → 差分方程 → 定点验证</span><span>专业 SVG 与离线 MathML</span></div>
+</header>
+<section id="question" aria-labelledby="h-question">
+<h2 id="h-question">同一组 b、a，为什么换一种画法就崩了？</h2>
+<p class="lead">你已经会用 <a href="09.html">FIR</a> 与 <a href="10.html">IIR</a> 方法设计出零点、极点都合格的传递函数。可是把同一组 <code>b</code>、<code>a</code> 下载到 16 位定点 DSP 后，输出却可能偏离仿真结果、甚至在无声输入时持续振荡。系数没变、算法没变，变的只是<strong>用哪种信号流图把差分方程写成乘加运算</strong>。</p>
+<p>在无限精度下，任何实现同一个系统函数 <math class="math-inline" aria-label="H 的 z"><mi>H</mi><mo>(</mo><mi>z</mi><mo>)</mo></math> 的结构都是等价的。差别出现在有限字长：每个乘法结果要舍入、每个状态变量要存储、每个系数要量化。不同结构的<strong>误差传播路径不同</strong>，于是量化灵敏度、舍入噪声与稳定性出现数量级的差异。</p>
+<div class="callout"><p><strong>本章的最小模型：</strong>把一次乘加视为“精确乘、有限字长加”，把系数视为设计值的近似。然后问三个可测问题：极点是否仍落在单位圆内？舍入噪声能否自激？同样的字长下哪种结构误差更小？</p></div>
+</section>
+<section id="fir" aria-labelledby="h-fir">
+<h2 id="h-fir">FIR：直接型与转置型</h2>
+<p>因果 FIR 的差分方程是一段有限卷积：系数 <code>b[k]</code> 与最近 M 个输入样本相乘后求和。</p>
+<div class="math-equation"><div class="math-scroll" data-math-scroll tabindex="0" role="region" aria-label="FIR 输出等于 b_k 乘 x[n-k] 对 k 从零到 M−1 求和"><math display="block" aria-label="FIR 输出等于 b_k 乘 x[n-k] 对 k 从零到 M−1 求和"><mrow><mi>y</mi><mo>[</mo><mi>n</mi><mo>]</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>M</mi><mo>−</mo><mn>1</mn></mrow></munderover><msub><mi>b</mi><mi>k</mi></msub><mi>x</mi><mo>[</mo><mi>n</mi><mo>−</mo><mi>k</mi><mo>]</mo></mrow></math></div><p class="equation-caption">式（1）：M 为系数个数，阶数为 M−1；范围外输入按零延拓。</p></div>
+<p><strong>直接型</strong>（抽头延迟线）就是这句话的直译：一条 <code>z⁻¹</code> 延迟链把 <code>x[n]</code> 依次右移，每个抽头乘各自的 <code>b[k]</code>，再送入一个为所有乘积求和的加法器。它的关键路径包含“延迟 → 乘 → 逐级加”。</p>
+<p><strong>转置型</strong>来自信号流图的转置规则：把所有支路箭头反向，分叉点与求和点互换。它给出同一个 <math class="math-inline" aria-label="H 的 z"><mi>H</mi><mo>(</mo><mi>z</mi><mo>)</mo></math>，但结构变了——每个 <code>b[k]</code> 乘法把结果注入一条沿输出方向传递的累加链。FPGA 实现里转置型的优势是：<strong>每次乘法后立刻进入一个寄存器</strong>，关键路径短、容易加流水线，适合高频时钟。</p>
+<figure class="figure"><img src="../assets/svg/11-fir-structures.svg" alt="FIR 直接型延迟链与转置型累加链的拓扑对比" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 01</span>　两种结构实现同一个 H(z)。直接型先乘后加、需要输入移位寄存器；转置型把乘法结果注入输出累加链，乘法与加法之间可插入寄存器。</figcaption></figure>
+<p>注意：<strong>转置不改变传递函数，只改变数据流</strong>。所以两者冲激响应完全相同；差别在硬件时序、寄存器数量与舍入误差的分配方式，而不是数学结果。</p>
+</section>
+<section id="iir" aria-labelledby="h-iir">
+<h2 id="h-iir">IIR：直接 I 型与直接 II 型</h2>
+<p>IIR 既有前向的零点部分，又有反馈的极点部分。用 <code>b</code>、<code>a</code> 表示、约定 <code>a[0]=1</code> 时，系统函数写成两个多项式的商：</p>
+<div class="math-equation"><div class="math-scroll" data-math-scroll tabindex="0" role="region" aria-label="H(z) 等于 b_k z 的负 k 次方求和除以 1 加 a_k z 的负 k 次方求和"><math display="block" aria-label="H(z) 等于 b_k z 的负 k 次方求和除以 1 加 a_k z 的负 k 次方求和"><mrow><mi>H</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>=</mo><mfrac><mrow><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>M</mi></mrow></munderover><msub><mi>b</mi><mi>k</mi></msub><msup><mi>z</mi><mrow><mo>−</mo><mi>k</mi></mrow></msup></mrow><mrow><mn>1</mn><mo>+</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mrow><mi>N</mi></mrow></munderover><msub><mi>a</mi><mi>k</mi></msub><msup><mi>z</mi><mrow><mo>−</mo><mi>k</mi></mrow></msup></mrow></mfrac></mrow></math></div><p class="equation-caption">式（2）：约定 <code>a[0]=1</code>；反馈极点是分母多项式的根。</p></div>
+<p><strong>直接 I 型</strong>把两个多项式分开实现：先过前向延迟链算零点部分，再过反馈延迟链算极点部分。它需要 M+N 个延迟单元（状态变量），但两个延迟链互不共享。</p>
+<p><strong>直接 II 型</strong>（典范型）利用了除法与乘法的可交换性：把分母先乘到中间变量 <code>w[n]</code> 上，再让 <code>w[n]</code> 过分子部分。因为两条链在同一顺序上工作，它们<strong>可以共用一条延迟线</strong>，状态数降到 max(M,N)。这正是“典范”——用最少的状态实现给定的传递函数。</p>
+<div class="math-equation"><div class="math-scroll" data-math-scroll tabindex="0" role="region" aria-label="直接二型中间变量 w[n] 等于 x[n] 减 a_k w[n-k] 求和，输出 y[n] 等于 b_k w[n-k] 求和"><math display="block" aria-label="直接二型中间变量 w[n] 等于 x[n] 减 a_k w[n-k] 求和，输出 y[n] 等于 b_k w[n-k] 求和"><mrow><mi>w</mi><mo>[</mo><mi>n</mi><mo>]</mo><mo>=</mo><mi>x</mi><mo>[</mo><mi>n</mi><mo>]</mo><mo>−</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mrow><mi>N</mi></mrow></munderover><msub><mi>a</mi><mi>k</mi></msub><mi>w</mi><mo>[</mo><mi>n</mi><mo>−</mo><mi>k</mi><mo>]</mo><mo>,</mo><mspace width="0.8em"></mspace><mi>y</mi><mo>[</mo><mi>n</mi><mo>]</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>M</mi></munderover><msub><mi>b</mi><mi>k</mi></msub><mi>w</mi><mo>[</mo><mi>n</mi><mo>−</mo><mi>k</mi><mo>]</mo></mrow></math></div><p class="equation-caption">式（3）：w[n] 是内部状态，不是输出；它能显著改变溢出与舍入的分布。</p></div>
+<figure class="figure"><img src="../assets/svg/11-iir-forms.svg" alt="IIR 直接 I 型与直接 II 型的状态延迟单元对比" width="920" height="420" loading="lazy"><figcaption><span class="fig-no">FIGURE 02</span>　直接 I 型使用两条独立延迟链（M+N 个状态）；直接 II 型把分母与分子串在同一条延迟线上，只需 max(M,N) 个状态。</figcaption></figure>
+</section>
+<section id="cascade" aria-labelledby="h-cascade">
+<h2 id="h-cascade">级联与并联：为什么工程偏爱二阶节</h2>
+<p>高阶直接型把全部极点塞进一个 N 阶多项式。系数量化后，这个多项式的根可能整体漂移。工程上更稳健的做法是先把 <math class="math-inline" aria-label="H 的 z"><mi>H</mi><mo>(</mo><mi>z</mi><mo>)</mo></math> 因式分解，再逐节实现。最常见的分解是<strong>二阶节级联</strong>（biquad cascade）：</p>
+<div class="math-equation"><div class="math-scroll" data-math-scroll tabindex="0" role="region" aria-label="H(z) 等于增益 g 乘以各二阶节传递函数的连乘"><math display="block" aria-label="H(z) 等于增益 g 乘以各二阶节传递函数的连乘"><mrow><mi>H</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>=</mo><mi>g</mi><munderover><mo>∏</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mrow><mi>K</mi></mrow></munderover><mfrac><mrow><msub><mi>b</mi><mrow><mn>0</mn><mi>k</mi></mrow></msub><mo>+</mo><msub><mi>b</mi><mrow><mn>1</mn><mi>k</mi></mrow></msub><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>+</mo><msub><mi>b</mi><mrow><mn>2</mn><mi>k</mi></mrow></msub><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><mrow><mn>1</mn><mo>+</mo><msub><mi>a</mi><mrow><mn>1</mn><mi>k</mi></mrow></msub><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>+</mo><msub><mi>a</mi><mrow><mn>2</mn><mi>k</mi></mrow></msub><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow></mfrac></mrow></math></div><p class="equation-caption">式（4）：共享增益 g；每个二阶节只负责一对共轭极点。</p></div>
+<p>关键点是<strong>每个二阶节的极点只由本节系数决定</strong>，量化不会把一个节的误差“传染”给其他节。代价是乘积的取值顺序与增益分配会影响内部信号的动态范围——中间某节可能把信号放大很多倍而造成定点溢出或舍入噪声被放大。所以尾部节点顺序、配对与缩放（scaling）是真实工程参数，不是随便排的。</p>
+<p>另一种分解是<strong>并联型</strong>：把 <math class="math-inline" aria-label="H 的 z"><mi>H</mi><mo>(</mo><mi>z</mi><mo>)</mo></math> 做部分分式展开，各节共用同一个输入、输出相加。并联的各节误差不沿信号链逐级传递，但在零点附近可能发生毁灭性抵消。级联与并联都没有绝对优势，要结合系数分布与溢出预算选择。</p>
+</section>
+<section id="lattice" aria-labelledby="h-lattice">
+<h2 id="h-lattice">格型与反射系数</h2>
+<p><strong>格型结构</strong>用一组<strong>反射系数</strong> <math class="math-inline" aria-label="k 下标 i"><msub><mi>k</mi><mi>i</mi></msub></math> 而不是直接系数来描述滤波器。它能实现任意 FIR/IIR 传递函数，并且有一系列性质：稳定性判据简单（所有 <math class="math-inline" aria-label="k 下标 i"><msub><mi>k</mi><mi>i</mi></msub></math> 的模小于 1 即稳定）、对系数量化不敏感、便于递推更新。代价是乘法次数通常多于直接型，且需要额外步骤把 <code>b</code>、<code>a</code> 转成反射系数。</p>
+<p>格型最早流行于线性预测编码（LPC）与语音压缩：反射系数的物理意义对应声道分段反射，量化时可直接限制在开区间内以保稳定。它也是后面<a href="15.html">自适应滤波器</a>与格型预测器的基础。</p>
+</section>
+<section id="quantization" aria-labelledby="h-quant">
+<h2 id="h-quantization">系数量化、极点漂移与极限环</h2>
+<p>定点实现里每个系数都只能取有限个离散值。把一个二阶节的极点写作 <math class="math-inline" aria-label="r 乘以 e 的正负 j theta 次方"><mi>r</mi><msup><mi>e</mi><mrow><mo>±</mo><mi>j</mi><mi>θ</mi></mrow></msup></math>，则分母系数与极点的关系是：</p>
+<div class="math-equation"><div class="math-scroll" data-math-scroll tabindex="0" role="region" aria-label="a1 等于负 2r cos theta，a2 等于 r 的平方"><math display="block" aria-label="a1 等于负 2r cos theta，a2 等于 r 的平方"><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>=</mo><mo>−</mo><mn>2</mn><mi>r</mi><mi>cos</mi><mo>θ</mo><mo>,</mo><mspace width="0.8em"></mspace><msub><mi>a</mi><mn>2</mn></msub><mo>=</mo><msup><mi>r</mi><mn>2</mn></msup></mrow></math></div><p class="equation-caption">式（5）：对分母多项式 D(z)=1+a₁z⁻¹+a₂z⁻²，极点为 r e^{±jθ}。</p></div>
+<p>当 <code>a2</code> 存在量化误差 <math class="math-inline" aria-label="delta a2"><mi>δ</mi><msub><mi>a</mi><mn>2</mn></msub></math> 时，极点半径的变化近似为：</p>
+<div class="math-equation"><div class="math-scroll" data-math-scroll tabindex="0" role="region" aria-label="极点半径误差约等于 delta a2 除以 2r"><math display="block" aria-label="极点半径误差约等于 delta a2 除以 2r"><mrow><mi>δ</mi><mi>r</mi><mo>≈</mo><mfrac><mrow><mi>δ</mi><msub><mi>a</mi><mn>2</mn></msub></mrow><mrow><mn>2</mn><mi>r</mi></mrow></mfrac></mrow></math></div><p class="equation-caption">式（6）：高 Q（r→1）时同样的系数误差带来更大的半径偏移。</p></div>
+<p>这解释了两件事。第一，<strong>窄带高 Q 滤波器对系数量化特别敏感</strong>：即使 <math class="math-inline" aria-label="delta a2"><mi>δ</mi><msub><mi>a</mi><mn>2</mn></msub></math> 很小，半径也可能贴近或越出单位圆。第二，<strong>高阶直接型把很多极点耦合在同一个多项式里</strong>，一个系数误差会同时移动所有根；因式分解成二阶节后，每个极点对只受自己那一节系数的控制。</p>
+<p><strong>极限环</strong>（limit cycle）是另一类有限字长现象：乘法与加法后的舍入是一个非线性环节，即使输入严格为零，滤波器状态也可能无法回到零，而在小范围内持续周期性振荡（零点输入极限环 / 颗粒极限环）。它无法用任何线性时不变理论预测，只能通过定点仿真与真实硬件测试发现。常见对策包括：提高累加器与状态存储位宽、使用带舍入的溢出保护、或改用对量化不敏感的结构（如格型）。</p>
+<div class="callout warn"><p><strong>边界提醒：</strong>“用二阶节级联”不是无条件更优。它降低极点系数量化灵敏度，但引入了增益分配与中间溢出问题；具体收益必须在目标字长下用定点仿真、而非仅看浮点曲线，来确认。</p></div>
+</section>
+<section id="experiment" aria-labelledby="h-experiment">
+<h2 id="h-experiment">交互：量化位数与极点半径</h2>
+<p>下面固定一个高 Q 二阶节（极点半径设计值 0.98、归一化角频率 0.2π），只改变系数的定点小数位宽 b，观察 <code>a1</code>、<code>a2</code> 量化后极点单位圆与半径的变化。</p>
+<div class="lab" data-spectrum-lab="biquadpole"><h3>可交互实验：极点对系数量化的敏感度</h3>
+<label for="range-11">分母系数的小数位宽 b（bit）</label>
+<input id="range-11" type="range" min="4" max="16" value="8" step="1">
+<output for="range-11" aria-live="polite"></output>
+<svg viewBox="0 0 560 215" width="560" height="215" role="img" aria-labelledby="lab11-t"><title id="lab11-t">量化后极点在 z 平面上的位置与单位圆</title></svg>
+<p class="muted">极点由二次方程根公式直接计算，不依赖网络与浮点库；滑块改变的是系数存储精度，不是设计值。</p></div>
+<p>把 b 调小会看到两个量化极点既沿幅角移动、也沿半径移动，且半径可能在 <code>r=1</code> 附近摆动。这正是真实 DSP 上“为什么同一组系数会失稳”的最小可观察机制。</p>
+<pre><code>from math import cos, pi, sqrt
+
+def poles(a1, a2):
+    disc = a1 * a1 - 4 * a2
+    if disc >= 0:
+        return ((-a1 + sqrt(disc)) / 2, (-a1 - sqrt(disc)) / 2)
+    re, im = -a1 / 2, sqrt(-disc) / 2
+    return (complex(re, im), complex(re, -im))
+
+def quantize(x, bits):
+    scale = 2 ** bits
+    return round(x * scale) / scale
+
+r, w0 = 0.98, 0.2 * pi
+a1, a2 = -2 * r * cos(w0), r * r
+qa1, qa2 = quantize(a1, 8), quantize(a2, 8)
+print(round(max(abs(p) for p in poles(a1, a2)), 6),
+      round(max(abs(p) for p in poles(qa1, qa2)), 6))</code></pre>
+<p><a href="../examples/11_structures.py">完整可运行测试（11_structures.py）</a>用标准库验证了两件事：直接型与转置型冲激响应完全一致；当极点为共轲复数时半径恰为 <math class="math-inline" aria-label="根号 a2"><msqrt><msub><mi>a</mi><mn>2</mn></msub></msqrt></math>，其量化偏移与式（6）一阶估计吻合（两者之差小于实际偏移的 5%）。</p>
+</section>
+<section id="limits" aria-labelledby="h-limits">
+<h2 id="h-limits">结构选型的边界</h2>
+<ul>
+<li>同一 <math class="math-inline" aria-label="H 的 z"><mi>H</mi><mo>(</mo><mi>z</mi><mo>)</mo></math> 的多种实现仅在无限精度下等价；有限字长下它们是不同的数值系统。</li>
+<li>延迟单元最少（典范型）不等于数值最优；状态少但极点耦合度高。</li>
+<li>二阶节级联降低极点量化灵敏度，但增益分配与中间溢出必须单独验证。</li>
+<li>极限环是非线性舍入现象，不能用线性稳定性/Nyquist 分析预测。</li>
+<li>转置型改变数据流而非传递函数；它优化的是时序与寄存器，不是频率响应。</li>
+</ul>
+<p>自检：若一个二阶节的 <code>a2</code> 设计值为 0.9604（r=0.98），用 6 位小数存系数，半径最多可能偏移多少？这种偏移会让极点离开单位圆吗？</p>
+</section>
+<section id="sources" aria-labelledby="h-sources">
+<h2 id="h-sources">参考资料与接口</h2>
+<ol class="refs">
+<li><a href="https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/">MIT OCW · Discrete-Time Signal Processing</a>：直接型、级联型、并联型与格型的等价性。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfilt.html">SciPy · sosfilt / tf2sos</a>：二阶节级联的数据结构与实现接口。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfreqz.html">SciPy · sosfreqz</a>：按二阶节计算频率响应。</li>
+</ol>
+</section>
+<nav class="chapter-nav"><a href="10.html">← 第 10 章</a><a href="../index.html#curriculum">课程地图</a><a href="12.html">第 12 章 →</a></nav>
+</article>
+</main>
 </div>
 </body>
 </html>

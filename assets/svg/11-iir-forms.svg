@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 430" role="img" aria-labelledby="t11f2 d11f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t11f2">IIR 直接 I 型与直接 II 型的状态延迟对比</title>
+<desc id="d11f2">直接 I 型把分子 N(z) 与分母 1/D(z) 分成前后两段实现，各带一条含两个 z⁻¹ 的延迟链，共 4 个状态；直接 II 型把分母移到最前、分子接在其后，二者共用同一条延迟线，状态数降到 max(M,N)=2。</desc>
+<rect x="0" y="0" width="920" height="430" fill="#fffdf9"/>
+<text x="30" y="42" font-size="15" font-weight="700" fill="#203035">① 直接 I 型：前向链与反馈链各自独立</text>
+<text x="30" y="118" font-size="14" fill="#53676d">x[n]</text>
+<line x1="72" y1="113" x2="120" y2="113" stroke="#9fb8b2" stroke-width="1.6"/><polygon points="120,107 132,113 120,119" fill="#147f80"/>
+<rect x="140" y="80" width="240" height="66" rx="8" fill="#eef8f6" stroke="#147f80"/>
+<text x="156" y="106" font-size="14" font-weight="700" fill="#0d7779">分子 N(z)</text><text x="156" y="128" font-size="13" fill="#53676d">b₀,b₁,b₂ ＋ 2 个 z⁻¹</text>
+<line x1="380" y1="113" x2="430" y2="113" stroke="#9fb8b2" stroke-width="1.6"/><polygon points="430,107 442,113 430,119" fill="#147f80"/>
+<rect x="450" y="80" width="240" height="66" rx="8" fill="#fdf0ea" stroke="#d06d4d"/>
+<text x="466" y="106" font-size="14" font-weight="700" fill="#b55c3e">分母 1/D(z)</text><text x="466" y="128" font-size="13" fill="#53676d">−a₁,−a₂ ＋ 2 个 z⁻¹</text>
+<line x1="690" y1="113" x2="730" y2="113" stroke="#9fb8b2" stroke-width="1.6"/><polygon points="730,107 742,113 730,119" fill="#147f80"/>
+<text x="750" y="118" font-size="14" fill="#203035">y[n]</text>
+<text x="140" y="176" font-size="14" fill="#b55c3e">状态数 = 2 ＋ 2 = 4 个存储单元</text>
+<text x="30" y="212" font-size="15" font-weight="700" fill="#203035">② 直接 II 型：分母在前、分子在后，共用一条延迟线</text>
+<text x="18" y="330" font-size="14" fill="#53676d">x[n]</text>
+<line x1="60" y1="325" x2="168" y2="325" stroke="#9fb8b2" stroke-width="1.6"/>
+<circle cx="180" cy="325" r="11" fill="#fff" stroke="#147f80" stroke-width="1.6"/><text x="174" y="330" font-size="13" fill="#0d7779">+</text>
+<line x1="191" y1="325" x2="240" y2="325" stroke="#9fb8b2" stroke-width="1.6"/><polygon points="240,319 252,325 240,331" fill="#147f80"/>
+<rect x="260" y="280" width="300" height="90" rx="8" fill="#eef8f6" stroke="#147f80"/>
+<text x="276" y="308" font-size="14" font-weight="700" fill="#0d7779">共享延迟线</text>
+<text x="276" y="332" font-size="13" fill="#53676d">w[n−1], w[n−2] ＝ 2 个 z⁻¹</text>
+<text x="276" y="354" font-size="13" fill="#53676d">＝ max(M,N) 个状态</text>
+<line x1="560" y1="325" x2="640" y2="325" stroke="#9fb8b2" stroke-width="1.6"/><polygon points="640,319 652,325 640,331" fill="#147f80"/>
+<text x="662" y="330" font-size="14" fill="#203035">y[n]</text>
+<path d="M560 355 V400 H180 V336" fill="none" stroke="#d06d4d" stroke-width="1.6"/>
+<polygon points="174,336 180,324 186,336" fill="#d06d4d"/>
+<text x="330" y="416" font-size="13" fill="#b55c3e">反馈 −a₁,−a₂ 由 w[n] 支路取回，与输入在同一加法器汇合</text>
+<text x="576" y="370" font-size="13" fill="#b55c3e">b₀,b₁,b₂</text>
+</svg>

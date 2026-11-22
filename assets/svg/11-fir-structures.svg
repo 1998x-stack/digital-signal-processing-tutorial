@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 430" role="img" aria-labelledby="t11f1 d11f1" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t11f1">FIR 直接型与转置型的信号流图对比</title>
+<desc id="d11f1">上图直接型用一条延迟链把输入逐级右移，每个抽头乘 b_k 后送入水平加法总线；下图转置型让 x[n] 同时乘所有 b_k，再把结果注入一条带延迟的垂直累加链，最后在顶端输出 y[n]。两种结构实现同一个 H(z)，区别只在数据流与寄存器位置。</desc>
+<rect x="0" y="0" width="920" height="430" fill="#fffdf9"/>
+<text x="30" y="40" font-size="15" font-weight="700" fill="#203035">① 直接型（抽头延迟线）：延迟 → 乘系数 → 求和</text>
+<line x1="30" y1="95" x2="430" y2="95" stroke="#9fb8b2" stroke-width="1.6"/>
+<text x="4" y="99" font-size="14" fill="#53676d">x[n]</text>
+<rect x="90" y="78" width="56" height="34" rx="5" fill="#e9f5f2" stroke="#147f80"/><text x="104" y="100" font-size="14" fill="#0d7779">z⁻¹</text>
+<rect x="250" y="78" width="56" height="34" rx="5" fill="#e9f5f2" stroke="#147f80"/><text x="264" y="100" font-size="14" fill="#0d7779">z⁻¹</text>
+<g stroke="#9fb8b2" stroke-width="1.6" fill="none">
+<path d="M40 95V152"/><path d="M180 95V152"/><path d="M340 95V152"/>
+<path d="M40 182V205"/><path d="M180 182V205"/><path d="M340 182V205"/>
+<path d="M40 205H440"/><path d="M440 205H470"/>
+</g>
+<g fill="#fbe9e0" stroke="#d06d4d"><polygon points="26,152 54,152 40,182"/><polygon points="166,152 194,152 180,182"/><polygon points="326,152 354,152 340,182"/></g>
+<text x="60" y="176" font-size="14" fill="#b55c3e">b₀</text><text x="200" y="176" font-size="14" fill="#b55c3e">b₁</text><text x="360" y="176" font-size="14" fill="#b55c3e">b₂</text>
+<g fill="#fff" stroke="#147f80" stroke-width="1.6"><circle cx="40" cy="205" r="10"/><circle cx="180" cy="205" r="10"/><circle cx="340" cy="205" r="10"/></g>
+<g font-size="13" fill="#0d7779" text-anchor="middle"><text x="40" y="210">+</text><text x="180" y="210">+</text><text x="340" y="210">+</text></g>
+<text x="478" y="210" font-size="14" fill="#203035">y[n]</text>
+<text x="30" y="252" font-size="15" font-weight="700" fill="#203035">② 转置型：乘系数 → 注入带延迟的输出累加链</text>
+<line x1="30" y1="330" x2="60" y2="330" stroke="#9fb8b2" stroke-width="1.6"/>
+<text x="2" y="334" font-size="14" fill="#53676d">x[n]</text>
+<g stroke="#9fb8b2" stroke-width="1.6" fill="none"><path d="M60 300V390"/><path d="M60 300H252"/><path d="M60 345H252"/><path d="M60 390H252"/></g>
+<g fill="#fbe9e0" stroke="#d06d4d"><polygon points="130,287 130,313 158,300"/><polygon points="130,332 130,358 158,345"/><polygon points="130,377 130,403 158,390"/></g>
+<text x="96" y="282" font-size="14" fill="#b55c3e">b₀</text><text x="96" y="330" font-size="14" fill="#b55c3e">b₁</text><text x="96" y="375" font-size="14" fill="#b55c3e">b₂</text>
+<g fill="#fff" stroke="#147f80" stroke-width="1.6"><circle cx="280" cy="300" r="10"/><circle cx="280" cy="345" r="10"/><circle cx="280" cy="390" r="10"/></g>
+<g font-size="13" fill="#0d7779" text-anchor="middle"><text x="280" y="305">+</text><text x="280" y="350">+</text><text x="280" y="395">+</text></g>
+<rect x="255" y="314" width="50" height="22" rx="4" fill="#e9f5f2" stroke="#147f80"/><text x="263" y="330" font-size="13" fill="#0d7779">z⁻¹</text>
+<rect x="255" y="359" width="50" height="22" rx="4" fill="#e9f5f2" stroke="#147f80"/><text x="263" y="375" font-size="13" fill="#0d7779">z⁻¹</text>
+<g stroke="#9fb8b2" stroke-width="1.6" fill="none"><path d="M280 300V286"/><path d="M280 286H390"/></g>
+<polygon points="390,279 404,286 390,293" fill="#147f80"/>
+<text x="410" y="291" font-size="14" fill="#203035">y[n]</text>
+<text x="30" y="424" font-size="13" fill="#53676d">两图均为 3 抽头示例（b₀,b₁,b₂）：转置把每次乘法紧接一个寄存器，关键路径更短。</text>
+</svg>
