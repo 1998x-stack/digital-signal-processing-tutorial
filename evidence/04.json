@@ -1,0 +1,25 @@
+{
+  "chapter": "04",
+  "title": "采样定理与混叠",
+  "sources": [
+    {
+      "id": "sampling",
+      "claim": "严格限带和无谱副本重叠是理想重建关键前提",
+      "url": "https://ocw.mit.edu/courses/2-161-signal-processing-continuous-and-discrete-fall-2008/pages/lecture-notes/",
+      "scope": "选 f_s>2B，避免端点边界细节"
+    },
+    {
+      "id": "alias",
+      "claim": "3 Hz 和 1 Hz 余弦在 4 Hz 下样本完全相等",
+      "url": "https://ocw.mit.edu/courses/res-6-008-digital-signal-processing-spring-2011/pages/study-materials/",
+      "scope": "独立三角恒等式与 Python 断言交叉核验"
+    },
+    {
+      "id": "sqnr",
+      "claim": "满幅正弦量化 SNR 约为 6.02B+1.76 dB",
+      "url": "https://www.analog.com/en/resources/technical-books/scientist_engineers_guide.html",
+      "scope": "仅对理想均匀无过载量化及常规噪声模型有效"
+    }
+  ],
+  "note": "Numerical examples are deterministic teaching demonstrations; their outputs are not external empirical metrics. Browser QA status is tracked separately."
+}

@@ -1,0 +1,19 @@
+{
+  "chapter": "01",
+  "title": "采样、量化与 DSP 信号链",
+  "sources": [
+    {
+      "id": "discrete",
+      "claim": "等间隔采样 x[n]=x_a(nT_s)，幅度量化是另一步",
+      "url": "https://ocw.mit.edu/courses/res-6-008-digital-signal-processing-spring-2011/pages/study-materials/",
+      "scope": "用离散时间与离散幅度的区别界定"
+    },
+    {
+      "id": "conversion",
+      "claim": "ADC 前抗混叠模拟低通和转换链",
+      "url": "https://ocw.mit.edu/courses/2-161-signal-processing-continuous-and-discrete-fall-2008/pages/lecture-notes/",
+      "scope": "仅以理想信号链概括，不涵盖所有硬件拓扑"
+    }
+  ],
+  "note": "Numerical examples are deterministic teaching demonstrations; their outputs are not external empirical metrics. Browser QA status is tracked separately."
+}
