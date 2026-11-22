@@ -93,6 +93,38 @@ const registry={
  draw(no,"#d06d4d");draw(np,"#147f80");
  text(svg,330,200,"归一化频率（0–0.5）→");
  out.textContent="K="+K+"，每段 "+L+" 点：K 段平均估计的变异系数（跨频点 std/mean）≈ "+cv.toFixed(3)+"，理论约 1/√K = "+(1/Math.sqrt(K)).toFixed(3)+"。青线越平说明方差越小，代价是频率分辨率下降。";
+ },
+ lms(tenths,svg,out){
+ const mu=tenths/100,M=4,h=[0.6,0.3,-0.2,0.1];
+ let s1=777,s2=999;
+ const r1=()=>{s1=(s1*16807)%2147483647;return s1/2147483647*2-1};
+ const r2=()=>{s2=(s2*48271)%2147483647;return s2/2147483647*2-1};
+ const N=600,x=Array.from({length:N},r1),v=Array.from({length:N},()=>0.05*r2());
+ const d=Array.from({length:N},(_,n)=>v[n]+h.reduce((s,hk,k)=>s+hk*(n-k>=0?x[n-k]:0),0));
+ const w=[0,0,0,0],errs=[];
+ for(let n=M-1;n<N;n++){
+ const xv=[];for(let k=0;k<M;k++)xv.push(x[n-k]);
+ const y=w.reduce((s,wk,k)=>s+wk*xv[k],0),e=d[n]-y;
+ const en=xv.reduce((s,q)=>s+q*q,0)+1e-6;
+ for(let k=0;k<M;k++)w[k]+=mu/en*e*xv[k];
+ errs.push(e*e);
+ }
+ const B=20,L=Math.floor(errs.length/B),curve=[];
+ for(let b=0;b<B;b++){let s=0;for(let i=b*L;i<(b+1)*L;i++)s+=errs[i];curve.push(s/L)}
+ const floor=Math.max(v.reduce((s,q)=>s+q*q,0)/N,1e-12);
+ const tail=curve.slice(-4).reduce((s,q)=>s+q,0)/4;
+ const mis=Math.max(0,tail/floor-1);
+ svg.replaceChildren();svg.setAttribute("viewBox","0 0 560 215");
+ const left=48,right=540,top=29,bottom=173,lo=-80,hi=10;
+ const px=i=>left+i*(right-left)/(B-1),py=v2=>top+(hi-Math.max(lo,Math.min(hi,10*Math.log10(Math.max(v2,1e-12)))))/(hi-lo)*144;
+ line(svg,left,bottom,right,bottom);line(svg,left,top,left,bottom);
+ [0,-20,-40,-60].forEach(g=>{const y=py(Math.pow(10,g/10));line(svg,left,y,right,y,"#eef3f1",1);text(svg,10,y+4,String(g))});
+ text(svg,4,20,"MSE (dB)");
+ line(svg,left,py(floor),right,py(floor),"#7461ba");
+ add(svg,"path",{d:curve.map((val,i)=>(i?"L":"M")+px(i).toFixed(1)+" "+py(val).toFixed(1)).join(" "),fill:"none",stroke:"#147f80","stroke-width":2.4});
+ text(svg,300,200,"迭代块 →");
+ text(svg,360,py(floor)-5,"噪声底");
+ out.textContent="μ̃="+mu.toFixed(2)+"：最终 MSE ≈ "+(10*Math.log10(Math.max(tail,1e-12))).toFixed(1)+" dB，噪声底 ≈ "+(10*Math.log10(floor)).toFixed(1)+" dB，失调 ≈ "+(100*mis).toFixed(1)+"%。"+(mu>=1.95?"步长接近上界 2：曲线振荡、难以收敛。":"μ̃ 越大收敛越快，但噪声底上方的失调也越大。");
  }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});

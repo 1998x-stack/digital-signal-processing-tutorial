@@ -1,0 +1,37 @@
+{
+  "chapter": "15",
+  "title": "自适应滤波器：从 Wiener 解到 LMS 与 NLMS",
+  "sources": [
+    {
+      "id": "wiener-hopf",
+      "claim": "最小均方误差解满足 Wiener-Hopf 方程 Rw_opt=p，w_opt=R⁻¹p",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341：Wiener 滤波与正则方程"
+    },
+    {
+      "id": "steepest",
+      "claim": "最速下降收敛要求 0<μ<2/λ_max；收敛速度受特征值散布制约",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "二次型代价面的梯度迭代与特征值分析"
+    },
+    {
+      "id": "lms",
+      "claim": "LMS 用瞬时梯度 w(n+1)=w(n)+μ e(n)x(n)；失调 M≈(μ/2)tr(R)",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "Widrow-Hoff LMS；examples/15_lms.py 校验收敛与失调单调性"
+    },
+    {
+      "id": "nlms",
+      "claim": "NLMS 用输入能量归一化步长，0<μ̃<2 保证收敛",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "归一化 LMS；示例校验输入放大 10 倍后仍稳定收敛"
+    }
+  ],
+  "notes": [
+    "“LMS 在均值意义下收敛到 Wiener 解”通常依赖输入与误差近似不相关的假设，页面已注明为常用近似。",
+    "失调公式 M≈(μ/2)tr(R) 是一阶近似；tr(R)=M·σ_x² 适用于白输入。",
+    "旧版页面中的第一人称“踩坑”叙述属于虚构轶事，已删除，改为以失效模式与设计约束陈述。",
+    "FXLMS 需要估计次级路径，页面仅作定性说明，未给出实验数字。"
+  ],
+  "status": "Wiener/LMS/NLMS 定义与收敛条件对照 MIT OCW 资料；确定性实验校验收敛、失调单调性与 NLMS 电平鲁棒性。浏览器 QA 由工作流记录。"
+}

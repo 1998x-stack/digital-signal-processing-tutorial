@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 410" role="img" aria-labelledby="t15f1 d15f1" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t15f1">均方误差等高线与特征值散布对最速下降路径的影响</title>
+<desc id="d15f1">左图 R 的两个特征值接近，等高线近似圆，负梯度方向几乎直指最小值，路径短；右图特征值散布大，等高线被拉成狭长椭圆，负梯度方向几乎垂直于谷底长轴，路径在两侧壁间反复振荡，需要很多步才到达最小值。</desc>
+<rect x="0" y="0" width="920" height="410" fill="#fffdf9"/>
+<text x="30" y="36" font-size="15" font-weight="700" fill="#203035">① 特征值接近：等高线近似圆，梯度直指谷底</text>
+<g fill="none" stroke="#bfdcd6"><ellipse cx="230" cy="210" rx="30" ry="30"/><ellipse cx="230" cy="210" rx="60" ry="60"/><ellipse cx="230" cy="210" rx="90" ry="90"/></g>
+<path d="M140 120 L198 172 L214 195 L224 205 L230 210" fill="none" stroke="#147f80" stroke-width="2.6"/>
+<circle cx="230" cy="210" r="4.5" fill="#d06d4d"/>
+<text x="222" y="230" font-size="13" fill="#b55c3e">w_opt</text>
+<text x="120" y="330" font-size="13" fill="#53676d">步数少，收敛快</text>
+<text x="30" y="216" font-size="15" font-weight="700" fill="#203035">② 特征值散布大：等高线呈狭长椭圆</text>
+<g fill="none" stroke="#f6ddcf"><ellipse cx="680" cy="210" rx="120" ry="26"/><ellipse cx="680" cy="210" rx="90" ry="19"/><ellipse cx="680" cy="210" rx="60" ry="12"/></g>
+<path d="M540 196 L760 224 L566 197 L740 223 L592 198 L724 221 L614 199 L710 220 L634 200 L700 219 L656 201 L690 217 L676 204 L686 214 L680 210" fill="none" stroke="#7461ba" stroke-width="2.4"/>
+<circle cx="680" cy="210" r="4.5" fill="#d06d4d"/>
+<text x="330" y="330" font-size="13" fill="#53676d">梯度方向几乎垂直于长轴，路径在两侧壁间振荡，收敛很慢</text>
+<text x="30" y="376" font-size="13" fill="#53676d">R 的特征值比值 χ=λ_max/λ_min 越大，山谷越狭长；有色输入因此比白输入更难收敛。</text>
+</svg>
