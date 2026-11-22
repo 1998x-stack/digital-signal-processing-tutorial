@@ -58,6 +58,19 @@ const registry={
  text(svg,36,17,"相对幅度（两曲线同一缩放）");text(svg,404,200,"归一化频率（下采样后 0–0.5）→");
  const alias=(()=>{const f=.30%(1/M);return f>1/(2*M)?1/M-f:f})();
  out.textContent="M="+M+"：新采样率下 Nyquist=0.5；带内 0.10 分量出现在 "+(0.10*M).toFixed(2)+"，0.30 带外分量混叠到 "+alias.toFixed(3)+"（原始归一化轴）＝"+(alias*M).toFixed(2)+"（新采样率轴）。赭色峰即为混叠。";
+ },
+ cic(N,svg,out){
+ const M=8,H=180,left=44,right=536,top=29,bottom=173;
+ const db=w=>{const s=Math.abs(Math.sin(M*w/2)/Math.sin(w/2))**N;return 20*Math.log10(Math.max(s,1e-9))-N*20*Math.log10(M)};
+ const pts=Array.from({length:H+1},(_,i)=>db(PI*i/H));
+ svg.replaceChildren();svg.setAttribute("viewBox","0 0 560 215");
+ line(svg,left,bottom,right,bottom);line(svg,left,top,left,bottom);
+ const lo=-100,hi=10,py=v=>top+(hi-Math.max(lo,Math.min(hi,v)))/(hi-lo)*144;
+ [0,-20,-40,-60,-80].forEach(g=>{const y=py(g);line(svg,left,y,right,y,"#eef3f1",1);text(svg,6,y+4,String(g))});
+ text(svg,6,20,"dB（相对直流）");
+ add(svg,"path",{d:pts.map((v,i)=>(i?"L":"M")+(left+i*(right-left)/H).toFixed(1)+" "+py(v).toFixed(1)).join(" "),fill:"none",stroke:"#7461ba","stroke-width":2.4});
+ text(svg,300,200,"ω：0 → π");
+ out.textContent="N="+N+" 级：直流增益 "+(N*20*Math.log10(M)).toFixed(1)+" dB（=M^N，M=8）；第一零点 ω=2π/8≈0.785 rad；第一旁瓣约 "+db(3*PI/M).toFixed(1)+" dB（相对直流）。N 越大阻带压得越低，但通带滚降也更明显。";
  }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});

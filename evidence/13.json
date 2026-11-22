@@ -1,0 +1,31 @@
+{
+  "chapter": "13",
+  "title": "多速率信号处理（二）：CIC、半带与滤波器组",
+  "sources": [
+    {
+      "id": "hogenauer",
+      "claim": "CIC 抽取器由积分器与梳状差分器构成，H(z)=(1-z^-M)/(1-z^-1)，无乘法器",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "级联积分梳状滤波器（Hogenauer 1981）；examples/13_cic.py 校验冲激响应与 M^N 增益"
+    },
+    {
+      "id": "halfband",
+      "claim": "半带 FIR 每隔一个抽头为零（除中心 1/2），H(z)+H(-z)=z^-alpha",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "N≡1(mod4)、中心下标为偶数时的频域恒等式；examples/13_cic.py 数值核验"
+    },
+    {
+      "id": "qmf",
+      "claim": "两通道滤波器组混叠消除条件 H0(-z)G0+H1(-z)G1=0；失真项 T(z)",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "分析/综合滤波器组的混叠与失真条件；G0=H1(-z)、G1=-H0(-z) 消混叠"
+    }
+  ],
+  "notes": [
+    "“每级约 13 dB”来自矩形窗（滑动平均）旁瓣典型值，是量级估计，不是任意 M、N 的精确阻带衰减，页面已标注。",
+    "多级抽取链的速率数字（122.88 MHz→48 kHz，因子 2560）可逐级核对；计算量节省未给出固定百分比。",
+    "半带 H(z)+H(-z)=z^-alpha 仅在中心下标为偶数（N≡1 mod 4）时成立；页面与示例均用此约定。",
+    "QMF 符号关系只保证混叠消除，完美重构还需功率互补/正交条件，页面已区分。"
+  ],
+  "status": "CIC/半带/QMF 结构与恒等式对照 MIT OCW 权威资料；确定性实验校验冲激响应、M^N 增益、半带恒等式与级联因子。浏览器 QA 由工作流记录。"
+}

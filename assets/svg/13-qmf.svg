@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 410" role="img" aria-labelledby="t13f2 d13f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t13f2">两通道正交镜像滤波器组</title>
+<desc id="d13f2">输入 x[n] 同时送入分析滤波器 H0（低通）与 H1（高通），各自做 2 倍下采样进入子带处理，再 2 倍上采样后经合成滤波器 G0、G1 相加得到输出。下采样引入的 X(-z) 混叠项由 H 与 G 的镜像与符号关系抵消，剩下失真项 T(z)。</desc>
+<rect x="0" y="0" width="920" height="410" fill="#fffdf9"/>
+<text x="30" y="38" font-size="15" font-weight="700" fill="#203035">两通道 QMF：分析 → ↓2 → 处理 → ↑2 → 合成</text>
+<text x="4" y="204" font-size="14" fill="#53676d">x[n]</text>
+<line x1="42" y1="200" x2="90" y2="200" stroke="#9fb8b2" stroke-width="1.6"/>
+<path d="M90 200 V120 H140" fill="none" stroke="#9fb8b2" stroke-width="1.6"/>
+<path d="M90 200 V280 H140" fill="none" stroke="#9fb8b2" stroke-width="1.6"/>
+<rect x="140" y="94" width="120" height="52" rx="6" fill="#eef8f6" stroke="#147f80"/>
+<text x="160" y="126" font-size="14" fill="#0d7779">H₀(z) 低通</text>
+<rect x="140" y="254" width="120" height="52" rx="6" fill="#fdf0ea" stroke="#d06d4d"/>
+<text x="160" y="286" font-size="14" fill="#b55c3e">H₁(z) 高通</text>
+<line x1="260" y1="120" x2="310" y2="120" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="260" y1="280" x2="310" y2="280" stroke="#9fb8b2" stroke-width="1.6"/>
+<rect x="310" y="102" width="52" height="36" rx="5" fill="#fff" stroke="#7461ba"/><text x="322" y="126" font-size="14" fill="#7461ba">↓2</text>
+<rect x="310" y="262" width="52" height="36" rx="5" fill="#fff" stroke="#7461ba"/><text x="322" y="286" font-size="14" fill="#7461ba">↓2</text>
+<line x1="362" y1="120" x2="470" y2="120" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="362" y1="280" x2="470" y2="280" stroke="#9fb8b2" stroke-width="1.6"/>
+<text x="386" y="112" font-size="13" fill="#53676d">子带处理</text>
+<text x="386" y="308" font-size="13" fill="#53676d">子带处理</text>
+<rect x="470" y="102" width="52" height="36" rx="5" fill="#fff" stroke="#7461ba"/><text x="482" y="126" font-size="14" fill="#7461ba">↑2</text>
+<rect x="470" y="262" width="52" height="36" rx="5" fill="#fff" stroke="#7461ba"/><text x="482" y="286" font-size="14" fill="#7461ba">↑2</text>
+<line x1="522" y1="120" x2="580" y2="120" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="522" y1="280" x2="580" y2="280" stroke="#9fb8b2" stroke-width="1.6"/>
+<rect x="580" y="94" width="120" height="52" rx="6" fill="#eef8f6" stroke="#147f80"/>
+<text x="600" y="126" font-size="14" fill="#0d7779">G₀(z)</text>
+<rect x="580" y="254" width="120" height="52" rx="6" fill="#fdf0ea" stroke="#d06d4d"/>
+<text x="600" y="286" font-size="14" fill="#b55c3e">G₁(z)</text>
+<path d="M700 120 H770 V200" fill="none" stroke="#9fb8b2" stroke-width="1.6"/>
+<path d="M700 280 H770 V200" fill="none" stroke="#9fb8b2" stroke-width="1.6"/>
+<circle cx="770" cy="200" r="11" fill="#fff" stroke="#147f80" stroke-width="1.6"/><text x="764" y="205" font-size="13" fill="#0d7779">+</text>
+<line x1="781" y1="200" x2="836" y2="200" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="836,194 850,200 836,206" fill="#147f80"/>
+<text x="858" y="205" font-size="14" fill="#203035">ŷ[n]</text>
+<text x="30" y="360" font-size="13" fill="#7461ba">混叠消除：H₀(−z)G₀(z) + H₁(−z)G₁(z) = 0（H₁(z)=H₀(−z)、G₀=H₀、G₁=−H₀(−z)）</text>
+<text x="30" y="388" font-size="13" fill="#53676d">完美重构还需失真项 T(z)=½[H₀²(z)−H₀²(−z)] 为纯延迟，即 H₀ 功率互补。</text>
+</svg>
