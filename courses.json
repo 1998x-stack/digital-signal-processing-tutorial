@@ -61,58 +61,58 @@
     },
     {
       "num": "06",
-      "title": "频域分析",
+      "title": "DTFT 与频率响应",
       "topics": [
-        "DTFT",
+        "DTFT 2π 周期",
         "频率响应",
-        "傅里叶家族"
+        "Parseval"
       ],
       "file": "chapters/06.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "07",
-      "title": "离散傅里叶变换 (DFT)",
+      "title": "DFT、频谱泄漏与补零",
       "topics": [
-        "DFT定义",
+        "频谱泄漏",
         "循环卷积",
-        "频谱泄露"
+        "补零与分辨率"
       ],
       "file": "chapters/07.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "08",
-      "title": "快速傅里叶变换 (FFT)",
+      "title": "FFT 与蝶形运算",
       "topics": [
-        "基2 DIT/DIF",
-        "蝶形运算",
-        "位反转"
+        "基 2 DIT",
+        "旋转因子",
+        "位反转与算法复杂度"
       ],
       "file": "chapters/08.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "09",
-      "title": "FIR滤波器设计",
+      "title": "FIR 线性相位与窗函数",
       "topics": [
         "线性相位",
-        "窗函数法",
-        "频率采样法"
+        "Hamming 窗",
+        "-6 dB 截止"
       ],
       "file": "chapters/09.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "10",
-      "title": "IIR滤波器设计",
+      "title": "IIR 双线性变换与 SOS",
       "topics": [
-        "模拟原型",
-        "双线性变换",
-        "冲激不变法"
+        "Butterworth",
+        "双线性预畸变",
+        "二阶节 SOS"
       ],
       "file": "chapters/10.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "11",

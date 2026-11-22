@@ -1,0 +1,25 @@
+{
+  "chapter": "10",
+  "title": "IIR 双线性变换",
+  "sources": [
+    {
+      "id": "prewarping",
+      "claim": "s=2fs (1-z^-1)/(1+z^-1) 带来非线性频率映射",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.bilinear.html",
+      "scope": "scipy.signal.bilinear 不自动 prewarp"
+    },
+    {
+      "id": "butter",
+      "claim": "Butterworth 低通临界点为 -3dB",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.butter.html",
+      "scope": "该点不同于 firwin 的 -6dB 截止"
+    },
+    {
+      "id": "sos",
+      "claim": "高阶 IIR 的 sos 实现减少数值敏感性风险",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.butter.html",
+      "scope": "浮点系数转换与有限字长误差仍需验证"
+    }
+  ],
+  "status": "Definitions verified against authoritative course/API references; deterministic experiments check numerical identities. Browser QA assessed by workflow."
+}

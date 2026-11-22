@@ -1,0 +1,25 @@
+{
+  "chapter": "07",
+  "title": "DFT 与频谱泄漏",
+  "sources": [
+    {
+      "id": "normalization",
+      "claim": "正向无系数、逆向除以 N 的 DFT 惯例",
+      "url": "https://docs.scipy.org/doc/scipy/tutorial/fft.html",
+      "scope": "不同工具支持 backward / forward / ortho 约定"
+    },
+    {
+      "id": "leakage",
+      "claim": "窗长度与边界不连续导致泄漏",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "纯正弦整数频点且有限观察可呈现两个独立峰"
+    },
+    {
+      "id": "padding",
+      "claim": "补零只使 DTFT 频率采样变密；线性卷积需要足够补零",
+      "url": "https://docs.scipy.org/doc/scipy/tutorial/fft.html",
+      "scope": "展示 N≥Lx+Lh−1 的零填充条件"
+    }
+  ],
+  "status": "Definitions verified against authoritative course/API references; deterministic experiments check numerical identities. Browser QA assessed by workflow."
+}

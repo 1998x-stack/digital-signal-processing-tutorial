@@ -1,0 +1,25 @@
+{
+  "chapter": "09",
+  "title": "FIR 窗函数设计",
+  "sources": [
+    {
+      "id": "symmetry",
+      "claim": "实系数对称 FIR 拥有线性相位，非所有 FIR 自动线性相位",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html",
+      "scope": "Type I/II 的条件与 Nyquist 零点条件"
+    },
+    {
+      "id": "cutoff",
+      "claim": "firwin 截止是 -6dB 半幅点",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html",
+      "scope": "不等同于 Butterworth -3dB 半功率点"
+    },
+    {
+      "id": "window",
+      "claim": "相同阶数的窗函数控制主瓣与旁瓣权衡",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html",
+      "scope": "图示为定性示意，最终结果应通过 freqz 检验"
+    }
+  ],
+  "status": "Definitions verified against authoritative course/API references; deterministic experiments check numerical identities. Browser QA assessed by workflow."
+}

@@ -19,7 +19,7 @@ class Page(HTMLParser):
   if t=="figure": self.figures+=1
   if t=="figcaption": self.captions+=1
   if t=="math": self.math+=1
-  if a.get("data-lab"): self.labs+=1
+  if a.get("data-lab") or a.get("data-spectrum-lab"): self.labs+=1
   for key in ("src","href"):
    if a.get(key): self.refs.append(a[key])
 def error(s): issues.append(s)
@@ -47,7 +47,7 @@ def run():
  except (OSError,ValueError,AssertionError,KeyError) as exc: error(f"Invalid catalog: {exc}");return 1
  page(ROOT/"index.html")
  for i in range(1,29):
-  n=f"{i:02d}"; page(ROOT/f"{n}.html");page(ROOT/"chapters"/f"{n}.html",i<=5)
+  n=f"{i:02d}"; page(ROOT/f"{n}.html");page(ROOT/"chapters"/f"{n}.html",i<=10)
   if not (ROOT/c["chapters"][i-1]["file"]).exists():error(f"Catalog broken: {n}")
  for path in sorted((ROOT/"assets/svg").glob("*.svg")):
   try:
@@ -56,10 +56,10 @@ def run():
    children=list(root)
    if not any(e.tag.endswith("title") for e in children) or not any(e.tag.endswith("desc") for e in children):error(f"{path.name}: missing title/desc")
   except ET.ParseError as exc:error(f"{path.name}: XML parse {exc}")
- for i in range(1,6):
+ for i in range(1,11):
   if not (ROOT/"evidence"/f"{i:02d}.json").exists():error(f"evidence missing {i:02d}")
  if issues:
   print("\n".join("FAIL "+i for i in issues));return 1
- print("PASS: 28 catalog entries, article links, 5 upgraded chapters and SVG XML")
+ print("PASS: 28 catalog entries, article links, 10 upgraded chapters and SVG XML")
  return 0
 if __name__=="__main__": sys.exit(run())

@@ -1,0 +1,25 @@
+{
+  "chapter": "08",
+  "title": "FFT 与基 2 DIT",
+  "sources": [
+    {
+      "id": "dft",
+      "claim": "FFT 与 DFT 计算数学上相同",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html",
+      "scope": "FFT 是高效算法，默认归一化仍由 norm 选项确定"
+    },
+    {
+      "id": "nonpower",
+      "claim": "非 2 幂长度仍能使用现代 FFT 库",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft.html",
+      "scope": "radix2 教学实现与通用 FFT 库不可混为一谈"
+    },
+    {
+      "id": "symmetry",
+      "claim": "复指数旋转因子重复使用实现 O(N log N)",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "基二奇偶分治公式和三层 N=8 说明"
+    }
+  ],
+  "status": "Definitions verified against authoritative course/API references; deterministic experiments check numerical identities. Browser QA assessed by workflow."
+}
