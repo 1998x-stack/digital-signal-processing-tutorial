@@ -19,7 +19,7 @@ class Page(HTMLParser):
   if t=="figure": self.figures+=1
   if t=="figcaption": self.captions+=1
   if t=="math": self.math+=1
-  if a.get("data-lab"): self.labs+=1
+  if a.get("data-lab") or a.get("data-spectrum-lab"): self.labs+=1
   for key in ("src","href"):
    if a.get(key): self.refs.append(a[key])
 def error(s): issues.append(s)
