@@ -1,0 +1,37 @@
+name: Content quality
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate pages, local links and SVG
+        run: python scripts/validate_site.py
+      - name: Validate numerical experiments
+        run: python examples/check_examples.py
+  browser-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium and Playwright
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Browser QA at desktop, tablet and two mobile widths
+        run: python scripts/browser_qa.py --out qa-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dsp-browser-qa
+          path: qa-results/
+          if-no-files-found: ignore

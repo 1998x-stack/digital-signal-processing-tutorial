@@ -1,0 +1,25 @@
+{
+  "chapter": "05",
+  "title": "Z 变换与 ROC",
+  "sources": [
+    {
+      "id": "roc",
+      "claim": "双边 Z 变换需与 ROC 一起限定序列",
+      "url": "https://ocw.mit.edu/courses/res-6-008-digital-signal-processing-spring-2011/pages/study-materials/",
+      "scope": "代数式相同不代表逆变换唯一"
+    },
+    {
+      "id": "causal",
+      "claim": "h[n]=a^n u[n] 对应 |z|>|a|",
+      "url": "https://www.ocw.mit.edu/courses/res-6-dtsp-discrete-time-signal-processing/resources/mitres_6-dtsp_s26_firstedition_pdf/",
+      "scope": "由几何级数计算，假定因果右边序列"
+    },
+    {
+      "id": "bibo",
+      "claim": "因果一阶系统 BIBO 稳定当且仅当 |a|<1",
+      "url": "https://www.analog.com/media/en/technical-documentation/dsp-book/dsp_book_Ch33.pdf",
+      "scope": "结合绝对可和判据；极点到单位圆的距离是线索"
+    }
+  ],
+  "note": "Numerical examples are deterministic teaching demonstrations; their outputs are not external empirical metrics. Browser QA status is tracked separately."
+}

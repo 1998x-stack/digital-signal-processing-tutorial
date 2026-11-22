@@ -1,0 +1,19 @@
+{
+  "chapter": "03",
+  "title": "LTI 与线性卷积",
+  "sources": [
+    {
+      "id": "convolution",
+      "claim": "LTI 卷积来自冲激分解、线性与时不变",
+      "url": "https://www.ocw.mit.edu/courses/res-6-dtsp-discrete-time-signal-processing/resources/mitres_6-dtsp_s26_firstedition_pdf/",
+      "scope": "零状态输入输出描述"
+    },
+    {
+      "id": "stability",
+      "claim": "离散 LTI 的 BIBO 稳定判据是冲激响应绝对可和",
+      "url": "https://ocw.mit.edu/courses/res-6-008-digital-signal-processing-spring-2011/pages/study-materials/",
+      "scope": "稳定性与因果性相互独立"
+    }
+  ],
+  "note": "Numerical examples are deterministic teaching demonstrations; their outputs are not external empirical metrics. Browser QA status is tracked separately."
+}
