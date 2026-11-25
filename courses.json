@@ -179,7 +179,7 @@
         "阵列信号处理"
       ],
       "file": "chapters/16.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "17",
@@ -190,7 +190,7 @@
         "MUSIC"
       ],
       "file": "chapters/17.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "18",
@@ -201,7 +201,7 @@
         "Wigner-Ville"
       ],
       "file": "chapters/18.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "19",
