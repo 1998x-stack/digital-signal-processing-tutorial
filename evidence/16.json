@@ -30,9 +30,9 @@
   "notes": [
     "第 150 样本处 LMS 系数误差≈0.17、RLS≈0.016，由本仓库确定性 AR(1) 输入（rho=0.9，seed 2024）计算，非外部测量值。",
     "遗忘因子跟踪实验使用确定性伪随机序列（seed 777/55），λ=1.0 对新系统误差 0.40、λ=0.99 误差 0.02。",
-    "browser_check.py 以 set_content 载入页面，相对路径的 SVG 无法解析，故报告 brokenImages=3；用 file:// 载入同一页面的独立检查（1440/768/390/360）显示无破图、无横向溢出、无 JS 报错。",
+    "not_verified：browser_check.py 以 set_content 载入页面，相对路径的 SVG 与样式表无法解析（brokenImages=3、无 CSS），且关卡 gate.browser.ok=false，故 MathML 结构、SVG 渲染与响应式布局只有静态校验，浏览器 QA 未验证。",
     "MVDR 波束图为教学示意（8 元半波间距线阵、单干扰源、理想协方差），不是任何硬件的实测方向图。",
     "旧版页面的第一人称“踩坑实录”与来源不明的 5–10 倍收敛数字已删除，改为可验证的机制陈述。"
   ],
-  "status": "RLS/Kalman/MVDR 定义与公式对照 MIT OCW、Kalman (1960)、Capon (1969)；确定性实验校验收敛优势、P 对称性与遗忘因子跟踪；MathML 结构、SVG 与响应式由浏览器检查（file:// 载入）确认。"
+  "status": "RLS/Kalman/MVDR 定义与公式对照 MIT OCW、Kalman (1960)、Capon (1969)；确定性实验校验收敛优势、P 对称性与遗忘因子跟踪；MathML 结构、SVG 与响应式布局未做浏览器确认（浏览器 QA 未验证）。"
 }

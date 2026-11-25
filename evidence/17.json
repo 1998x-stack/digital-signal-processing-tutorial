@@ -35,9 +35,10 @@
   ],
   "notes": [
     "双峰分辨实验使用确定性序列：64 点、采样率 64 Hz、两个正弦 10.0/10.6 Hz、白噪声（seed 1234），p=16。",
-    "周期图在间隔 0.6 Hz（< f_s/N = 1 Hz）时只给一个峰；Burg AR 谱给出 10.03 与 10.75 Hz 两个峰，最大 |k|≈0.993。",
+    "周期图在间隔 0.6 Hz（< f_s/N = 1 Hz）时只给一个峰；Burg AR 谱给出 10.03 与 10.75 Hz 两个峰，最大 |k|≈0.992。",
+    "not_verified：浏览器 QA 未验证。browser_check.py 以 set_content 载入页面，相对路径的 SVG 与样式表无法解析（brokenImages=3、无 CSS），关卡 gate.browser.ok=false，故 MathML 结构、SVG 渲染与响应式布局只有静态校验，没有浏览器确认。",
     "f_s/N 在文中被明确表述为 DFT 观察网格间距与矩形窗主瓣尺度，不是任意信号的普适分辨率下界。",
     "旧版页面中“我的经验”式第一人称叙述与未标注来源的结论已删除，改为可验证的机制陈述与来源。"
   ],
-  "status": "周期图/AR/Yule-Walker/Burg/MUSIC 定义与公式对照 MIT OCW、SciPy 文档与 Schmidt (1986)；确定性实验校验单峰/双峰分辨与 |k|<1；MathML 结构、SVG 与响应式由浏览器检查（file:// 载入）确认。"
+  "status": "周期图/AR/Yule-Walker/Burg/MUSIC 定义与公式对照 MIT OCW、SciPy 文档与 Schmidt (1986)；确定性实验校验单峰/双峰分辨与 |k|<1；MathML 结构、SVG 与响应式布局未做浏览器确认（浏览器 QA 未验证）。"
 }
