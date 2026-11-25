@@ -72,7 +72,7 @@
 <div class="math-equation"><div class="math-scroll" data-math-scroll tabindex="0" role="region" aria-label="周期图 P(omega) 等于 1/N 乘 x[n] e^{−j omega n} 求和的模平方"><math display="block" aria-label="周期图 P(omega) 等于 1/N 乘 x[n] e^{−j omega n} 求和的模平方"><mrow><mi>P</mi><mo>(</mo><msup><mi>e</mi><mrow><mi>j</mi><mi>ω</mi></mrow></msup><mo>)</mo><mo>=</mo><mfrac><mn>1</mn><mi>N</mi></mfrac><msup><mrow><mo>|</mo><munderover><mo>∑</mo><mrow><mi>n</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>N</mi><mo>−</mo><mn>1</mn></mrow></munderover><mi>x</mi><mo>[</mo><mi>n</mi><mo>]</mo><msup><mi>e</mi><mrow><mo>−</mo><mi>j</mi><mi>ω</mi><mi>n</mi></mrow></msup><mo>|</mo></mrow><mn>2</mn></msup></mrow></math></div><p class="equation-caption">式（7）：对实信号，周期图以 2π 为周期且在 ω 与 2π−ω 对称。</p></div>
 <p>周期图的均值近似等于真实 PSD（近似无偏），但它是一个<strong>不一致估计</strong>：对白噪声，单个频率 Bin 上的周期图服从指数分布，其标准差与均值同量级，且增加 N 只提高频率采样密度，不降低每个频率点上的方差。</p>
 <p><strong>Welch 法</strong>把长记录分成 K 段（可重叠），每段加窗后计算周期图，再对 K 个估计取平均。当各段近似独立时，方差降到单段的约 1/K；代价是每段长度变短，频率分辨率下降。这就是 PSD 估计永恒的分辨率—方差折中。</p>
-<figure class="figure"><img src="../assets/svg/14-psd-welch.svg" alt="单段周期图与 8 段平均 Welch 估计的波动对比" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 02</span>　同一段白噪声：单段周期图的跨频点波动（变异系数≈0.95）在 8 段平均后降到≈0.35，接近 1/√8。两者的整体均值相同，降低的只是方差。</figcaption></figure>
+<figure class="figure"><img src="../assets/svg/14-psd-welch.svg" alt="单段周期图与 8 段平均 Welch 估计的波动对比" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 02</span>　同一段白噪声：单段周期图的跨频点波动（变异系数≈1.09）在 8 段平均后降到≈0.36，接近 1/√8。两者的整体均值相同，降低的只是方差。</figcaption></figure>
 <pre><code>import random
 
 random.seed(0)                      # 固定种子，结果可复现
