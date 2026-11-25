@@ -1,284 +1,124 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第16章 高级自适应算法</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="RLS 递推最小二乘、Kalman 预测—更新循环与 MVDR 波束形成：当 LMS 在有色输入下收敛缓慢时，如何用更多结构换取更快的收敛与干扰抑制。">
+<title>第 16 章 · 高级自适应算法：RLS、Kalman 与 MVDR</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/adaptive-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🎛️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数字信号处理导论</a></li>
-            <li><a href="02.html">第2章 离散时间信号</a></li>
-            <li><a href="03.html">第3章 离散时间系统</a></li>
-            <li><a href="04.html">第4章 采样定理</a></li>
-            <li><a href="05.html">第5章 Z变换</a></li>
-            <li><a href="06.html">第6章 频域分析</a></li>
-            <li><a href="07.html">第7章 离散傅里叶变换 (DFT)</a></li>
-            <li><a href="08.html">第8章 快速傅里叶变换 (FFT)</a></li>
-            <li><a href="09.html">第9章 FIR滤波器设计</a></li>
-            <li><a href="10.html">第10章 IIR滤波器设计</a></li>
-            <li><a href="11.html">第11章 滤波器结构</a></li>
-            <li><a href="12.html">第12章 多速率信号处理 (一)</a></li>
-            <li><a href="13.html">第13章 多速率信号处理 (二)</a></li>
-            <li><a href="14.html">第14章 统计信号处理基础</a></li>
-            <li><a href="15.html">第15章 自适应滤波器</a></li>
-            <li><a href="16.html" class="active">第16章 高级自适应算法</a></li>
-            <li><a href="17.html">第17章 谱估计进阶</a></li>
-            <li><a href="18.html">第18章 时频分析</a></li>
-            <li><a href="19.html">第19章 MATLAB/Python DSP仿真</a></li>
-            <li><a href="20.html">第20章 定点DSP实现</a></li>
-            <li><a href="21.html">第21章 嵌入式DSP芯片开发</a></li>
-            <li><a href="22.html">第22章 FPGA上的DSP</a></li>
-            <li><a href="23.html">第23章 音频信号处理</a></li>
-            <li><a href="24.html">第24章 通信数字信号处理</a></li>
-            <li><a href="25.html">第25章 图像信号处理</a></li>
-            <li><a href="26.html">第26章 AI+DSP融合</a></li>
-            <li><a href="27.html">第27章 软件无线电 (SDR)</a></li>
-            <li><a href="28.html">第28章 综合项目：实时音频处理器</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-
-        <h2>第16章 高级自适应算法</h2>
-
-        <p>上一章我们学习了LMS算法。它简单、优雅、实用——但正如我们反复强调的，LMS有一个"硬伤"：<strong>收敛速度受输入信号自相关矩阵的特征值散布影响严重</strong>。如果你的输入是白噪声，LMS收敛飞快；但如果输入是强相关的有色信号（比如语音），LMS会慢得让你怀疑人生。</p>
-
-        <p>这一章我们来升级自适应武器库。我们将学习三种更强大的工具——<strong>RLS</strong>（递推最小二乘）、<strong>Kalman滤波器</strong>和<strong>MVDR波束形成</strong>。它们分别从不同角度突破了LMS的局限，虽然计算代价更高，但收敛速度和跟踪能力也上了一个台阶。</p>
-
-        <div class="highlight">
-            <strong>💡 核心认知：</strong>从LMS到RLS到Kalman，自适应算法的演进有一条清晰的脉络——对信号/系统的建模越来越精细，获取的性能增益也越来越大。如果你把LMS看作"盲人摸象"，那RLS就是"戴上眼镜看"，而Kalman则是"拿着地图看"。
-        </div>
-
-        <h3>16.1 RLS算法：最小二乘的递推之美</h3>
-
-        <p>LMS的核心思想是<strong>最小均方</strong>——最小化误差的统计期望。而对于RLS（Recursive Least Squares，递推最小二乘），它的优化目标变了：最小化从开始到当前时刻所有误差的<strong>加权平方和</strong>。</p>
-
-        <p>具体来说，RLS的代价函数是：</p>
-
-        <p style="text-align:center;font-size:1.1em;font-weight:bold;">
-            \(J(n) = \sum_{i=1}^{n} \lambda^{n-i} e^2(i)\)
-        </p>
-
-        <p>其中 \(\lambda\) 是<strong>遗忘因子（forgetting factor）</strong>，取值范围通常为 \(0.95 &lt; \lambda &lt; 1\)。\(\lambda\) 越接近1，算法越"记性好"——老的误差样本权重不衰减太多，稳态精度高但跟踪慢；\(\lambda\) 越小，算法越"健忘"——更看重最近的误差，跟踪能力强但稳态噪声大。</p>
-
-        <p>RLS的关键步骤是：利用<strong>矩阵求逆引理（Woodbury公式）</strong>，直接递推更新自相关矩阵的逆矩阵 \(\mathbf{P}(n) = \mathbf{R}^{-1}(n)\)，而不用每次都做矩阵求逆。这个技巧是RLS的核心——它将每步计算从 \(O(M^3)\) 降到了 \(O(M^2)\)。虽然比LMS的 \(O(M)\) 高一个量级，但避免了矩阵求逆这个不可接受的操作。</p>
-
-        <pre><code>// RLS算法伪代码
-初始化: w(0) = 0, P(0) = δ^{-1} * I  (δ 是一个小的正数)
-对每个时刻 n = 1, 2, 3, ...:
-    // 1. 计算增益向量
-    k(n) = P(n-1) * x(n) / (λ + x^T(n) * P(n-1) * x(n))
-
-    // 2. 计算先验误差
-    e(n) = d(n) - w^T(n-1) * x(n)
-
-    // 3. 更新系数
-    w(n) = w(n-1) + k(n) * e(n)
-
-    // 4. 更新逆相关矩阵
-    P(n) = (P(n-1) - k(n) * x^T(n) * P(n-1)) / λ</code></pre>
-
-        <p>看到这个流程，你是否注意到一个有趣的相似性？RLS的结构和Kalman滤波器有着惊人的对称性——增益向量 \(k(n)\) 和Kalman增益 \(K(n)\) 扮演的角色几乎相同。事实上，RLS可以看作Kalman滤波器在特定条件下的特例。这点我们在下一节还会提到。</p>
-
-        <h3>16.2 RLS vs LMS：公平的对比</h3>
-
-        <p>让我们把两个算法放在一张表格里做对比。这是你在选择自适应算法时必须做的权衡决策。</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>维度</th>
-                    <th>LMS</th>
-                    <th>RLS</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>优化准则</strong></td>
-                    <td>最小均方（最小化 \(E[e^2]\)）</td>
-                    <td>最小二乘（最小化 \(\sum e^2\)）</td>
-                </tr>
-                <tr>
-                    <td><strong>每步复杂度</strong></td>
-                    <td>\(O(M)\)</td>
-                    <td>\(O(M^2)\)</td>
-                </tr>
-                <tr>
-                    <td><strong>收敛速度</strong></td>
-                    <td>慢（受特征值散布影响）</td>
-                    <td>快（约5-10倍于LMS）</td>
-                </tr>
-                <tr>
-                    <td><strong>对输入相关性的敏感度</strong></td>
-                    <td>高（有色输入大幅降速）</td>
-                    <td>低（白化输入后收敛）</td>
-                </tr>
-                <tr>
-                    <td><strong>稳态失调</strong></td>
-                    <td>可控（通过 \(\mu\) 调节）</td>
-                    <td>理论为零（在时不变系统中）</td>
-                </tr>
-                <tr>
-                    <td><strong>数值稳定性</strong></td>
-                    <td>好</td>
-                    <td>差（\(\mathbf{P}(n)\) 可能失去正定性）</td>
-                </tr>
-                <tr>
-                    <td><strong>存储需求</strong></td>
-                    <td>\(O(M)\)</td>
-                    <td>\(O(M^2)\)（存储 \(\mathbf{P}\) 矩阵）</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="tip">
-            <strong>🔧 工程选择建议：</strong>
-            <ul>
-                <li><strong>选LMS的场景：</strong>嵌入式平台资源受限（如MCU、DSP芯片）、滤波器阶数高（M&gt;100）、输入信号近似白噪声；</li>
-                <li><strong>选RLS的场景：</strong>PC或FPGA上有充足算力、需要快速收敛（如信道均衡的训练序列很短）、输入信号相关性很强；</li>
-                <li><strong>折中方案：</strong>仿射投影算法（APA）是LMS和RLS之间的折中——计算量 \(O(KM)\)，K为投影阶数，性能也在两者之间。</li>
-            </ul>
-        </div>
-
-        <h3>16.3 Kalman滤波器：状态空间视角下的最优估计</h3>
-
-        <p>如果说LMS是"看见什么学什么"，RLS是"记住所有然后找最优"，那么Kalman滤波器就是"根据演化模型预测+用观测数据修正"。</p>
-
-        <p>Kalman滤波器由Rudolf Kalman在1960年提出。它的基本思想是把问题建模成<strong>状态空间模型</strong>：</p>
-
-        <ul>
-            <li><strong>状态方程：</strong> \(\mathbf{x}(n+1) = \mathbf{F} \mathbf{x}(n) + \mathbf{w}(n)\) ——描述了系统状态如何随时间演化；</li>
-            <li><strong>观测方程：</strong> \(\mathbf{z}(n) = \mathbf{H} \mathbf{x}(n) + \mathbf{v}(n)\) ——描述了如何从状态得到观测数据；</li>
-        </ul>
-
-        <p>其中 \(\mathbf{w}(n) \sim \mathcal{N}(0, \mathbf{Q})\) 是过程噪声，\(\mathbf{v}(n) \sim \mathcal{N}(0, \mathbf{R})\) 是观测噪声。Kalman滤波器给我们的，是在已知这些噪声统计量的前提下，从带噪声的观测中递推估计系统状态。</p>
-
-        <p>Kalman滤波器的核心是一个"预测-更新"的两步循环：</p>
-
-        <pre><code>// Kalman滤波器核心循环 — 预测-更新
-
-// 预测步骤 (Predict / Time Update):
-x_pred = F * x_est              // 先验状态估计
-P_pred = F * P_est * F^T + Q    // 先验误差协方差
-
-// 更新步骤 (Update / Measurement Update):
-K = P_pred * H^T / (H * P_pred * H^T + R)  // Kalman增益
-x_est = x_pred + K * (z - H * x_pred)       // 后验状态估计
-P_est = (I - K * H) * P_pred                 // 后验误差协方差</code></pre>
-
-        <p>这一步"预测→更新→预测→更新"的循环，就是Kalman滤波器的全部。它优雅、简洁，而且被证明是在高斯噪声假设下的<strong>最优线性估计器</strong>——在所有线性滤波器中，没有比它更好的。</p>
-
-        <p>从自适应滤波的角度来看，Kalman滤波器也可以用来在线估计自适应滤波器的系数。如果我们将待估计的滤波器系数 \(\mathbf{w}(n)\) 视为状态变量，那么RLS实际上就是Kalman滤波器的一个特例：当状态转移矩阵 \(\mathbf{F} = \mathbf{I}\) 且过程噪声协方差 \(\mathbf{Q}\) 取特定值时，两者等价。</p>
-
-        <h3>16.4 Kalman滤波的经典应用</h3>
-
-        <h4>目标跟踪</h4>
-
-        <p>想象一个雷达在跟踪一架飞机。每过一秒钟，雷达给出一个带有噪声的飞机位置测量值 \((z_x, z_y)\)。系统的状态可以定义为位置和速度 \([p_x, p_y, v_x, v_y]^T\)，状态转移矩阵 \(\mathbf{F}\) 描述匀速度运动模型：</p>
-
-        <p style="text-align:center;font-size:1em;font-weight:bold;">
-            \(\mathbf{F} = \begin{bmatrix} 1 & 0 & \Delta t & 0 \\ 0 & 1 & 0 & \Delta t \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix}\)
-        </p>
-
-        <p>Kalman滤波器能在每个时刻给出比原始测量更平滑的位置估计——因为它在"相信测量"和"相信运动模型"之间做了最优加权。一个有意思的调试经验：如果你看到Kalman滤波器的输出有明显的滞后（lag），通常意味着过程噪声协方差 \(\mathbf{Q}\) 设置得太小（太相信模型），需要适当增大。</p>
-
-        <h4>IMU信号融合</h4>
-
-        <p>手机、无人机、机器人上都有的IMU（惯性测量单元）包含加速度计和陀螺仪。加速度计低频准确但高频噪声大，陀螺仪高频响应好但存在漂移。Kalman滤波器的经典用法是用加速度计测量来修正陀螺仪的积分漂移——这正是手机定位和无人机姿态估计的基础。</p>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑实录：</strong>很多人第一次使用Kalman滤波器时，把过程噪声协方差矩阵 \(\mathbf{Q}\) 随便设了一个对角矩阵就跑。结果在目标突然改变运动方式（比如匀速直线运动的飞机突然拐弯）时，滤波器输出完全跟不上，出现了严重的"发散"现象。后来我才意识到，\(\mathbf{Q}\) 的选取不是"随便填一个数"——它编码了你对系统模型的"信心程度"：如果目标可能突然机动，\(\mathbf{Q}\) 就必须设得足够大。这是一个被称为"Q tuning"的经典难题，没有通用的公式，需要针对具体场景调试。
-        </div>
-
-        <h3>16.5 阵列信号处理与MVDR波束形成</h3>
-
-        <p>现在我们进入自适应滤波的另一个分支——<strong>空域滤波</strong>。如果我们把上一章的自适应滤波器中的"时间延时节拍"替换为"空间位置（不同天线/麦克风）上的信号"，就从时域自适应滤波进入了阵列信号处理。</p>
-
-        <p><strong>MVDR（Minimum Variance Distortionless Response，最小方差无失真响应）</strong>波束形成，也叫<strong>Capon波束形成</strong>，是自适应空域滤波的经典算法。</p>
-
-        <p>它的核心思想是：对于期望方向的信号，保持无失真通过（增益为1）；与此同时，最小化阵列输出的总功率（即最小化来自其他方向的干扰和噪声的贡献）。数学上，这可以写成一个约束优化问题：</p>
-
-        <p style="text-align:center;font-size:1.1em;font-weight:bold;">
-            \(\min_{\mathbf{w}} \mathbf{w}^H \mathbf{R} \mathbf{w} \quad \text{s.t.} \quad \mathbf{w}^H \mathbf{a}(\theta_0) = 1\)
-        </p>
-
-        <p>其中 \(\mathbf{R}\) 是阵列接收信号的协方差矩阵，\(\mathbf{a}(\theta_0)\) 是期望方向的导向矢量（steering vector）。这个问题的解为：</p>
-
-        <p style="text-align:center;font-size:1.1em;font-weight:bold;">
-            \(\mathbf{w}_{\text{MVDR}} = \frac{\mathbf{R}^{-1} \mathbf{a}(\theta_0)}{\mathbf{a}^H(\theta_0) \mathbf{R}^{-1} \mathbf{a}(\theta_0)}\)
-        </p>
-
-        <p>MVDR波束形成相比传统的延时求和波束形成（Delay-and-Sum），能更有效地抑制干扰。当干扰方向与期望方向接近时，常规波束形成的主瓣会"吞掉"干扰，而MVDR会在干扰方向自动形成<strong>一个深陷的零陷</strong>（null），这在雷达和智能麦克风阵列中极其有用。</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>波束形成方法</th>
-                    <th>干扰抑制能力</th>
-                    <th>需要DOA先验</th>
-                    <th>计算量</th>
-                    <th>鲁棒性</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>延时求和 (DAS)</td>
-                    <td>弱</td>
-                    <td>否（固定波束）</td>
-                    <td>\(O(M)\)</td>
-                    <td>非常鲁棒</td>
-                </tr>
-                <tr>
-                    <td>MVDR (Capon)</td>
-                    <td>强（自适应零陷）</td>
-                    <td>是（需知道期望方向）</td>
-                    <td>\(O(M^3)\) 求逆</td>
-                    <td>中等（对导向矢量误差敏感）</td>
-                </tr>
-                <tr>
-                    <td>LCMV</td>
-                    <td>更强（多约束）</td>
-                    <td>是</td>
-                    <td>\(O(M^3)\)</td>
-                    <td>高（可约束多个方向）</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="highlight">
-            <strong>💡 有意思的细节：</strong>MVDR的 \(\mathbf{R}\) 矩阵求逆在实时系统中是"不可能完成的任务"。工程上常用的做法是用RLS递归地更新 \(\mathbf{R}^{-1}\)（类似RLS中的 \(\mathbf{P}(n)\)），或者使用LMS-like的梯度下降来渐近逼近MVDR解。另一种巧妙的思路是用GSC（Generalized Sidelobe Canceller）将约束优化转化为无约束优化，然后用LMS来实现。
-        </div>
-
-        <h3>16.6 从自适应滤波到智能信号处理</h3>
-
-        <p>回顾第15章和本章，我们实际上走了一条从"手工固定设计"到"在线自适应学习"的进化之路。Wiener滤波器假设已知统计量，LMS勇敢地丢弃了这个假设，RLS又捡回了数据的历史信息，Kalman更进一步引入了状态演化模型，而MVDR则将自适应的思想从时域扩展到了空域。</p>
-
-        <p>这种"加入更多先验信息以获得更好性能"的范式，在当今的AI信号处理中同样存在——只是把"先验模型"换成了"训练数据"。你在第26章会看到，深度学习如何把自适应滤波的"在线学习"推向新的高度。</p>
-
-        <h3>16.7 本章小结</h3>
-
-        <ul>
-            <li>RLS算法通过递推更新逆相关矩阵，用\(O(M^2)\)的计算量实现了比LMS快5-10倍的收敛速度，特别适合输入信号相关性强的场景；</li>
-            <li>Kalman滤波器建立了"预测-更新"的双步循环框架，在状态空间模型下给出最优线性估计；</li>
-            <li>Kalman滤波器在目标跟踪和IMU融合中是最经典的应用，过程噪声协方差 \(\mathbf{Q}\) 的调优是最需要经验的环节；</li>
-            <li>MVDR波束形成将自适应滤波从时域扩展到空域，在干扰方向形成零陷，是雷达和麦克风阵列的核心技术；</li>
-            <li>从LMS到RLS到Kalman，体现了"更多先验知识→更好性能"的算法设计哲学。</li>
-        </ul>
-
-        <p>下一章我们将转向另一个经典话题——<strong>谱估计进阶</strong>。你之前学的FFT周期图法只能给出分辨率受数据长度限制的功率谱。而AR模型谱、Burg算法、MUSIC方法能以更高的分辨率揭示信号的频谱结构——在某些条件下，甚至可以分辨频率间隔远小于FFT分辨率的两个正弦分量。</p>
-
-        <div class="footer-nav">
-            <a href="15.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="17.html">下一章 →</a>
-        </div>
-    </div>
+<a class="skip" href="#main">跳转至正文</a>
+<header class="topbar"><a class="brand" href="../index.html">∿ Digital Signal Processing</a><span>CHAPTER 16 / 28</span><a href="../index.html#curriculum">课程地图</a></header>
+<div class="layout">
+<nav class="toc" aria-label="本章目录">
+<div class="back"><a href="../index.html">← 返回课程首页</a></div>
+<p>本章路径</p>
+<div class="toc-items">
+<a href="#problem">LMS 为什么在有色输入下变慢？</a>
+<a href="#rls">RLS：把最小二乘写成递推</a>
+<a href="#kalman">Kalman：预测与更新的两步循环</a>
+<a href="#mvdr">MVDR：把自适应从时域搬到空域</a>
+<a href="#experiment">交互：过程噪声与目标跟踪</a>
+<a href="#limits">边界与失效模式</a>
+<a href="#sources">参考资料与接口</a>
 </div>
+</nav>
+<main id="main">
+<article class="article">
+<header class="article-header">
+<p class="kicker">Signal · System · Insight / 16</p>
+<h1>高级自适应算法：RLS、Kalman 与 MVDR</h1>
+<p class="dek">当输入高度相关、噪声统计未知或需要在干扰方向“挖零陷”时，只靠 LMS 往往太慢；用更多结构换取更快的收敛。</p>
+<div class="read-meta"><span>现象 → 递推 → 状态空间 → 空域</span><span>3 张独立 SVG 与离线 MathML</span></div>
+</header>
+<section id="problem" aria-labelledby="h-problem">
+<h2 id="h-problem">LMS 为什么在有色输入下变慢？</h2>
+<p class="lead">第 15 章的 LMS 用瞬时梯度更新权重，每个样本只做 <code>O(M)</code> 次乘法，代价低、数值稳。但它的收敛速度由输入自相关矩阵 <code>R = E[x(n)xᵀ(n)]</code> 的<strong>特征值散布</strong>决定：最慢的收敛模式的时间常数正比于 <code>1/(μ λ_min)</code>。当输入是强相关的有色信号（例如一个极点靠近单位圆的 AR(1) 过程），<code>λ_min</code> 远小于 <code>λ_max</code>，LMS 就会慢得难以接受。</p>
+<p>把 <code>R</code> 的特征值按大小排序 <code>λ_1 ≥ λ_2 ≥ … ≥ λ_M &gt; 0</code>，定义条件数 <code>κ = λ_max / λ_min</code>。LMS 的全部收敛时间由 <code>κ</code> 放大，而 LS/RLS 类算法对这种散布不敏感，收敛大约只需 <code>M</code> 到 <code>2M</code> 个样本。代价是每样本的复杂度升到 <code>O(M²)</code>。</p>
+<p>本章按“加入的结构越来越多”排序：<strong>RLS</strong> 把最小二乘写成递推，用历史数据白化输入；<strong>Kalman</strong> 额外引入状态演化模型，在噪声统计已知时给出最优线性估计；<strong>MVDR</strong> 把同样的自适应思想从时间节拍搬到天线或麦克风的空间位置，在干扰方向形成零陷。</p>
+<aside class="callout"><p><strong>关键区分：</strong>“更快收敛”不等于“稳态误差更小”。RLS 换来的主要是<strong>收敛速度</strong>与对相关输入的鲁棒性；在时不变、噪声不变的系统里，调好步长的 LMS 稳态失调可以做得同样低。</p></aside>
+</section>
+<section id="rls" aria-labelledby="h-rls">
+<h2 id="h-rls">RLS：把最小二乘写成递推</h2>
+<p>最小二乘（LS）不再最小化误差的统计期望，而是最小化从起始到当前时刻的<strong>加权平方和</strong>。遗忘因子 <code>λ</code> 满足 <code>0 &lt; λ ≤ 1</code>，第 <code>i</code> 个误差的权重是 <code>λ^{n−i}</code>：<code>λ</code> 越接近 1，记忆越长、稳态越稳；<code>λ</code> 越小，越看重近期误差、跟踪越快，但稳态噪声更大。</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="RLS 代价函数是加权误差平方和，可横向滚动"><math display="block" aria-label="RLS 代价函数是加权误差平方和"><mrow><mi>J</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msup><mi>λ</mi><mrow><mi>n</mi><mo>−</mo><mi>i</mi></mrow></msup><msup><mi>e</mi><mn>2</mn></msup><mo>(</mo><mi>i</mi><mo>)</mo></mrow></math></div><p class="equation-caption">式（1）：n 从 1 递增；e(i) 是第 i 步的先验误差。</p></div>
+<p>若在每一步都求导置零，会得到正规方程 <code>R(n) w(n) = p(n)</code>，其中 <code>R(n) = Σ λ^{n−i} x(i)xᵀ(i)</code>、<code>p(n) = Σ λ^{n−i} d(i)x(i)</code>。直接求逆是 <code>O(M³)</code>，不适合实时运行。RLS 的关键是用<strong>矩阵求逆引理</strong>直接递推 <code>P(n) = R⁻¹(n)</code>，把每步代价降到 <code>O(M²)</code>。三类递推式如下。</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="RLS 增益向量公式，可横向滚动"><math display="block" aria-label="RLS 增益向量公式"><mrow><mi>k</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mi>P</mi><mo>(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>)</mo><mi>x</mi><mo>(</mo><mi>n</mi><mo>)</mo></mrow><mrow><mi>λ</mi><mo>+</mo><msup><mi>x</mi><mi>T</mi></msup><mo>(</mo><mi>n</mi><mo>)</mo><mi>P</mi><mo>(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>)</mo><mi>x</mi><mo>(</mo><mi>n</mi><mo>)</mo></mrow></mfrac></mrow></math></div><p class="equation-caption">式（2）：分母为标量，因此避免了对矩阵整体求逆。</p></div>
+<figure class="figure"><img src="../assets/svg/16-rls-loop.svg" alt="RLS 每个样本由增益向量驱动权重递推与协方差递推的闭环" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 01</span>　同一增益 <code>k(n)</code> 同时驱动两条递推：它沿误差方向修正权重，又用于收缩协方差矩阵。更新后的 <code>P(n)</code> 回到下一拍的增益计算，因此 P 的初始化和遗忘因子会共同影响数值行为。</figcaption></figure>
+<p>先验误差 <code>e(n) = d(n) − wᵀ(n−1)x(n)</code> 先算，再由增益更新权重；协方差则用同一增益和输入向量收缩。两条递推式写作：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="RLS 权重递推公式，可横向滚动"><math display="block" aria-label="RLS 权重递推公式"><mrow><mi>w</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><mi>w</mi><mo>(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>)</mo><mo>+</mo><mi>k</mi><mo>(</mo><mi>n</mi><mo>)</mo><mi>e</mi><mo>(</mo><mi>n</mi><mo>)</mo></mrow></math></div><p class="equation-caption">式（3）：与 LMS 形式相似，但增益是 <code>M</code> 维向量，而非标量步长 μ。</p></div>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="RLS 协方差递推公式，可横向滚动"><math display="block" aria-label="RLS 协方差递推公式"><mrow><mi>P</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><msup><mi>λ</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mrow><mo>[</mo><mi>P</mi><mo>(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>)</mo><mo>−</mo><mi>k</mi><mo>(</mo><mi>n</mi><mo>)</mo><msup><mi>x</mi><mi>T</mi></msup><mo>(</mo><mi>n</mi><mo>)</mo><mi>P</mi><mo>(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>)</mo><mo>]</mo></mrow></mrow></math></div><p class="equation-caption">式（4）：λ=1 时为增长窗，P 随数据增多而收缩；λ&lt;1 时保留有限记忆。</p></div>
+<aside class="callout warn"><p><strong>初始化不是无关紧要的细节：</strong>常取 <code>P(0)=δ⁻¹I</code>，<code>δ</code> 很小（即 <code>P(0)</code> 很大）。若把 <code>P(0)</code> 取得太小、同时又用较小的 <code>λ</code>，在数据方向尚未被激励前 P 会病态增长，本仓库的确定性实验就观察到过这种失稳。工程上还需监控 P 的正定性。</p></aside>
+<p>本仓库的 <a href="../examples/16_rls.py">16_rls.py</a> 在有色输入（AR(1)，极点 0.9）上对比了二者：第 150 个样本处，LMS 的系数误差约为 0.17，而 RLS 约为 0.016——这正是 <code>κ</code> 造成差距的直接体现。</p>
+</section>
+<section id="kalman" aria-labelledby="h-kalman">
+<h2 id="h-kalman">Kalman：预测与更新的两步循环</h2>
+<p>RLS 把待估计量当成一组固定系数。若系统本身在演化（目标在移动、姿态在变化），更自然的做法是给状态一个<strong>演化模型</strong>。Kalman 滤波器把问题写成状态空间：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="状态方程与观测方程，可横向滚动"><math display="block" aria-label="状态方程与观测方程"><mtable><mtr><mtd><mrow><mi>x</mi><mo>(</mo><mi>n</mi><mo>+</mo><mn>1</mn><mo>)</mo><mo>=</mo><mi>F</mi><mi>x</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>+</mo><mi>w</mi><mo>(</mo><mi>n</mi><mo>)</mo></mrow></mtd></mtr><mtr><mtd><mrow><mi>z</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><mi>H</mi><mi>x</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>+</mo><mi>v</mi><mo>(</mo><mi>n</mi><mo>)</mo></mrow></mtd></mtr></mtable></math></div><p class="equation-caption">式（5）：过程噪声 <code>w ~ N(0,Q)</code>，观测噪声 <code>v ~ N(0,R)</code>；F 是状态转移矩阵，H 是观测矩阵。</p></div>
+<p>每一步分两个阶段。<strong>预测</strong>用 F 把上一拍的后验估计外推，并把误差协方差按 <code>F P Fᵀ</code> 放大，再加上过程噪声 <code>Q</code>：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="Kalman 预测步的状态和协方差外推，可横向滚动"><math display="block" aria-label="Kalman 预测步的状态和协方差外推"><mtable><mtr><mtd><mrow><msup><mover><mi>x</mi><mo>^</mo></mover><mo>−</mo></msup><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><mi>F</mi><mover><mi>x</mi><mo>^</mo></mover><mo>(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>)</mo></mrow></mtd></mtr><mtr><mtd><mrow><msup><mi>P</mi><mo>−</mo></msup><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><mi>F</mi><mi>P</mi><mo>(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>)</mo><msup><mi>F</mi><mi>T</mi></msup><mo>+</mo><mi>Q</mi></mrow></mtd></mtr></mtable></math></div><p class="equation-caption">式（6）：上标 <code>−</code> 表示修正前的先验量（prior）。</p></div>
+<p><strong>更新</strong>用新息 <code>z(n) − H x̂⁻(n)</code> 修正先验。Kalman 增益 <code>K</code> 自动在“相信模型”与“相信观测”之间加权：观测噪声 <code>R</code> 小则增益大、更信观测；先验协方差 <code>P⁻</code> 小则增益小、更信模型。</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="Kalman 更新步的增益、状态与协方差，可横向滚动"><math display="block" aria-label="Kalman 更新步的增益、状态与协方差"><mtable><mtr><mtd><mrow><mi>K</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><msup><mi>P</mi><mo>−</mo></msup><mo>(</mo><mi>n</mi><mo>)</mo><msup><mi>H</mi><mi>T</mi></msup><msup><mrow><mo>(</mo><mi>H</mi><msup><mi>P</mi><mo>−</mo></msup><mo>(</mo><mi>n</mi><mo>)</mo><msup><mi>H</mi><mi>T</mi></msup><mo>+</mo><mi>R</mi><mo>)</mo></mrow><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mtd></mtr><mtr><mtd><mrow><mover><mi>x</mi><mo>^</mo></mover><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><msup><mover><mi>x</mi><mo>^</mo></mover><mo>−</mo></msup><mo>(</mo><mi>n</mi><mo>)</mo><mo>+</mo><mi>K</mi><mo>(</mo><mi>n</mi><mo>)</mo><mrow><mo>[</mo><mi>z</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>−</mo><mi>H</mi><msup><mover><mi>x</mi><mo>^</mo></mover><mo>−</mo></msup><mo>(</mo><mi>n</mi><mo>)</mo><mo>]</mo></mrow></mrow></mtd></mtr><mtr><mtd><mrow><mi>P</mi><mo>(</mo><mi>n</mi><mo>)</mo><mo>=</mo><mrow><mo>(</mo><mi>I</mi><mo>−</mo><mi>K</mi><mo>(</mo><mi>n</mi><mo>)</mo><mi>H</mi><mo>)</mo></mrow><msup><mi>P</mi><mo>−</mo></msup><mo>(</mo><mi>n</mi><mo>)</mo></mrow></mtd></mtr></mtable></math></div><p class="equation-caption">式（7）：只需求 <code>H P⁻ Hᵀ + R</code> 的逆；当观测维数很小时，这远小于滤波器状态维数。</p></div>
+<figure class="figure"><img src="../assets/svg/16-kalman-cycle.svg" alt="Kalman 滤波器从后验估计出发，经预测步与更新步回到后验估计的循环" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 02</span>　预测步把状态与协方差向前推进，并用 <code>Q</code> 放大不确定性；更新步用观测 <code>z(n)</code>、矩阵 <code>H</code> 与噪声 <code>R</code> 修正估计并收缩协方差。输出后验估计，再进入下一拍。</figcaption></figure>
+<p>在高斯噪声假设下，Kalman 滤波器是<strong>均方误差最小的线性估计器</strong>。把待估系数 <code>w(n)</code> 当作状态变量、取 <code>F=I</code> 并选择相应的 <code>Q</code>，RLS 就成为 Kalman 的一个特例——两者的增益递推结构完全同构。</p>
+<aside class="callout"><p><strong>Q 与 R 编码了“你有多信谁”。</strong>本页的交互图用一个匀速目标演示：把 <code>Q</code> 设小，曲线更平滑但目标突然机动时明显滞后；把 <code>Q</code> 设大，能跟上机动但估计更抖、RMS 更高。这不是可以套公式的调参，而是对系统模型信心的声明。</p></aside>
+</section>
+<section id="mvdr" aria-labelledby="h-mvdr">
+<h2 id="h-mvdr">MVDR：把自适应从时域搬到空域</h2>
+<p>把“不同时间的延迟节拍”换成“不同天线或麦克风的空间位置”，自适应滤波就变成了<strong>阵列信号处理</strong>。对均匀线阵，来自角度 <code>θ</code> 的远场信号在各阵元上相差一个与阵元间距和波长相关的相位，这些相位构成<strong>导向矢量</strong> <code>a(θ)</code>。空域滤波就是给各阵元乘上复权重 <code>w</code> 再求和。</p>
+<p>延时求和（DAS）用固定权重把主瓣对准期望方向，但它对旁瓣内的强干扰几乎无能为力。MVDR（最小方差无失真响应，又称 Capon）改成：<strong>在保持期望方向单位增益的前提下，最小化阵列输出的总功率</strong>，从而自动把零陷放到干扰方向。</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="MVDR 约束优化问题，可横向滚动"><math display="block" aria-label="MVDR 约束优化问题"><mtable><mtr><mtd><mrow><munder><mo>min</mo><mi>w</mi></munder><mspace width="0.3em"/><msup><mi>w</mi><mi>H</mi></msup><mi>R</mi><mi>w</mi></mrow></mtd></mtr><mtr><mtd><mrow><mtext>s.t.</mtext><mspace width="0.3em"/><msup><mi>w</mi><mi>H</mi></msup><mi>a</mi><mo>(</mo><msub><mi>θ</mi><mn>0</mn></msub><mo>)</mo><mo>=</mo><mn>1</mn></mrow></mtd></mtr></mtable></math></div><p class="equation-caption">式（8）：<code>R = E[y yᴴ]</code> 是接收数据协方差矩阵，<code>θ₀</code> 是期望方向；上标 H 表示共轭转置。</p></div>
+<p>这个约束问题有闭式解。拉格朗日乘子法给出：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="MVDR 权重解，可横向滚动"><math display="block" aria-label="MVDR 权重解"><mrow><msub><mi>w</mi><mtext>MVDR</mtext></msub><mo>=</mo><mfrac><mrow><msup><mi>R</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mi>a</mi><mo>(</mo><msub><mi>θ</mi><mn>0</mn></msub><mo>)</mo></mrow><mrow><msup><mi>a</mi><mi>H</mi></msup><mo>(</mo><msub><mi>θ</mi><mn>0</mn></msub><mo>)</mo><msup><mi>R</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mi>a</mi><mo>(</mo><msub><mi>θ</mi><mn>0</mn></msub><mo>)</mo></mrow></mfrac></mrow></math></div><p class="equation-caption">式（9）：分母是标量，保证 <code>wᴴa(θ₀)=1</code>。注意解显式依赖 <code>R⁻¹</code>。</p></div>
+<figure class="figure"><img src="../assets/svg/16-mvdr-null.svg" alt="延时求和与 MVDR 的波束图对比，MVDR 在干扰方向形成深零陷" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 03</span>　两种波束图在 0° 期望方向都保持单位增益，但 MVDR 在 −40° 干扰方向形成很深的零陷。零陷的位置来自数据协方差矩阵 <code>R</code>，而不是预先写死的旁瓣形状。</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th>波束形成方法</th><th>干扰抑制</th><th>需要 DOA 先验</th><th>计算量</th><th>鲁棒性</th></tr></thead><tbody><tr><td>延时求和 DAS</td><td>弱（固定旁瓣）</td><td>否</td><td><code>O(M)</code></td><td>高</td></tr><tr><td>MVDR / Capon</td><td>强（自适应零陷）</td><td>是（期望方向）</td><td><code>O(M³)</code> 求逆</td><td>中等，对导向矢量误差敏感</td></tr><tr><td>LCMV</td><td>更强（多约束）</td><td>是</td><td><code>O(M³)</code></td><td>较高，可约束多个方向</td></tr></tbody></table></div>
+<p>实时系统里直接对 <code>R</code> 求逆不可接受。常见做法是用 RLS 式递推更新 <code>R⁻¹</code>，或改用广义旁瓣相消器（GSC）把约束问题变成无约束问题，再用 LMS 求解。注意本图的零陷依赖于较准的 <code>a(θ₀)</code>：导向矢量失配时，MVDR 会把自己的零陷“对准错误位置”，性能反而可能不如稳健的 DAS。这属于教学示意（8 元半波间距线阵、单干扰源），不代表特定硬件指标。</p>
+</section>
+<section id="experiment" aria-labelledby="h-experiment">
+<h2 id="h-experiment">交互：过程噪声与目标跟踪</h2>
+<p>下面用一个一维匀速目标演示 <code>Q</code> 的作用。真值（紫色）先以固定速度运动，到第 60 个样本时改变速度（机动）；带噪观测（浅色点）叠加了固定的观测噪声；Kalman 估计（青色）由滑块选择的 <code>Q</code> 决定。拖动滑块可以同时看到平滑程度与机动后的滞后如何权衡。</p>
+<div class="lab" data-spectrum-lab="kalman">
+<h3>动手验证：选择过程噪声强度 Q</h3>
+<label for="range-16">过程噪声强度 Q（0.1 – 30）</label>
+<input id="range-16" type="range" min="1" max="300" step="1" value="30">
+<output for="range-16" aria-live="polite">改变 Q，比较估计曲线与误差。</output>
+<svg role="img" aria-label="Kalman 估计对匀速目标的跟踪曲线" viewBox="0 0 560 215" width="560" height="215"><title>过程噪声与 Kalman 跟踪</title></svg>
+<p class="muted">观测噪声固定 <code>R=6.25</code>；曲线为确定性伪随机序列（seed 2024）。当 JS 关闭时，FIGURE 02 的预测—更新循环仍可独立理解原理。</p>
+</div>
+<p>下面的代码片段给出 RLS 的核心递推；完整可运行实验见 <a href="../examples/16_rls.py">examples/16_rls.py</a>，本地运行 <code>python examples/16_rls.py</code>。</p>
+<pre><code># RLS 核心递推（完整可运行版见 examples/16_rls.py）
+Px = [sum(P[i][j] * xv[j] for j in range(M)) for i in range(M)]
+denom = lam + sum(xv[i] * Px[i] for i in range(M))
+k = [v / denom for v in Px]                 # 增益向量 k(n)
+e = d[n] - sum(w[i] * xv[i] for i in range(M))
+w = [w[i] + k[i] * e for i in range(M)]      # 权重递推
+P = [[(P[i][j] - k[i] * Px[j]) / lam for j in range(M)] for i in range(M)]</code></pre>
+</section>
+<section id="limits" aria-labelledby="h-limits">
+<h2 id="h-limits">边界与失效模式</h2>
+<ul>
+<li><strong>RLS 不是无条件稳定：</strong><code>P</code> 的初始化、遗忘因子与有限精度会共同影响数值行为；工程上需监控其正定性，或改用平方根/QR 形式。</li>
+<li><strong>遗忘因子引入稳态误差：</strong><code>λ&lt;1</code> 才能跟踪时变系统，但它也把稳态误差抬高；<code>λ</code> 的选择是跟踪能力与平稳精度的折中。</li>
+<li><strong>Kalman 依赖模型：</strong>当 <code>F</code>、<code>H</code>、<code>Q</code>、<code>R</code> 与真实系统不匹配时，估计会有偏或发散；<code>Q</code> 过小是最常见的滞后原因。</li>
+<li><strong>MVDR 对导向矢量误差敏感：</strong>期望方向或阵列校准不准时，零陷可能偏离干扰方向，性能未必优于稳健的 DAS。</li>
+<li><strong>协方差估计需要足够快拍：</strong>用样本协方差替代理论 <code>R</code> 时，若快拍数不远大于阵元数，<code>R̂</code> 会病态，零陷变浅甚至消失。</li>
+</ul>
+<p>自检：为什么“RLS 比 LMS 收敛快”不等于“RLS 最终误差一定更小”？在 Kalman 里，把 <code>R</code> 增大而保持 <code>Q</code> 不变，增益 <code>K</code> 会变大还是变小？</p>
+</section>
+<section id="sources" aria-labelledby="h-sources">
+<h2 id="h-sources">参考资料与接口</h2>
+<ol class="refs">
+<li><a href="https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/">MIT OCW · Discrete-Time Signal Processing</a>：自适应滤波、RLS 递推与增值（矩阵求逆引理）的推导。</li>
+<li><a href="https://doi.org/10.1115/1.3662552">R. E. Kalman (1960) · A New Approach to Linear Filtering and Prediction Problems</a>：预测—更新循环与最优线性估计的原始文献。</li>
+<li><a href="https://doi.org/10.1109/PROC.1969.7278">J. Capon (1969) · High-Resolution Frequency-Wavenumber Spectrum Analysis</a>：MVDR（Capon）波束形成的原始文献。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.lfilter.html">SciPy · lfilter</a>：固定系数滤波，可作为自适应滤波的对照基线。</li>
+</ol>
+</section>
+<nav class="chapter-nav"><a href="15.html">← 第 15 章</a><a href="../index.html#curriculum">课程地图</a><a href="17.html">第 17 章 →</a></nav>
+</article>
+</main>
 </div>
 </body>
 </html>

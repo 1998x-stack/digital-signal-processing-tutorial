@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t16f1 d16f1" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t16f1">RLS 两个联立递推的信息流</title>
+<desc id="d16f1">每个新样本同时驱动两条递推。上方的增益块用旧协方差矩阵 P 和输入 x 计算 k(n)；增益向下送入权重递推得到 w(n)，并向右送入协方差递推更新 P(n)。更新后的 P(n) 反馈回增益块，用于下一个样本，形成闭环。</desc>
+<rect x="0" y="0" width="920" height="400" fill="#fffdf9"/>
+<text x="30" y="38" font-size="15" font-weight="700" fill="#203035">RLS：一个增益同时驱动权重与协方差</text>
+<text x="8" y="146" font-size="14" fill="#53676d">x[n]</text>
+<polygon points="40,133 62,146 40,159" fill="#147f80"/>
+<line x1="62" y1="146" x2="150" y2="146" stroke="#9fb8b2" stroke-width="1.6"/>
+<rect x="150" y="112" width="300" height="68" rx="9" fill="#f1edfb" stroke="#7461ba"/>
+<text x="172" y="140" font-size="14" fill="#5b48a6">增益  k(n) = P(n−1)x(n) / (λ + xᵀP(n−1)x(n))</text>
+<text x="172" y="164" font-size="13" fill="#53676d">两个递推共用的中间量，O(M²)</text>
+<line x1="300" y1="112" x2="300" y2="72" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="294,84 300,72 306,84" fill="#7461ba"/>
+<rect x="180" y="20" width="240" height="52" rx="9" fill="#fff" stroke="#7461ba"/>
+<text x="200" y="42" font-size="13" fill="#5b48a6">P(n−1)：逆相关矩阵记忆</text>
+<text x="200" y="62" font-size="12" fill="#53676d">初始化 P(0)=δ⁻¹I，δ 很小</text>
+<line x1="450" y1="146" x2="540" y2="146" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="528,140 540,146 528,152" fill="#147f80"/>
+<line x1="450" y1="146" x2="450" y2="300" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="450" y1="300" x2="540" y2="300" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="528,294 540,300 528,306" fill="#d06d4d"/>
+<rect x="540" y="112" width="330" height="68" rx="9" fill="#eef8f6" stroke="#147f80"/>
+<text x="562" y="140" font-size="14" fill="#0d7779">权重递推  w(n) = w(n−1) + k(n) e(n)</text>
+<text x="562" y="164" font-size="13" fill="#53676d">误差方向上的修正，无矩阵求逆</text>
+<rect x="540" y="266" width="330" height="68" rx="9" fill="#fbf1ec" stroke="#d06d4d"/>
+<text x="562" y="294" font-size="14" fill="#b55c3e">协方差递推  P(n) = (P(n−1) − k(n)xᵀP(n−1)) / λ</text>
+<text x="562" y="318" font-size="13" fill="#53676d">λ 控制记忆长度；λ=1 为增长窗</text>
+<line x1="870" y1="300" x2="898" y2="300" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="898" y1="300" x2="898" y2="60" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="898" y1="60" x2="300" y2="60" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="312,54 300,60 312,66" fill="#7461ba"/>
+<text x="470" y="52" font-size="13" fill="#7461ba">P(n) 回到增益，供下一拍使用</text>
+<text x="30" y="382" font-size="13" fill="#53676d">每样本一次 O(M²) 更新与一次标量除法；相对直接求 R⁻¹ 的 O(M³)，代价换来对相关输入的快速收敛。</text>
+</svg>

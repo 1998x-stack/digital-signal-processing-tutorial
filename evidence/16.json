@@ -1,0 +1,38 @@
+{
+  "chapter": "16",
+  "title": "高级自适应算法：RLS、Kalman 与 MVDR",
+  "sources": [
+    {
+      "id": "rls",
+      "claim": "RLS 最小化加权平方和，用矩阵求逆引理递推 P=R⁻¹，每步 O(M²)，收敛对输入特征值散布不敏感",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341：递推最小二乘与自适应滤波；examples/16_rls.py 校验有色输入下的收敛优势与 P 对称性"
+    },
+    {
+      "id": "kalman",
+      "claim": "Kalman 滤波器以预测—更新两步循环递推，在高斯噪声下是均方误差最小的线性估计器；RLS 是其特例",
+      "url": "https://doi.org/10.1115/1.3662552",
+      "scope": "Kalman (1960), A New Approach to Linear Filtering and Prediction Problems"
+    },
+    {
+      "id": "mvdr",
+      "claim": "MVDR 在 wᴴa(θ₀)=1 约束下最小化 wᴴRw，解为 R⁻¹a/(aᴴR⁻¹a)，在干扰方向形成零陷",
+      "url": "https://doi.org/10.1109/PROC.1969.7278",
+      "scope": "Capon (1969), High-Resolution Frequency-Wavenumber Spectrum Analysis"
+    },
+    {
+      "id": "forgetting",
+      "claim": "遗忘因子 0<λ≤1 控制记忆长度；λ<1 跟踪时变系统但抬高稳态误差，λ=1 为增长窗",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341：指数加权最小二乘；examples/16_rls.py 校验中点突变后的跟踪"
+    }
+  ],
+  "notes": [
+    "第 150 样本处 LMS 系数误差≈0.17、RLS≈0.016，由本仓库确定性 AR(1) 输入（rho=0.9，seed 2024）计算，非外部测量值。",
+    "遗忘因子跟踪实验使用确定性伪随机序列（seed 777/55），λ=1.0 对新系统误差 0.40、λ=0.99 误差 0.02。",
+    "browser_check.py 以 set_content 载入页面，相对路径的 SVG 无法解析，故报告 brokenImages=3；用 file:// 载入同一页面的独立检查（1440/768/390/360）显示无破图、无横向溢出、无 JS 报错。",
+    "MVDR 波束图为教学示意（8 元半波间距线阵、单干扰源、理想协方差），不是任何硬件的实测方向图。",
+    "旧版页面的第一人称“踩坑实录”与来源不明的 5–10 倍收敛数字已删除，改为可验证的机制陈述。"
+  ],
+  "status": "RLS/Kalman/MVDR 定义与公式对照 MIT OCW、Kalman (1960)、Capon (1969)；确定性实验校验收敛优势、P 对称性与遗忘因子跟踪；MathML 结构、SVG 与响应式由浏览器检查（file:// 载入）确认。"
+}

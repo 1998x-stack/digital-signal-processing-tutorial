@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t16f2 d16f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t16f2">Kalman 滤波器的预测—更新循环</title>
+<desc id="d16f2">循环从上一拍的后验估计出发。预测步用状态转移矩阵 F 外推状态，并用过程噪声协方差 Q 放大误差协方差，得到先验估计。更新步用观测 z(n)、观测矩阵 H 与观测噪声协方差 R 计算 Kalman 增益 K，用新息修正先验状态并收缩协方差。输出后验估计，再回到预测步进入下一拍。</desc>
+<rect x="0" y="0" width="920" height="400" fill="#fffdf9"/>
+<text x="30" y="38" font-size="15" font-weight="700" fill="#203035">Kalman：先预测、再用观测修正</text>
+<rect x="60" y="90" width="330" height="150" rx="10" fill="#f1edfb" stroke="#7461ba"/>
+<text x="84" y="120" font-size="14" font-weight="700" fill="#5b48a6">预测（时间更新）</text>
+<text x="84" y="150" font-size="13" fill="#203035">x̂⁻(n) = F x̂(n−1)</text>
+<text x="84" y="176" font-size="13" fill="#203035">P⁻(n) = F P(n−1) Fᵀ + Q</text>
+<text x="84" y="208" font-size="13" fill="#53676d">Q 越大，越不相信模型</text>
+<line x1="240" y1="70" x2="240" y2="90" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="234,80 240,90 246,80" fill="#7461ba"/>
+<text x="252" y="66" font-size="13" fill="#5b48a6">过程噪声 Q</text>
+<rect x="530" y="90" width="330" height="150" rx="10" fill="#eef8f6" stroke="#147f80"/>
+<text x="554" y="120" font-size="14" font-weight="700" fill="#0d7779">更新（量测更新）</text>
+<text x="554" y="150" font-size="13" fill="#203035">K(n) = P⁻Hᵀ (HP⁻Hᵀ + R)⁻¹</text>
+<text x="554" y="176" font-size="13" fill="#203035">x̂(n) = x̂⁻ + K (z(n) − H x̂⁻)</text>
+<text x="554" y="208" font-size="13" fill="#53676d">R 越大，越不相信观测</text>
+<line x1="390" y1="165" x2="530" y2="165" stroke="#9fb8b2" stroke-width="2"/>
+<polygon points="518,159 530,165 518,171" fill="#147f80"/>
+<text x="416" y="156" font-size="13" fill="#0d7779">先验 (x̂⁻, P⁻)</text>
+<line x1="695" y1="90" x2="695" y2="60" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="689,72 695,60 701,72" fill="#147f80"/>
+<text x="707" y="56" font-size="13" fill="#0d7779">观测 z(n)</text>
+<line x1="860" y1="90" x2="860" y2="330" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="860" y1="330" x2="240" y2="330" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="240" y1="330" x2="240" y2="240" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="234,252 240,240 246,252" fill="#7461ba"/>
+<text x="430" y="322" font-size="13" fill="#7461ba">后验估计 (x̂, P) 进入下一拍</text>
+<line x1="700" y1="240" x2="700" y2="270" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="694,258 700,270 706,258" fill="#147f80"/>
+<text x="712" y="286" font-size="13" fill="#0d7779">输出 / 下一拍</text>
+<text x="30" y="382" font-size="13" fill="#53676d">在高斯噪声假设下，它是均方误差最小的线性估计器；RLS 是 F=I、特定 Q 时的特例。</text>
+</svg>
