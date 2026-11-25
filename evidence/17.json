@@ -1,0 +1,43 @@
+{
+  "chapter": "17",
+  "title": "谱估计进阶：AR 模型与 MUSIC",
+  "sources": [
+    {
+      "id": "periodogram",
+      "claim": "周期图为有限长傅里叶变换幅度平方的 1/N 归一化；矩形窗主瓣宽度约为 f_s/N",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html",
+      "scope": "SciPy periodogram 文档；MIT OCW 6.341 关于窗函数与分辨率"
+    },
+    {
+      "id": "zero-pad",
+      "claim": "补零只增加频域插值采样密度，不增加信息、不缩小主瓣宽度",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341：DFT 频率网格与补零的性质"
+    },
+    {
+      "id": "ar",
+      "claim": "p 阶 AR 模型等价于白噪声经全极点滤波器，功率谱为滤波器幅频响应平方；Yule-Walker + Levinson-Durbin 以 O(p²) 求解",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341：参数化谱估计、Toeplitz 结构与递推"
+    },
+    {
+      "id": "burg",
+      "claim": "Burg 直接从前向/后向预测误差估计反射系数，且保证 |k_m|<1，从而 AR 稳定",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341；examples/17_spectral.py 校验 |k|<1 与双峰"
+    },
+    {
+      "id": "music",
+      "claim": "MUSIC 用噪声子空间伪谱 P=1/(aᴴU_nU_nᴴa) 估计频率，真实频率处出现尖峰",
+      "url": "https://doi.org/10.1109/TAP.1986.1143830",
+      "scope": "Schmidt (1986), Multiple Emitter Location and Signal Parameter Estimation"
+    }
+  ],
+  "notes": [
+    "双峰分辨实验使用确定性序列：64 点、采样率 64 Hz、两个正弦 10.0/10.6 Hz、白噪声（seed 1234），p=16。",
+    "周期图在间隔 0.6 Hz（< f_s/N = 1 Hz）时只给一个峰；Burg AR 谱给出 10.03 与 10.75 Hz 两个峰，最大 |k|≈0.993。",
+    "f_s/N 在文中被明确表述为 DFT 观察网格间距与矩形窗主瓣尺度，不是任意信号的普适分辨率下界。",
+    "旧版页面中“我的经验”式第一人称叙述与未标注来源的结论已删除，改为可验证的机制陈述与来源。"
+  ],
+  "status": "周期图/AR/Yule-Walker/Burg/MUSIC 定义与公式对照 MIT OCW、SciPy 文档与 Schmidt (1986)；确定性实验校验单峰/双峰分辨与 |k|<1；MathML 结构、SVG 与响应式由浏览器检查（file:// 载入）确认。"
+}

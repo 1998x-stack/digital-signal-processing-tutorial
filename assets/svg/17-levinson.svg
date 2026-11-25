@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t17f2 d17f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t17f2">Levinson-Durbin 格型递推与反射系数</title>
+<desc id="d17f2">每一级 m 把上一级的前向预测误差 f 和后向预测误差 b 通过同一反射系数 k_m 耦合起来。f 经过加法器输出新的前向误差，b 经过加法器输出新的后向误差。反射系数满足 |k_m|&lt;1 时预测误差功率 σ² 逐级非负下降，AR 模型稳定。</desc>
+<rect x="0" y="0" width="920" height="400" fill="#fffdf9"/>
+<text x="30" y="38" font-size="15" font-weight="700" fill="#203035">Levinson-Durbin：逐级用反射系数更新</text>
+<text x="8" y="126" font-size="13" fill="#53676d">f_{m−1}[n]</text>
+<polygon points="92,114 112,126 92,138" fill="#147f80"/>
+<line x1="112" y1="126" x2="250" y2="126" stroke="#9fb8b2" stroke-width="1.6"/>
+<circle cx="286" cy="126" r="13" fill="#fff" stroke="#147f80" stroke-width="1.6"/><text x="282" y="131" font-size="14" fill="#0d7779">+</text>
+<line x1="299" y1="126" x2="470" y2="126" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="458,120 470,126 458,132" fill="#147f80"/>
+<text x="478" y="122" font-size="13" fill="#0d7779">f_m[n] 前向误差</text>
+<text x="8" y="266" font-size="13" fill="#53676d">b_{m−1}[n−1]</text>
+<polygon points="112,254 132,266 112,278" fill="#7461ba"/>
+<line x1="132" y1="266" x2="250" y2="266" stroke="#9fb8b2" stroke-width="1.6"/>
+<circle cx="286" cy="266" r="13" fill="#fff" stroke="#7461ba" stroke-width="1.6"/><text x="280" y="271" font-size="14" fill="#5b48a6">+</text>
+<line x1="299" y1="266" x2="470" y2="266" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="458,260 470,266 458,272" fill="#7461ba"/>
+<text x="478" y="270" font-size="13" fill="#5b48a6">b_m[n] 后向误差</text>
+<line x1="150" y1="266" x2="150" y2="196" stroke="#9fb8b2" stroke-width="1.4"/>
+<line x1="150" y1="196" x2="250" y2="196" stroke="#9fb8b2" stroke-width="1.4"/>
+<line x1="250" y1="196" x2="250" y2="139" stroke="#9fb8b2" stroke-width="1.4"/>
+<line x1="286" y1="139" x2="286" y2="150" stroke="#9fb8b2" stroke-width="1.2" stroke-dasharray="3 3"/>
+<line x1="150" y1="126" x2="150" y2="196" stroke="#9fb8b2" stroke-width="1.4"/>
+<rect x="250" y="172" width="150" height="48" rx="8" fill="#f1edfb" stroke="#7461ba"/>
+<text x="272" y="201" font-size="14" fill="#5b48a6">× k_m（反射系数）</text>
+<line x1="400" y1="196" x2="470" y2="196" stroke="#9fb8b2" stroke-width="1.4"/>
+<line x1="470" y1="196" x2="470" y2="253" stroke="#9fb8b2" stroke-width="1.4"/>
+<line x1="340" y1="126" x2="340" y2="119" stroke="#9fb8b2" stroke-width="1.2" stroke-dasharray="3 3"/>
+<rect x="520" y="80" width="370" height="150" rx="10" fill="#eef8f6" stroke="#147f80"/>
+<text x="542" y="110" font-size="14" font-weight="700" fill="#0d7779">系数与功率递推</text>
+<text x="542" y="140" font-size="13" fill="#203035">a_m[i] = a_{m−1}[i] + k_m · a_{m−1}[m−i]</text>
+<text x="542" y="166" font-size="13" fill="#203035">σ²_m = (1 − k_m²) · σ²_{m−1}</text>
+<text x="542" y="196" font-size="13" fill="#53676d">以 a_{m−1}[m−i] 反转下标是关键</text>
+<text x="542" y="218" font-size="13" fill="#53676d">|k_m| &lt; 1 ⇔ σ² 逐级非负下降</text>
+<text x="30" y="382" font-size="13" fill="#53676d">Toeplitz 结构使每级只需 O(m) 次运算，总复杂度 O(p²)；Burg 算法直接从数据求 k_m 并保持 |k_m|&lt;1。</text>
+</svg>

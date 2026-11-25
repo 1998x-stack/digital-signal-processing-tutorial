@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t17f3 d17f3" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t17f3">MUSIC 的信号子空间与噪声子空间</title>
+<desc id="d17f3">左侧把协方差矩阵 R 的 8 个特征值按大小排列：前 K 个明显高于噪声底，张成信号子空间，其余 M−K 个接近噪声功率，张成噪声子空间。右侧说明两子空间正交，真实频率的导向矢量落在信号子空间内，它在噪声子空间上的投影接近零，于是 MUSIC 伪谱分母接近零、出现尖峰。</desc>
+<rect x="0" y="0" width="920" height="400" fill="#fffdf9"/>
+<text x="30" y="38" font-size="15" font-weight="700" fill="#203035">MUSIC：用噪声子空间找频率</text>
+<text x="60" y="70" font-size="13" fill="#53676d">协方差矩阵 R 的特征值（M = 8）</text>
+<line x1="60" y1="320" x2="470" y2="320" stroke="#718d88" stroke-width="1.6"/>
+<line x1="60" y1="96" x2="60" y2="320" stroke="#718d88" stroke-width="1.6"/>
+<rect x="80" y="110" width="34" height="210" fill="#147f80"/>
+<rect x="128" y="120" width="34" height="200" fill="#147f80"/>
+<rect x="176" y="288" width="34" height="32" fill="#c9b7a6"/>
+<rect x="224" y="291" width="34" height="29" fill="#c9b7a6"/>
+<rect x="272" y="289" width="34" height="31" fill="#c9b7a6"/>
+<rect x="320" y="292" width="34" height="28" fill="#c9b7a6"/>
+<rect x="368" y="290" width="34" height="30" fill="#c9b7a6"/>
+<rect x="416" y="293" width="34" height="27" fill="#c9b7a6"/>
+<line x1="60" y1="278" x2="470" y2="278" stroke="#916c22" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="352" y="272" font-size="12" fill="#916c22">噪声底</text>
+<text x="86" y="102" font-size="13" fill="#0d7779">信号子空间 U_s</text>
+<text x="180" y="102" font-size="13" fill="#916c22">噪声子空间 U_n</text>
+<line x1="520" y1="330" x2="860" y2="330" stroke="#718d88" stroke-width="1.4"/>
+<line x1="520" y1="330" x2="690" y2="150" stroke="#147f80" stroke-width="1.6"/>
+<polygon points="520,330 560,300 730,150 690,180" fill="#dff0ec" stroke="#147f80"/>
+<text x="600" y="250" font-size="13" fill="#0d7779">信号子空间 span(U_s)</text>
+<line x1="520" y1="330" x2="600" y2="380" stroke="#b55c3e" stroke-width="1.6"/>
+<text x="600" y="388" font-size="13" fill="#b55c3e">噪声子空间 span(U_n)</text>
+<line x1="620" y1="230" x2="700" y2="200" stroke="#7461ba" stroke-width="2.2"/>
+<polygon points="700,200 686,196 690,210" fill="#7461ba"/>
+<text x="700" y="196" font-size="13" fill="#5b48a6">a(f) 落在信号子空间</text>
+<path d="M660 214 L 700 222" fill="none" stroke="#916c22" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="700" y="242" font-size="12" fill="#916c22">在 U_n 上投影≈0</text>
+<rect x="520" y="60" width="350" height="52" rx="8" fill="#fff" stroke="#dbe7e3"/>
+<text x="536" y="84" font-size="13" fill="#203035">P_MUSIC(f) = 1 / ‖U_nᴴ a(f)‖²</text>
+<text x="536" y="104" font-size="12" fill="#53676d">真实频率处分母→0，伪谱出现尖峰</text>
+<text x="30" y="382" font-size="13" fill="#53676d">教学示意：特征值高度经简化；实际需先估计信号个数 K，K 估计错误会带来假峰或漏峰。</text>
+</svg>

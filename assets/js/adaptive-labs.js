@@ -47,6 +47,46 @@ function kalman(z, q, r = 6.25) {
   return out;
 }
 
+function twoTone(noise) {
+  const nz = lcg(N, 1234);
+  return Array.from({ length: N }, (_, n) => Math.sin(2 * Math.PI * 10 * n / 64)
+    + Math.sin(2 * Math.PI * 10.6 * n / 64) + noise * nz[n]);
+}
+function periodogram(x) {
+  const out = [];
+  for (let k = 0; k <= x.length / 2; k++) {
+    let re = 0, im = 0;
+    for (let n = 0; n < x.length; n++) { re += x[n] * Math.cos(2 * Math.PI * k * n / x.length); im -= x[n] * Math.sin(2 * Math.PI * k * n / x.length); }
+    out.push((re * re + im * im) / x.length);
+  }
+  return out;
+}
+function burg(x, p) {
+  let f = x.slice(), b = x.slice();
+  const a = Array.from({ length: p + 1 }, () => new Array(p + 1).fill(0));
+  const kref = []; let err = x.reduce((s, v) => s + v * v, 0) / x.length;
+  for (let m = 1; m <= p; m++) {
+    let num = 0, den = 0;
+    for (let n = m; n < x.length; n++) { num += -2 * f[n] * b[n - 1]; den += f[n] ** 2 + b[n - 1] ** 2; }
+    const km = num / den; kref.push(km); a[m][m] = km;
+    for (let i = 1; i < m; i++) a[m][i] = a[m - 1][i] + km * a[m - 1][m - i];
+    err *= 1 - km * km;
+    const nf = f.slice(), nb = b.slice();
+    for (let n = x.length - 1; n >= m; n--) { nf[n] = f[n] + km * b[n - 1]; nb[n] = b[n - 1] + km * f[n]; }
+    f = nf; b = nb;
+  }
+  return { a: a[p].slice(1, p + 1), kref, err };
+}
+function arSpec(a, err, M = 256) {
+  const out = [];
+  for (let i = 0; i <= M; i++) {
+    const w = Math.PI * i / M;
+    let re = 1, im = 0;
+    for (let k = 0; k < a.length; k++) { re += a[k] * Math.cos(w * (k + 1)); im -= a[k] * Math.sin(w * (k + 1)); }
+    out.push(err / (re * re + im * im));
+  }
+  return out;
+}
 function frame(svg) {
   svg.replaceChildren();
   svg.setAttribute("viewBox", "0 0 560 215");
@@ -74,6 +114,20 @@ const registry = {
     out.textContent = "过程噪声 Q=" + q.toFixed(1) + "：位置 RMS 误差 " + rms.toFixed(2) +
       "，机动后 16 点平均滞后 " + lag.toFixed(2) + "。" +
       (q < 0.5 ? "Q 太小：曲线更平滑，但转弯时明显落后。" : q > 8 ? "Q 太大：跟得上机动，但更抖、RMS 更高。" : "Q 适中：在平滑与跟踪之间折中。");
+  },
+  ar(pv, svg, out) {
+    const p = pv, x = twoTone(0.1), per = periodogram(x), { a, kref, err } = burg(x, p), sp = arSpec(a, err);
+    const g = frame(svg), fmax = 32, mp = Math.max(...per), ms = Math.max(...sp), M = sp.length - 1;
+    const X = f => g.left + f / fmax * (g.right - g.left);
+    const Y = (v, mx) => g.bottom - v / mx * (g.bottom - g.top) * 0.92;
+    per.forEach((v, k) => line(svg, X(k * fmax / (per.length - 1)), g.bottom, X(k * fmax / (per.length - 1)), Y(v, mp), "#e3c9ab", 3));
+    add(svg, "path", { d: sp.map((v, i) => (i ? "L" : "M") + X(i / M * fmax).toFixed(1) + " " + Y(v, ms).toFixed(1)).join(" "), fill: "none", stroke: "#147f80", "stroke-width": 2.4 });
+    txt(svg, g.left + 6, g.top + 12, "周期图（赭柱）与 Burg AR 谱（青线），各自归一化", "#53676d");
+    const hm = 0.30, pk = [];
+    for (let i = 1; i < sp.length - 1; i++) if (sp[i] > sp[i - 1] && sp[i] >= sp[i + 1] && sp[i] > hm * ms) pk.push(i / M * fmax);
+    out.textContent = "AR 阶数 p=" + p + "：Burg 谱出现 " + pk.length + " 个峰（" +
+      pk.map(v => v.toFixed(1)).join("、") + " Hz），最大 |k|=" + Math.max(...kref.map(Math.abs)).toFixed(3) +
+      "。" + (pk.length >= 2 ? "已分辨出间隔 0.6 Hz 的双峰（周期图仍是单峰）。" : p > 30 ? "阶数过高，谱线起伏，未必更清晰。" : "仍与周期图类似地合并为单峰。");
   }
 };
 document.querySelectorAll("[data-spectrum-lab]").forEach(el => {
