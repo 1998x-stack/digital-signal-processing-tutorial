@@ -87,6 +87,28 @@ function arSpec(a, err, M = 256) {
   }
   return out;
 }
+function dftMag(x) {
+  const n0 = x.length, out = [];
+  for (let k = 0; k < n0; k++) {
+    let re = 0, im = 0;
+    for (let n = 0; n < n0; n++) { re += x[n] * Math.cos(2 * Math.PI * k * n / n0); im -= x[n] * Math.sin(2 * Math.PI * k * n / n0); }
+    out.push(Math.hypot(re, im));
+  }
+  return out;
+}
+function stepTones() {
+  const n0 = 192, x = [];
+  for (let n = 0; n < n0; n++) x.push(Math.sin(2 * Math.PI * (n < n0 / 2 ? 24 : 60) * n / n0));
+  return x;
+}
+function stftSpec(x, L, hop) {
+  const w = Array.from({ length: L }, (_, n) => 0.5 - 0.5 * Math.cos(2 * Math.PI * n / (L - 1)));
+  const frames = [];
+  for (let m = 0; m + L <= x.length; m += hop) {
+    frames.push({ m, s: dftMag(w.map((wn, n) => x[m + n] * wn)).slice(0, L / 2 + 1) });
+  }
+  return frames;
+}
 function frame(svg) {
   svg.replaceChildren();
   svg.setAttribute("viewBox", "0 0 560 215");
@@ -128,6 +150,23 @@ const registry = {
     out.textContent = "AR 阶数 p=" + p + "：Burg 谱出现 " + pk.length + " 个峰（" +
       pk.map(v => v.toFixed(1)).join("、") + " Hz），最大 |k|=" + Math.max(...kref.map(Math.abs)).toFixed(3) +
       "。" + (pk.length >= 2 ? "已分辨出间隔 0.6 Hz 的双峰（周期图仍是单峰）。" : p > 30 ? "阶数过高，谱线起伏，未必更清晰。" : "仍与周期图类似地合并为单峰。");
+  },
+  stft(sv, svg, out) {
+    const L = sv * 2, hop = sv, x = stepTones(), frames = stftSpec(x, L, hop), g = frame(svg);
+    const nb = frames[0].s.length, nf = frames.length;
+    let mx = 0;
+    frames.forEach(f => f.s.forEach(v => { if (v > mx) mx = v; }));
+    const cw = (g.right - g.left) / Math.max(nf, 1), ch = (g.bottom - g.top) / Math.max(nb, 1);
+    frames.forEach((f, fi) => f.s.forEach((v, bi) => {
+      const t = v / mx;
+      const col = "rgb(" + Math.round(233 - 213 * t) + "," + Math.round(245 - 118 * t) + "," + Math.round(240 - 112 * t) + ")";
+      add(svg, "rect", { x: g.left + fi * cw, y: g.bottom - (bi + 1) * ch, width: cw + 0.5, height: ch + 0.5, fill: col });
+    }));
+    txt(svg, g.left + 6, g.top + 12, "语谱图：横轴时间、纵轴频率", "#53676d");
+    const peakHz = idx => { const s = frames[idx].s; let bi = 0; for (let i = 1; i < s.length; i++) if (s[i] > s[bi]) bi = i; return bi * 192 / L; };
+    out.textContent = "窗长 L=" + L + "、帧移 " + hop + "：频率分辨率 f_s/L = " + (192 / L).toFixed(1) +
+      " Hz，时间分辨率≈ " + (hop / 192 * 1000).toFixed(0) + " ms。前段峰 " + peakHz(0).toFixed(0) +
+      " Hz，后段峰 " + peakHz(nf - 1).toFixed(0) + " Hz。" + (L <= 16 ? "窗很短：台阶陡、时间准，但频率带很宽。" : L >= 48 ? "窗较长：频率细，但时间定位变模糊。" : "窗长适中。");
   }
 };
 document.querySelectorAll("[data-spectrum-lab]").forEach(el => {

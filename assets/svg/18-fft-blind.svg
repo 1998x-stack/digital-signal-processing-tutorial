@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t18f3 d18f3" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t18f3">整段 FFT 丢失时间信息，语谱图恢复时间定位</title>
+<desc id="d18f3">上图是整段信号的幅度谱：在 32 Hz 与 64 Hz 处各有一个峰，但它无法说明哪个分量先出现。下图是语谱图：横轴时间、纵轴频率，前一半只在 32 Hz 处有能量，后一半只在 64 Hz 处有能量，形成台阶状亮带，时间定位一目了然。</desc>
+<rect x="0" y="0" width="920" height="400" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">同样的数据：频谱告诉你“有哪些”，语谱图告诉你“何时有”</text>
+<text x="60" y="62" font-size="13" fill="#b55c3e">整段 FFT 幅度谱</text>
+<line x1="60" y1="150" x2="440" y2="150" stroke="#718d88" stroke-width="1.5"/>
+<line x1="60" y1="66" x2="60" y2="150" stroke="#718d88" stroke-width="1.5"/>
+<polyline points="60,150 180,150 190,70 200,150 330,150 340,70 350,150 440,150" fill="none" stroke="#d06d4d" stroke-width="2.2"/>
+<text x="176" y="64" font-size="12" fill="#b55c3e">32 Hz</text>
+<text x="326" y="64" font-size="12" fill="#b55c3e">64 Hz</text>
+<text x="58" y="168" font-size="12" fill="#53676d">两个峰都在，但时间先后完全丢失</text>
+<text x="510" y="62" font-size="13" fill="#0d7779">语谱图（STFT 幅度平方）</text>
+<line x1="510" y1="300" x2="890" y2="300" stroke="#718d88" stroke-width="1.5"/>
+<line x1="510" y1="80" x2="510" y2="300" stroke="#718d88" stroke-width="1.5"/>
+<rect x="520" y="232" width="175" height="20" fill="#147f80"/>
+<rect x="695" y="108" width="175" height="20" fill="#147f80"/>
+<text x="524" y="228" font-size="12" fill="#0d7779">前段：32 Hz</text>
+<text x="700" y="104" font-size="12" fill="#0d7779">后段：64 Hz</text>
+<line x1="695" y1="80" x2="695" y2="300" stroke="#7461ba" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="700" y="318" font-size="12" fill="#5b48a6">t = 中点</text>
+<text x="856" y="318" font-size="12" fill="#53676d">t →</text>
+<text x="476" y="76" font-size="12" fill="#53676d">f</text>
+<line x1="60" y1="360" x2="890" y2="360" stroke="#e5ece9"/>
+<text x="60" y="382" font-size="13" fill="#53676d">窗越短，台阶越陡、时间定位越准，但纵向的频率带越宽（频率分辨率越差）——这就是不确定性折中。</text>
+</svg>

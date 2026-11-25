@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t18f2 d18f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t18f2">Wigner-Ville 分布的交叉项</title>
+<desc id="d18f2">时频平面上，两个真实分量分别位于较低和较高频率，各自是一条较宽的水平亮带。Wigner-Ville 分布是双线性的，会在两个分量频率的中点额外生成一条虚假的亮带，这就是交叉项。伪 WVD 通过在时域和频域加窗来抑制交叉项，代价是分辨率下降。</desc>
+<rect x="0" y="0" width="920" height="400" fill="#fffdf9"/>
+<text x="30" y="38" font-size="15" font-weight="700" fill="#203035">双线性分布会在两个分量之间“造”出一个假分量</text>
+<line x1="80" y1="320" x2="860" y2="320" stroke="#718d88" stroke-width="1.6"/>
+<line x1="80" y1="80" x2="80" y2="320" stroke="#718d88" stroke-width="1.6"/>
+<text x="840" y="338" font-size="12" fill="#53676d">t →</text>
+<text x="44" y="76" font-size="12" fill="#53676d">f</text>
+<rect x="120" y="266" width="680" height="12" rx="6" fill="#147f80"/>
+<text x="806" y="278" font-size="13" fill="#0d7779">分量 f₁</text>
+<rect x="120" y="140" width="680" height="12" rx="6" fill="#147f80"/>
+<text x="806" y="152" font-size="13" fill="#0d7779">分量 f₂</text>
+<rect x="120" y="200" width="680" height="14" rx="7" fill="none" stroke="#d06d4d" stroke-width="2" stroke-dasharray="8 5"/>
+<text x="640" y="196" font-size="13" fill="#b55c3e">交叉项位于 (f₁+f₂)/2</text>
+<line x1="80" y1="203" x2="800" y2="203" stroke="#f0d9c9" stroke-width="1" stroke-dasharray="4 4"/>
+<line x1="90" y1="152" x2="90" y2="272" stroke="#7461ba" stroke-width="1.4"/>
+<line x1="76" y1="152" x2="104" y2="152" stroke="#7461ba" stroke-width="1.4"/>
+<line x1="76" y1="272" x2="104" y2="272" stroke="#7461ba" stroke-width="1.4"/>
+<line x1="76" y1="203" x2="104" y2="203" stroke="#7461ba" stroke-width="1.4"/>
+<text x="40" y="158" font-size="11" fill="#5b48a6">f₂</text>
+<text x="40" y="207" font-size="11" fill="#5b48a6">mid</text>
+<text x="40" y="278" font-size="11" fill="#5b48a6">f₁</text>
+<rect x="520" y="80" width="330" height="80" rx="9" fill="#fff" stroke="#dbe7e3"/>
+<text x="536" y="104" font-size="13" fill="#203035">线性分布（STFT/小波）：无交叉项</text>
+<text x="536" y="126" font-size="13" fill="#b55c3e">双线性分布（WVD）：出现交叉项</text>
+<text x="536" y="148" font-size="12" fill="#53676d">伪 WVD：加窗抑制交叉项，分辨率↓</text>
+<text x="30" y="382" font-size="13" fill="#53676d">教学示意：交叉项的位置在两个分量频率的中点；它会造成“幽灵目标”，WVD 图必须结合先验判读。</text>
+</svg>

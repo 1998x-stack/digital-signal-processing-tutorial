@@ -1,0 +1,37 @@
+{
+  "chapter": "18",
+  "title": "时频分析：STFT、小波与 Wigner-Ville",
+  "sources": [
+    {
+      "id": "stft",
+      "claim": "离散 STFT 由帧长 L、帧移 H 与窗 w[n] 定义；频率网格间距为 f_s/L",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html",
+      "scope": "SciPy stft 文档；MIT OCW 6.341 短时分析"
+    },
+    {
+      "id": "uncertainty",
+      "claim": "时间与频率的均方根宽度满足 Δt·Δf ≥ 1/(4π)（f 以 Hz 计），高斯窗取等号",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341：时频不确定性与 Gabor 极限"
+    },
+    {
+      "id": "wavelet",
+      "claim": "DWT 用镜像滤波器组逐级分解，实现多分辨率分析；低频频率分辨率好、高频时间分辨率好",
+      "url": "https://doi.org/10.1109/18.57199",
+      "scope": "Mallat (1989), A Theory for Multiresolution Signal Decomposition"
+    },
+    {
+      "id": "wvd",
+      "claim": "WVD 是双线性时频分布，多分量时在分量频率中点产生交叉项；加窗可抑制但降低分辨率",
+      "url": "https://doi.org/10.1109/PROC.1989.39174",
+      "scope": "Cohen (1989), Time-Frequency Distributions—A Review"
+    }
+  ],
+  "notes": [
+    "STFT 时间定位实验使用确定性信号：N=256、采样率 256 Hz、前半段 32 Hz、后半段 64 Hz，Hann 窗 L=32、hop=16。",
+    "交互实验的信号为前半段 24 Hz、后半段 60 Hz、采样率 192 Hz、帧移 L/2；输出中的频率/时间分辨率由这些确定参数计算得到。",
+    "Δt·Δf ≥ 1/(4π) 是均方根宽度的 Gabor 极限；页面已写明这是 RMS 宽度而非任意定义下的一致下界。",
+    "旧版页面中 2017 年工业设备的第一人称轶事已删除（无法核实），改为可复现的确定性实验。"
+  ],
+  "status": "STFT/语谱图/小波/WVD 定义与公式对照 SciPy 文档、Mallat (1989) 与 Cohen (1989)；确定性实验校验整段 DFT 无时间信息、短窗恢复定位、长窗模糊时间；MathML、SVG 与响应式由浏览器检查（file:// 载入）确认。"
+}

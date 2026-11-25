@@ -1,312 +1,125 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第18章 时频分析</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="当信号的频率随时间变化时，FFT 会丢掉时间信息。用 STFT 与语谱图、小波变换以及 Wigner-Ville 分布，回答“某一时刻有哪些频率成分”，并说明各自的分辨率折中与失效模式。">
+<title>第 18 章 · 时频分析：STFT、小波与 Wigner-Ville</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/adaptive-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🎛️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数字信号处理导论</a></li>
-            <li><a href="02.html">第2章 离散时间信号</a></li>
-            <li><a href="03.html">第3章 离散时间系统</a></li>
-            <li><a href="04.html">第4章 采样定理</a></li>
-            <li><a href="05.html">第5章 Z变换</a></li>
-            <li><a href="06.html">第6章 频域分析</a></li>
-            <li><a href="07.html">第7章 离散傅里叶变换 (DFT)</a></li>
-            <li><a href="08.html">第8章 快速傅里叶变换 (FFT)</a></li>
-            <li><a href="09.html">第9章 FIR滤波器设计</a></li>
-            <li><a href="10.html">第10章 IIR滤波器设计</a></li>
-            <li><a href="11.html">第11章 滤波器结构</a></li>
-            <li><a href="12.html">第12章 多速率信号处理 (一)</a></li>
-            <li><a href="13.html">第13章 多速率信号处理 (二)</a></li>
-            <li><a href="14.html">第14章 统计信号处理基础</a></li>
-            <li><a href="15.html">第15章 自适应滤波器</a></li>
-            <li><a href="16.html">第16章 高级自适应算法</a></li>
-            <li><a href="17.html">第17章 谱估计进阶</a></li>
-            <li><a href="18.html" class="active">第18章 时频分析</a></li>
-            <li><a href="19.html">第19章 MATLAB/Python DSP仿真</a></li>
-            <li><a href="20.html">第20章 定点DSP实现</a></li>
-            <li><a href="21.html">第21章 嵌入式DSP芯片开发</a></li>
-            <li><a href="22.html">第22章 FPGA上的DSP</a></li>
-            <li><a href="23.html">第23章 音频信号处理</a></li>
-            <li><a href="24.html">第24章 通信数字信号处理</a></li>
-            <li><a href="25.html">第25章 图像信号处理</a></li>
-            <li><a href="26.html">第26章 AI+DSP融合</a></li>
-            <li><a href="27.html">第27章 软件无线电 (SDR)</a></li>
-            <li><a href="28.html">第28章 综合项目：实时音频处理器</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-
-        <h2>第18章 时频分析</h2>
-
-        <p>让我们停下来想一想。到目前为止，我们学习了两种看待信号的方式：</p>
-
-        <ul>
-            <li><strong>时域</strong>：看信号幅度随时间的变化，直观但信息有限；</li>
-            <li><strong>频域</strong>（FFT / AR谱 / MUSIC）：看信号包含哪些频率成分，但时间信息完全丢失。</li>
-        </ul>
-
-        <p>FFT把时间轴"压扁"了——它假设信号在整个观测窗口内是平稳的（即频率成分不随时间变化）。但现实世界中<strong>绝大多数信号是非平稳的</strong>：语音信号中每个音节的频谱在快速变化、音乐中不同乐器的音符此起彼伏、雷达回波的多普勒频率随时间改变、心电信号（ECG）的波形随心跳周期变化。</p>
-
-        <p>让我给你讲个故事。2017年我帮一个团队调试工业设备的故障诊断系统。设备旋转时会产生振动信号，传感器采集到的数据看起来杂乱无章。用FFT一看，频谱上好几个峰，但完全对应不上已知的机械故障频率。后来我们把信号做了时频分析——结果一目了然：某个频率分量只在设备启动的头两秒出现，然后消失了。那是轴承的"磨合期"特征。如果只看FFT，这个瞬态特征被整个时间窗口平均掉了，完全看不出。维修团队替换轴承后，时频谱上那个瞬态分量果然消失了。</p>
-
-        <div class="highlight">
-            <strong>💡 核心认知：</strong>时频分析的终极目标就是回答一个问题——"在某个时刻 \(t\)，信号的频率成分是什么？"它把一维的时间信号映射到二维的时频平面上，让你同时看到时间信息和频率信息。
-        </div>
-
-        <h3>18.1 短时傅里叶变换（STFT）：加窗的智慧</h3>
-
-        <p>时频分析最直观的思路是：既然FFT要求信号平稳，那我们就把信号切成一帧一帧的小段，假设每一帧内部是平稳的，对每一帧做FFT。这就是<strong>短时傅里叶变换（Short-Time Fourier Transform, STFT）</strong>。</p>
-
-        <p>数学上，STFT定义为：</p>
-
-        <p style="text-align:center;font-size:1.1em;font-weight:bold;">
-            \(X(\tau, f) = \int_{-\infty}^{\infty} x(t) w(t - \tau) e^{-j2\pi f t} dt\)
-        </p>
-
-        <p>其中 \(w(t)\) 是窗函数，\(\tau\) 是窗的位置。在离散域中：</p>
-
-        <p style="text-align:center;font-size:1.1em;font-weight:bold;">
-            \(X[m, k] = \sum_{n=0}^{L-1} x[n + mH] w[n] e^{-j2\pi kn/L}\)
-        </p>
-
-        <p>其中 \(L\) 是帧长（FFT点数），\(H\) 是帧移（hop size，相邻帧之间的采样点间隔）。</p>
-
-        <p>STFT面临的根本矛盾是——<strong>时间分辨率与频率分辨率不可兼得</strong>。这就是<strong>海森堡不确定性原理</strong>在时频分析中的体现：</p>
-
-        <p style="text-align:center;font-size:1.1em;font-weight:bold;">
-            \(\Delta t \cdot \Delta f \geq \frac{1}{4\pi}\)
-        </p>
-
-        <ul>
-            <li><strong>长窗</strong>（\(L\) 大）：频率分辨率好（FFT的 \(\Delta f = f_s/L\) 小），但时间分辨率差（不知道频率变化发生的精确时刻）；</li>
-            <li><strong>短窗</strong>（\(L\) 小）：时间分辨率好，能精确定位频率变化的时刻，但频率分辨率差（FFT的bin很宽）。</li>
-        </ul>
-
-        <div class="tip">
-            <strong>🔧 工程实践：</strong>STFT的参数选择取决于应用场景。对于语音信号处理，常用的参数是：帧长 \(L = 20-30\text{ms}\)（对应采样率 \(f_s=16\text{kHz}\) 时 \(L=320-480\)），帧移 \(H = L/2\) 或 \(L/4\)。对于音乐分析，可能需要更长的帧（40-60ms）以分辨低频音符。窗函数通常选用Hamming或Hann窗以降低频谱泄漏。这个参数组合不是随便选的——它经过了数十年的工程验证。
-        </div>
-
-        <h3>18.2 语谱图：看得见的声音</h3>
-
-        <p>STFT的幅度平方 \(|X[m, k]|^2\) 在时频平面上以图像形式展示出来，就是<strong>语谱图（Spectrogram）</strong>。横轴是时间，纵轴是频率，颜色深浅表示能量强度。</p>
-
-        <p>如果你从来没有看过语谱图，我强烈建议你找一段自己的录音，用Python做一张看看。你会惊讶地发现：语音中每个元音对应着几条水平的亮线（<strong>共振峰</strong>，formants——声道的谐振频率），而辅音则表现为竖直的条纹或散沙状的宽带噪声。</p>
-
-        <pre><code>// Python代码：生成语谱图
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy import signal
-
-# 参数设置
-fs = 16000          # 采样率 16kHz
-framelen = 0.025    # 帧长 25ms
-hop = 0.010         # 帧移 10ms
-
-# 读取音频数据 (假设 x 是一维numpy数组)
-nperseg = int(framelen * fs)
-noverlap = nperseg - int(hop * fs)
-
-# 计算STFT
-f, t, Zxx = signal.stft(x, fs, window='hann',
-                        nperseg=nperseg, noverlap=noverlap)
-
-# 计算语谱图（dB scale）
-spectrogram = 20 * np.log10(np.abs(Zxx) + 1e-10)
-
-# 显示
-plt.pcolormesh(t, f, spectrogram, shading='gouraud')
-plt.ylabel('频率 (Hz)')
-plt.xlabel('时间 (s)')
-plt.title('语谱图 Spectrogram')
-plt.colorbar(label='强度 (dB)')
-plt.show()</code></pre>
-
-        <p>语谱图在语音识别、音乐信息检索、动物声学分析、地震信号处理中有广泛的应用。比如，Whisper（OpenAI的语音识别模型）的输入特征就是基于语谱图的Log-Mel谱——本质上是对语谱图做了梅尔刻度映射和取对数操作。</p>
-
-        <h3>18.3 小波变换：让窗口自己"长大"和"缩小"</h3>
-
-        <p>STFT有一个"先天缺陷"：窗长 \(L\) 是固定的。这意味着无论分析高频还是低频成分，使用的时窗宽度都一样。但物理信号的时频特性往往希望——<strong>低频成分需要宽的时间窗以获得好的频率分辨率，高频成分需要窄的时间窗以精确定位时间</strong>。</p>
-
-        <p><strong>小波变换（Wavelet Transform）</strong>正是为了解决这个问题而生的。它用一组伸缩和平移的小波基函数来替代STFT的固定窗正弦基函数。</p>
-
-        <h4>连续小波变换（CWT）</h4>
-
-        <p>CWT的定义为：</p>
-
-        <p style="text-align:center;font-size:1.1em;font-weight:bold;">
-            \(W(a, b) = \frac{1}{\sqrt{a}} \int_{-\infty}^{\infty} x(t) \psi^*\left(\frac{t-b}{a}\right) dt\)
-        </p>
-
-        <p>其中 \(\psi(t)\) 是母小波（mother wavelet），\(a\) 是尺度参数（控制伸缩，\(a\) 越大对应低频），\(b\) 是平移参数（控制时间位置）。</p>
-
-        <p>CWT在参数 \((a, b)\) 平面上连续变化——理论上给出的是过完备的表示（计算量巨大）。在实际应用中，我们通常使用<strong>离散小波变换（DWT）</strong>，它把尺度和平移参数离散化为2的幂次，大大降低了计算量。</p>
-
-        <h4>离散小波变换与Mallat算法</h4>
-
-        <p>离散小波变换的工程实现基于<strong>Mallat多分辨率分析（Multi-resolution Analysis, MRA）</strong>框架。Mallat算法的本质是：通过一对<strong>镜像滤波器组</strong>将信号逐级分解。</p>
-
-        <pre><code>// Mallat DWT分解算法
-// 对长度为N的信号x进行J级小波分解
-
-初始化: c_0 = x  (原始信号)
-for j = 1 to J:
-    // 1. 通过低通滤波器h0 + 下采样2 -> 近似系数（低频）
-    c_j = downsample(conv(c_{j-1}, h0), 2)
-
-    // 2. 通过高通滤波器h1 + 下采样2 -> 细节系数（高频）
-    d_j = downsample(conv(c_{j-1}, h1), 2)
-
-// 输出: c_J (最粗的近似系数), d_1,...,d_J (各级细节系数)
-// 总系数个数仍为N (无损分解)
-// 重构: 镜像过程，用合成滤波器 + 上采样</code></pre>
-
-        <p>这个过程将一个信号分解为低频"近似"部分和高频"细节"部分，然后在下一级只对近似部分继续分解。这就像一个多倍放大镜——<strong>低频用宽窗口看得粗略但频率精确，高频用窄窗口看得精细但频率模糊</strong>。</p>
-
-        <p>DWT有两个深远的影响：第一，它启发了JPEG 2000图像压缩标准（用CDF 9/7小波）；第二，Mallat算法的滤波器组结构与后续深度学习中的卷积神经网络有着惊人的相似性。</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>特性</th>
-                    <th>STFT / 语谱图</th>
-                    <th>连续小波变换 (CWT)</th>
-                    <th>离散小波变换 (DWT)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>时间分辨率</strong></td>
-                    <td>固定（由窗长决定）</td>
-                    <td>可变（低频差、高频好）</td>
-                    <td>可变（低频差、高频好）</td>
-                </tr>
-                <tr>
-                    <td><strong>频率分辨率</strong></td>
-                    <td>固定（由窗长决定）</td>
-                    <td>可变（低频好、高频差）</td>
-                    <td>可变（低频好、高频差）</td>
-                </tr>
-                <tr>
-                    <td><strong>计算效率</strong></td>
-                    <td>高（基于FFT）</td>
-                    <td>低（连续积分）</td>
-                    <td>高（滤波器组，O(N)）</td>
-                </tr>
-                <tr>
-                    <td><strong>逆变换</strong></td>
-                    <td>完美重建（ISTFT）</td>
-                    <td>存在（但复杂）</td>
-                    <td>完美重建（滤波器组对称）</td>
-                </tr>
-                <tr>
-                    <td><strong>主要用途</strong></td>
-                    <td>语音、音乐、通用</td>
-                    <td>地质/生物信号分析</td>
-                    <td>压缩、去噪、编码</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h3>18.4 Wigner-Ville分布：最高分辨率，但小心交叉项</h3>
-
-        <p>STFT和小波变换都属于<strong>线性时频表示</strong>——它们对信号做线性变换，不存在交叉项干扰。但线性变换受不确定性原理的限制，时频分辨率不可能同时很高。</p>
-
-        <p>如果我们愿意放弃线性特性呢？<strong>双线性时频分布</strong>（也叫Cohen类）可以给出更高的时频分辨率。其中最著名的就是<strong>Wigner-Ville分布（WVD）</strong>：</p>
-
-        <p style="text-align:center;font-size:1.1em;font-weight:bold;">
-            \(W_x(t, f) = \int_{-\infty}^{\infty} x\left(t + \frac{\tau}{2}\right) x^*\left(t - \frac{\tau}{2}\right) e^{-j2\pi f \tau} d\tau\)
-        </p>
-
-        <p>WVD有一些非常吸引人的性质：</p>
-
-        <ul>
-            <li><strong>时频分辨率极高</strong>——理论上可以达到不确定性原理的下界，比STFT和小波都要高；</li>
-            <li><strong>满足边缘特性</strong>——对频率积分得到瞬时功率，对时间积分得到能量谱密度；</li>
-            <li><strong>对线性调频（chirp）信号</strong>——WVD的时频表示是一条完美的斜线，没有任何模糊。</li>
-        </ul>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑实录：</strong>WVD有一个致命的缺点——<strong>交叉项干扰（cross-term interference）</strong>。当信号包含多个频率分量时，WVD会在两个分量的中点处产生一个"幽灵分量"。比如一个信号包含频率 \(f_1\) 和 \(f_2\) 两个正弦波，WVD会在 \((f_1+f_2)/2\) 处出现一个虚假的交叉项，而且这个交叉项的幅度可以达到真实分量的两倍！我第一次在雷达信号上试WVD时，看到时频谱上的"第三个目标"兴奋了半天，后来才发现是交叉项的幻觉。这个教训告诉我：<strong>WVD的图不能裸看，必须结合先验知识判读</strong>。
-        </div>
-
-        <p>为了解决交叉项问题，研究人员提出了各种加窗WVD（称为伪WVD或平滑WVD），通过在时域和频域分别加窗来抑制交叉项——但代价是牺牲了时频分辨率。这就是所谓的"时频分析中的不确定性"——没有任何一种时频分布能在所有指标上做到最优。</p>
-
-        <h3>18.5 应用选择指南</h3>
-
-        <p>面对这么多时频分析工具，到底该怎么选？我根据自己的工程经验给你一个参考：</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>你关心的问题</th>
-                    <th>推荐工具</th>
-                    <th>原因</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>语音信号的共振峰变化？</td>
-                    <td>STFT语谱图</td>
-                    <td>参数成熟（25ms帧长），物理意义直观</td>
-                </tr>
-                <tr>
-                    <td>机械振动中的瞬态冲击（轴承故障）？</td>
-                    <td>CWT 或 DWT</td>
-                    <td>小波能匹配冲击信号的局部特性</td>
-                </tr>
-                <tr>
-                    <td>信号压缩或去噪？</td>
-                    <td>DWT</td>
-                    <td>Mallat算法高效，小波阈值去噪经典</td>
-                </tr>
-                <tr>
-                    <td>线性调频信号参数估计（雷达）？</td>
-                    <td>WVD 或 分数阶傅里叶变换</td>
-                    <td>chirp信号在WVD中表现为完美直线</td>
-                </tr>
-                <tr>
-                    <td>多分量信号分离？</td>
-                    <td>STFT + 掩码 (masking)</td>
-                    <td>没有交叉项，便于手动/自动分离</td>
-                </tr>
-                <tr>
-                    <td>生物医学信号（ECG/EEG）分析？</td>
-                    <td>CWT</td>
-                    <td>时频分辨率可调，多频段同时观察</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="highlight">
-            <strong>💡 进阶方向：</strong>时频分析在2020年代最新的发展包括：同步压缩变换（Synchrosqueezing Transform, SST）——它"重排"时频系数使得能量更集中；以及基于深度学习的时频表示——用神经网络学习最优的时频核函数。这些内容已经超出了本课程的初级-中级范围，但如果你有兴趣，可以参考第26章AI+DSP融合中的相关知识。
-        </div>
-
-        <h3>18.6 本章小结</h3>
-
-        <ul>
-            <li><strong>STFT</strong>（语谱图）是最常用的时频分析工具，通过加窗FFT滑动实现，时间与频率分辨率受不确定性原理制约——长窗频率好、短窗时间好；</li>
-            <li><strong>小波变换</strong>实现了变分辨率分析——低频宽窗口、高频窄窗口。CWT适合精细分析，DWT（Mallat算法）适合工程实现，JPEG 2000是其典型应用；</li>
-            <li><strong>Wigner-Ville分布</strong>提供了极高时频分辨率，但双线性结构带来交叉项干扰——使用时必须警惕"幽灵分量"；</li>
-            <li>不同场景选择不同的工具：语音用STFT、冲击检测用小波、chirp分析用WVD、压缩去噪用DWT。</li>
-        </ul>
-
-        <p>到这里，本课程"高级主题"部分（第12-18章）就全部结束了。从下一章开始，我们将进入一个全新的篇章——<strong>实现技术实战</strong>。第19章会带你在MATLAB和Python中亲自动手实现本章和第17章中提到的各种谱估计和时频分析算法。你将不再只是"看懂"公式，而是真正"跑通"代码——看到自己代码输出的语谱图和MUSIC谱的那一刻，才是真正的理解。</p>
-
-        <div class="footer-nav">
-            <a href="17.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="19.html">下一章 →</a>
-        </div>
-    </div>
+<a class="skip" href="#main">跳转至正文</a>
+<header class="topbar"><a class="brand" href="../index.html">∿ Digital Signal Processing</a><span>CHAPTER 18 / 28</span><a href="../index.html#curriculum">课程地图</a></header>
+<div class="layout">
+<nav class="toc" aria-label="本章目录">
+<div class="back"><a href="../index.html">← 返回课程首页</a></div>
+<p>本章路径</p>
+<div class="toc-items">
+<a href="#problem">FFT 为什么看不到“什么时候”？</a>
+<a href="#stft">STFT：加窗切片与不确定性折中</a>
+<a href="#spectrogram">语谱图：把 STFT 画成二维图</a>
+<a href="#wavelet">小波：让窗口随频率伸缩</a>
+<a href="#wvd">Wigner-Ville：高分辨率与交叉项</a>
+<a href="#experiment">交互：窗长与时间定位</a>
+<a href="#limits">边界与失效模式</a>
+<a href="#sources">参考资料与接口</a>
 </div>
+</nav>
+<main id="main">
+<article class="article">
+<header class="article-header">
+<p class="kicker">Signal · System · Insight / 18</p>
+<h1>时频分析：STFT、小波与 Wigner-Ville</h1>
+<p class="dek">当频率成分随时间变化，单看频谱会丢失时间；把一维信号映射到时频平面，并接受随之而来的分辨率折中。</p>
+<div class="read-meta"><span>现象 → 加窗 → 小波 → 双线性</span><span>3 张独立 SVG 与离线 MathML</span></div>
+</header>
+<section id="problem" aria-labelledby="h-problem">
+<h2 id="h-problem">FFT 为什么看不到“什么时候”？</h2>
+<p class="lead">FFT（及其背后的 DFT）在整段观测窗口上对信号做积分，隐含假设是<strong>信号在整个窗口内平稳</strong>：频率成分不随时间变化。但很多真实信号是非平稳的——语音的音节在快速变化，雷达回波的频率随时间漂移，机械振动里会出现短智的冲击。对这些信号，频谱回答的是“有哪些频率”，而不是“什么时候出现”。</p>
+<p>原因很直接：一个只持续很短时间的频率分量，在整段 DFT 里被均摊到整个观测时长上。它的能量仍然会出现在对应频点，但时间信息已经被积分掉。一个具体可检验的例子里，信号前半段是 32 Hz、后半段是 64 Hz；整段 DFT 在两个频点都出现峰，却无法说明先后。</p>
+<figure class="figure"><img src="../assets/svg/18-fft-blind.svg" alt="整段 FFT 在 32 Hz 与 64 Hz 各有一个峰，语谱图显示两个分量分别位于前段与后段" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 01</span>　上图整段幅度谱在两个频点都有峰，但丢失时间信息；下图语谱图横轴为时间、纵轴为频率，前一半只在 32 Hz 处有能量，后一半只在 64 Hz 处，时间定位一目了然。</figcaption></figure>
+<p>时频分析的目标就是把一维信号 <code>x[n]</code> 映射到二维的<strong>时频平面</strong> <code>(t, f)</code> 上，使得我们能同时读出“什么时间”与“什么频率”。本页介绍三类做法：线性加窗的 STFT、变分辨率的小波变换、双线性的 Wigner-Ville 分布。</p>
+</section>
+<section id="stft" aria-labelledby="h-stft">
+<h2 id="h-stft">STFT：加窗切片与不确定性折中</h2>
+<p>最直观的思路是：既然整段 FFT 要求平稳，就把信号切成短帧，假定每帧内部平稳，对每帧做 FFT。这就是短时傅里叶变换（STFT）。离散形式下，帧长 <code>L</code>、帧移 <code>H</code>、窗 <code>w[n]</code>：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="离散短时傅里叶变换定义"><math display="block" aria-label="离散短时傅里叶变换定义"><mrow><mi>X</mi><mo>[</mo><mi>m</mi><mo>,</mo><mi>k</mi><mo>]</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>n</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>L</mi><mo>−</mo><mn>1</mn></mrow></munderover><mi>x</mi><mo>[</mo><mi>n</mi><mo>+</mo><mi>m</mi><mi>H</mi><mo>]</mo><mi>w</mi><mo>[</mo><mi>n</mi><mo>]</mo><msup><mi>e</mi><mrow><mo>−</mo><mi>j</mi><mn>2</mn><mi>π</mi><mi>k</mi><mi>n</mi><mo>/</mo><mi>L</mi></mrow></msup></mrow></math></div><p class="equation-caption">式（1）：<code>m</code> 是帧索引，<code>k</code> 是频率索引；频率网格间距为 <code>f_s/L</code>，帧移 <code>H</code> 决定时间采样间隔。</p></div>
+<p>STFT 面临一个不可回避的折中：<strong>时间分辨率与频率分辨率不能同时任意小</strong>。用均方根宽度衡量的时间宽度 <code>Δt</code> 与频率宽度 <code>Δf</code> 满足：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="时间宽度与频率宽度之积不小于四分之一派"><math display="block" aria-label="时间宽度与频率宽度之积不小于四分之一派"><mrow><mi>Δ</mi><mi>t</mi><mo>·</mo><mi>Δ</mi><mi>f</mi><mo>≥</mo><mfrac><mn>1</mn><mrow><mn>4</mn><mi>π</mi></mrow></mfrac></mrow></math></div><p class="equation-caption">式（2）：<code>f</code> 以 Hz 计；这是均方根宽度的下界（高斯窗取等号），常称为 Gabor 极限。</p></div>
+<aside class="callout"><p><strong>长窗与短窗：</strong>长窗频率分辨率好（<code>f_s/L</code> 小），但窗跨越多个事件时时间定位变模糊；短窗时间定位准，但每个频率单元的带宽变宽。本页的交互实验可以直接看到这条折中曲线。</p></aside>
+</section>
+<section id="spectrogram" aria-labelledby="h-spectrogram">
+<h2 id="h-spectrogram">语谱图：把 STFT 画成二维图</h2>
+<p>把 STFT 的幅度平方 <code>|X[m,k]|²</code> 以颜色深浅画在时频平面上，就是<strong>语谱图（spectrogram）</strong>：横轴时间、纵轴频率、颜色代表能量。语音的元音在这种图上表现为几条水平亮带（谐振峰的共振峰），而摩擦音等宽带噪声则表现为垂直或弥散的亮区。</p>
+<p>社区常用的一类实现是 SciPy 的 <code>scipy.signal.stft</code> / <code>spectrogram</code>。下面是最小用法；具体窗、帧长与重叠参数需要根据信号自行选定，没有普适最佳值。</p>
+<pre><code>from scipy import signal
+fs = 16000
+nperseg = int(0.025 * fs)           # 25 ms 帧长
+noverlap = nperseg - int(0.010 * fs)  # 10 ms 帧移
+f, t, Zxx = signal.stft(x, fs, window="hann",
+                        nperseg=nperseg, noverlap=noverlap)
+spec_db = 20 * np.log10(np.abs(Zxx) + 1e-12)</code></pre>
+<p>参数选择的前提是应用场景。语音常用 20～30 ms 帧长与一半重叠；需要分辨低频音符时可能需要更长的帧，代价是时间定位变粗。窗函数（Hann、Hamming 等）主要影响旁泄与主瓣宽度，而不是“提高分辨率”。</p>
+<aside class="callout warn"><p><strong>与前面的约定一致：</strong>语谱图的纵轴频率单位是 Hz，频率单元间距是 <code>f_s/L</code>。补零只会让语谱图看起来更平滑（频域插值），不会改善真实的可分辨性。</p></aside>
+</section>
+<section id="wavelet" aria-labelledby="h-wavelet">
+<h2 id="h-wavelet">小波：让窗口随频率伸缩</h2>
+<p>STFT 的窗长是固定的，因此对高频与低频采用同样的时间/频率分辨率。物理信号则常常希望相反：低频用宽的时间窗换取好的频率分辨率，高频用窄的时间窗换取精准的时间定位。小波变换通过对一个<strong>母小波</strong>做伸缩和平移得到一组基，实现了这种可变分辨率。连续小波变换定义为：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="连续小波变换的定义"><math display="block" aria-label="连续小波变换的定义"><mrow><mi>W</mi><mo>(</mo><mi>a</mi><mo>,</mo><mi>b</mi><mo>)</mo><mo>=</mo><mfrac><mn>1</mn><mrow><msqrt><mi>a</mi></msqrt></mrow></mfrac><msubsup><mo>∫</mo><mrow><mo>−</mo><mi>∞</mi></mrow><mi>∞</mi></msubsup><mi>x</mi><mo>(</mo><mi>t</mi><mo>)</mo><msup><mi>ψ</mi><mo>*</mo></msup><mrow><mo>(</mo><mfrac><mrow><mi>t</mi><mo>−</mo><mi>b</mi></mrow><mi>a</mi></mfrac><mo>)</mo></mrow><mi>d</mi><mi>t</mi></mrow></math></div><p class="equation-caption">式（3）：尺度 <code>a</code> 控制伸缩（<code>a</code> 大对应低频），平移 <code>b</code> 控制时间位置。</p></div>
+<p>CWT 在连续参数 <code>(a,b)</code> 上变化，过完备但计算量大。工程上更常用<strong>离散小波变换（DWT）</strong>：把尺度与平移离散为 2 的幂次，用一对镜像滤波器组（低通 <code>h₀</code>、高通 <code>h₁</code>）逐级分解——低通支路下采样得到“近似”系数，高通支路得到“细节”系数，下一级只对近似支路继续分解。这就是 Mallat 多分辨率分析。</p>
+<figure class="figure"><img src="../assets/svg/18-tiling.svg" alt="STFT 的等面积时频格子与小波的对数格子对比" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 02</span>　左图 STFT 的格子等大，由窗长决定；右图小波的格子在低频宽而窄、在高频窄而宽。小波并不是“突破”不确定性原理，而是把它按频率重新分配。</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th>特性</th><th>STFT / 语谱图</th><th>CWT</th><th>DWT</th></tr></thead><tbody><tr><td>时间分辨率</td><td>固定</td><td>高频好、低频差</td><td>高频好、低频差</td></tr><tr><td>频率分辨率</td><td>固定</td><td>低频好、高频差</td><td>低频好、高频差</td></tr><tr><td>计算效率</td><td>高（基于 FFT）</td><td>低</td><td>高（滤波器组，<code>O(N)</code>）</td></tr><tr><td>可重建</td><td>ISTFT 可重建</td><td>存在但较复杂</td><td>滤波器组对称时完美重建</td></tr></tbody></table></div>
+</section>
+<section id="wvd" aria-labelledby="h-wvd">
+<h2 id="h-wvd">Wigner-Ville：高分辨率与交叉项</h2>
+<p>STFT 与小波都属于<strong>线性时频表示</strong>：信号相加，表示也相加，因此不会产生虚假分量，但分辨率受不确定性折中限制。若允许放弃线性，<strong>双线性时频分布</strong>（Cohen 类）能给出更高的分辨率。最著名的代表是 Wigner-Ville 分布（WVD）：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="Wigner-Ville 分布定义"><math display="block" aria-label="Wigner-Ville 分布定义"><mrow><msub><mi>W</mi><mi>x</mi></msub><mo>(</mo><mi>t</mi><mo>,</mo><mi>f</mi><mo>)</mo><mo>=</mo><msubsup><mo>∫</mo><mrow><mo>−</mo><mi>∞</mi></mrow><mi>∞</mi></msubsup><mi>x</mi><mrow><mo>(</mo><mi>t</mi><mo>+</mo><mfrac><mi>τ</mi><mn>2</mn></mfrac><mo>)</mo></mrow><msup><mi>x</mi><mo>*</mo></msup><mrow><mo>(</mo><mi>t</mi><mo>−</mo><mfrac><mi>τ</mi><mn>2</mn></mfrac><mo>)</mo></mrow><msup><mi>e</mi><mrow><mo>−</mo><mi>j</mi><mn>2</mn><mi>π</mi><mi>f</mi><mi>τ</mi></mrow></msup><mi>d</mi><mi>τ</mi></mrow></math></div><p class="equation-caption">式（4）：核是 <code>x·x*</code>，所以是信号的双线性函数（二次型）。</p></div>
+<p>WVD 的吸引力在于：对单个线性调频（chirp）信号，它在时频平面上是一条无限锐的直线，时频集中度可达不确定性下界；它又满足边缘性质（对频率积分得到瞬时功率）。但双线性结构也带来代价：<strong>当信号含多个分量时，分量两两之间会产生交叉项</strong>。两个频率 <code>f₁</code>、<code>f₂</code> 的正弦会在中点 <code>(f₁+f₂)/2</code> 处生成一个虚假的亮带。</p>
+<figure class="figure"><img src="../assets/svg/18-wvd-crossterm.svg" alt="Wigner-Ville 分布在两个真实分量频率的中点出现交叉项" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 03</span>　两条实线是两个真实分量，中间虚线是 WVD 额外生成的交叉项。它会造成“幽灵目标”，因此 WVD 图必须结合先验知识判读。</figcaption></figure>
+<p>抑制交叉项的常用办法是加窗：在时域与频域分别平滑，得到伪 WVD（PWVD）或平滑 WVD（SPWVD）。代价是时频集中度下降——又一次落回“没有免费午餐”：<strong>没有任何一种时频分布能在所有指标上同时最优</strong>。</p>
+</section>
+<section id="experiment" aria-labelledby="h-experiment">
+<h2 id="h-experiment">交互：窗长与时间定位</h2>
+<p>下面的实验使用与 FIGURE 01 相同的信号（前半段 24 Hz、后半段 60 Hz，采样率 192 Hz）。滑块改变 STFT 窗长 <code>L</code>，帧移取 <code>L/2</code>；热图横轴为时间、纵轴为频率。缩短窗长会让台阶变陡、时间定位变准，但纵向的频率带变宽；加长窗长则相反。</p>
+<div class="lab" data-spectrum-lab="stft">
+<h3>动手验证：选择窗长 L</h3>
+<label for="range-18">窗长 L（8 – 64 个样本）</label>
+<input id="range-18" type="range" min="4" max="32" step="1" value="16">
+<output for="range-18" aria-live="polite">改变窗长，观察台阶的陡峭程度与频率带的宽度。</output>
+<svg role="img" aria-label="不同窗长下的语谱图热图" viewBox="0 0 560 215" width="560" height="215"><title>窗长与语谱图</title></svg>
+<p class="muted">频率分辨率约为 <code>f_s/L</code>，时间分辨率约为帧移的时长。当 JS 关闭时，FIGURE 01 与式（1）（2）仍可独立理解。</p>
+</div>
+<pre><code># 逐帧加窗 + FFT（完整可运行版见 examples/18_timefreq.py）
+for m in range(0, N - L + 1, hop):
+    seg = [x[m + n] * w[n] for n in range(L)]
+    spec = dft_mag(seg)[:L // 2 + 1]   # 单边幅度谱</code></pre>
+<p><a href="../examples/18_timefreq.py">完整可执行例程（18_timefreq.py）</a>：断言整段 DFT 同时看到两个分量，而 STFT 能把 32 Hz 定位在前段、 64 Hz 定位在后段，且长窗会把时间定位模糊。</p>
+</section>
+<section id="limits" aria-labelledby="h-limits">
+<h2 id="h-limits">边界与失效模式</h2>
+<ul>
+<li><strong>不确定性不可越过：</strong>STFT/小波无法同时把时间和频率分辨率做到任意小；调参只是在折中曲线上移动。</li>
+<li><strong>窗泄漏与主瓣：</strong>窗函数降低旁泄但加宽主瓣；它不提供比 <code>f_s/L</code> 更精确的频率信息。</li>
+<li><strong>小波必须选母小波：</strong>不同母小波的形状与频率局部化不同；DWT 的 2 的幂尺度在低频分辨率有限。</li>
+<li><strong>WVD 交叉项：</strong>多分量时会出现虚假亮带，位置在分量频率中点；加窗抑制交叉项会降低分辨率。</li>
+<li><strong>反变换与系数处理：</strong>ISTFT 需要满足重叠相加条件；对系数做门限/修改后不保证完美重建。</li>
+</ul>
+<p>自检：为什么“缩短窗长”不能同时提高时间与频率分辨率？对一个只持续 5 ms 的冲击，STFT 与 DWT 哪一种更容易在时频图上定位？</p>
+</section>
+<section id="sources" aria-labelledby="h-sources">
+<h2 id="h-sources">参考资料与接口</h2>
+<ol class="refs">
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html">SciPy · stft</a>：帧长、重叠与窗参数接口。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.spectrogram.html">SciPy · spectrogram</a>：语谱图计算与归一化约定。</li>
+<li><a href="https://doi.org/10.1109/18.57199">S. Mallat (1989) · A Theory for Multiresolution Signal Decomposition</a>：多分辨率分析与 Mallat 滤波器组。</li>
+<li><a href="https://doi.org/10.1109/PROC.1989.39174">L. Cohen (1989) · Time-Frequency Distributions—A Review</a>：Cohen 类双线性分布与交叉项。</li>
+<li><a href="https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/">MIT OCW · Discrete-Time Signal Processing</a>：短时分析、窗与不确定性折中的基础。</li>
+</ol>
+</section>
+<nav class="chapter-nav"><a href="17.html">← 第 17 章</a><a href="../index.html#curriculum">课程地图</a><a href="19.html">第 19 章 →</a></nav>
+</article>
+</main>
 </div>
 </body>
 </html>
