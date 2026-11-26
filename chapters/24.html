@@ -79,7 +79,7 @@
 <section id="constellation" aria-labelledby="h-constellation">
 <h2 id="h-constellation">星座图与调制阶数</h2>
 <p class="lead">把 I/Q 样本画在复平面上就是星座图。判断调制方式的直接方法就是看星座点的数量与布局。</p>
-<figure class="figure"><img src="../assets/svg/24-constellation.svg" alt="QPSK、16QAM、64QAM 的复平面星座点分布" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 03</span>　三种调制的星座布局。每轴电平数越多，每符号携带的比特越多，但归一化到单位平均功率后相邻点最小距离越小：16QAM 约为 QPSK 的 0.45 倍，64QAM 约为 0.22 倍——距离越小，达到同样误码率所需的信噪比越高。这些比值由 <a href="../examples/24_communication.py">examples/24_communication.py</a> 复算。</figcaption></figure>
+<figure class="figure"><img src="../assets/svg/24-constellation.svg" alt="QPSK、16QAM、64QAM 的复平面星座点分布" width="960" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 03</span>　三种调制的星座布局。每轴电平数越多，每符号携带的比特越多，但归一化到单位平均功率后相邻点最小距离越小：16QAM 约为 QPSK 的 0.45 倍，64QAM 约为 0.22 倍——距离越小，达到同样误码率所需的信噪比越高。这些比值由 <a href="../examples/24_communication.py">examples/24_communication.py</a> 复算。</figcaption></figure>
 <div class="table-wrap"><table><thead><tr><th>调制</th><th>点数</th><th>每符号比特</th><th>每轴电平</th><th>特点</th></tr></thead><tbody>
 <tr><td><strong>QPSK</strong></td><td>4</td><td>2</td><td>2</td><td>幅度恒定，只携带相位，对功放线性度要求低</td></tr>
 <tr><td><strong>16QAM</strong></td><td>16</td><td>4</td><td>4</td><td>幅度与相位都携带信息，需更高信噪比</td></tr>
