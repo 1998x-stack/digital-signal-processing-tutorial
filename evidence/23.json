@@ -1,0 +1,38 @@
+{
+  "chapter": "23",
+  "title": "音频信号处理：均衡、动态与回声消除",
+  "sources": [
+    {
+      "id": "sampling-and-bitdepth",
+      "claim": "CD/流媒体常用 44.1 kHz/48 kHz 采样与 16/24 bit 位深；每增加 1 bit 理论动态范围约增加 6.02 dB（16 bit ≈ 96 dB，24 bit ≈ 144 dB）",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341：量化噪声与动态范围"
+    },
+    {
+      "id": "rjb-cookbook",
+      "claim": "RBJ Audio-EQ-Cookbook 给出峰值/搁架滤波器的双二阶系数闭式，先设计模拟目标再经双线性变换映射到数字域；Q = f0/BW",
+      "url": "https://www.w3.org/TR/audio-eq-cookbook/",
+      "scope": "Robert Bristow-Johnson, Audio EQ Cookbook（W3C 归档）"
+    },
+    {
+      "id": "drc",
+      "claim": "压缩器在阈值以上按比率压缩（4:1 即输入每升 4 dB 输出升 1 dB），限幅器为比率极大的压缩器；Attack/Release 决定增益包络的时间常数",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "动态范围处理的静态曲线与时间常数定义"
+    },
+    {
+      "id": "aec",
+      "claim": "AEC 以扬声器信号为参考做自适应滤波估计回声路径并相减；全双工需双讲检测（DTD）冻结更新，并配合非线性处理与残留回声抑制",
+      "url": "https://www.itu.int/rec/T-REC-G.168",
+      "scope": "ITU-T G.168 数字网络回声消除器"
+    }
+  ],
+  "notes": [
+    "确定性实验 examples/23_audio.py 仅用标准库：RBJ 峰值双二阶在 1 kHz 处增益 12.0000 dB，DC 与 Nyquist 增益 0.0016/0.0012 dB（≈0）；4:1 压缩器在阈值 -20 dBFS 处输入 -8 dBFS 得输出 -17 dBFS；限幅天花板 -0.1 dBFS。",
+    "旧版页面中的第一人称工程事故（车载 DSP 项目、TWS 耳机朋友等轶事）无法核实，已删除，替换为可从公开来源核验的通用设计约束（低频高 Q 极点贴近单位圆导致系数量化敏感）。",
+    "采样率“为什么是 44.1 kHz”的历史细节（与早期录像设备行频的关系）未展开，避免无法核实的量化断言；页面对各参数的说明以 Nyquist 与工程对齐需求为准。",
+    "FIGURE 01/02 由 examples/23_audio.py 同一系数模型计算生成；FIGURE 03 为结构框图，不表示某次具体测量。",
+    "not_verified：浏览器 QA 未验证（browser_check.py 用 set_content 载入，相对路径资源无法解析）。"
+  ],
+  "status": "参数、RBJ 双二阶、动态曲线与 AEC 流程对照 MIT OCW 6.341、RBJ Audio-EQ-Cookbook 与 ITU-T G.168；确定性实验通过；浏览器 QA 未验证。"
+}

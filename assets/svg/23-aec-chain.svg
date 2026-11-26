@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 430" role="img" aria-labelledby="t23f3 d23f3" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t23f3">声学回声消除（AEC）的信号流图</title>
+<desc id="d23f3">远端参考信号 x[n] 既送往扬声器，也送入自适应滤波器来估计回声路径 h[n]；滤波器输出 ŷ[n] 从麦克风信号 d[n]（近端语音加回声加噪声）中减去，得到残差 e[n]；e[n] 驱动系数更新，但在双讲检测判为双讲时冻结更新。</desc>
+<rect width="920" height="430" fill="#fffdf9"/>
+<text x="30" y="32" font-size="15" font-weight="700" fill="#203035">AEC：用参考信号估计回声，再从麦克风中减去</text>
+<text x="24" y="122" font-size="13" fill="#0d7779">x[n] 参考</text>
+<polygon points="96,110 116,122 96,134" fill="#147f80"/>
+<line x1="116" y1="122" x2="300" y2="122" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="170" y1="122" x2="170" y2="330" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="164,330 170,318 176,330" fill="#147f80"/>
+<rect x="300" y="92" width="150" height="60" rx="8" fill="#eef8f6" stroke="#147f80"/>
+<text x="318" y="118" font-size="13" fill="#0d7779">扬声器 → 房间</text>
+<text x="318" y="138" font-size="12" fill="#53676d">h[n] 回声路径</text>
+<rect x="92" y="300" width="230" height="72" rx="8" fill="#fbf1ec" stroke="#d06d4d"/>
+<text x="114" y="326" font-size="13" fill="#b55c3e">自适应滤波器 ĥ[n]</text>
+<text x="114" y="348" font-size="12" fill="#53676d">ŷ[n] = ĥᵀ[n] x[n]</text>
+<polygon points="400,342 420,354 400,366" fill="#7461ba" opacity="0"/>
+<line x1="237" y1="354" x2="322" y2="354" stroke="#9fb8b2" stroke-width="1.6"/>
+<text x="248" y="344" font-size="12" fill="#0d7779">ŷ[n]</text>
+<line x1="450" y1="122" x2="560" y2="122" stroke="#9fb8b2" stroke-width="1.6"/>
+<text x="474" y="110" font-size="12" fill="#53676d">声学回声</text>
+<line x1="560" y1="122" x2="560" y2="278" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="560" y1="278" x2="470" y2="278" stroke="#9fb8b2" stroke-width="1.6"/>
+<circle cx="456" cy="278" r="14" fill="#fff" stroke="#d06d4d" stroke-width="1.6"/>
+<text x="448" y="283" font-size="15" fill="#b55c3e">−</text>
+<line x1="237" y1="354" x2="360" y2="354" stroke="#9fb8b2" stroke-width="0"/>
+<polygon points="442,278 456,278 456,278" fill="#147f80"/>
+<line x1="442" y1="278" x2="386" y2="278" stroke="#9fb8b2" stroke-width="1.6"/>
+<rect x="300" y="248" width="86" height="60" rx="8" fill="#eef8f6" stroke="#147f80"/>
+<text x="312" y="272" font-size="12" fill="#0d7779">麦克风</text>
+<text x="312" y="290" font-size="12" fill="#53676d">d[n]</text>
+<line x1="470" y1="278" x2="560" y2="278" stroke="#9fb8b2" stroke-width="1.6"/>
+<text x="590" y="274" font-size="13" fill="#203035">e[n] 残差 →</text>
+<text x="590" y="294" font-size="12" fill="#53676d">近端语音保留</text>
+<line x1="560" y1="292" x2="560" y2="386" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="560" y1="386" x2="150" y2="386" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="150" y1="386" x2="150" y2="372" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="144,372 150,360 156,372" fill="#d06d4d"/>
+<rect x="600" y="340" width="286" height="66" rx="8" fill="#f3effa" stroke="#7461ba"/>
+<text x="618" y="366" font-size="13" fill="#5b48a0">双讲检测（DTD）</text>
+<text x="618" y="388" font-size="12" fill="#53676d">判为双讲时冻结系数更新</text>
+<line x1="600" y1="373" x2="560" y2="373" stroke="#7461ba" stroke-width="1.4" stroke-dasharray="4 4"/>
+<text x="30" y="416" font-size="13" fill="#53676d">虚线为控制路径：DTD 决定是否允许更新，而不是直接改变音频。</text>
+</svg>

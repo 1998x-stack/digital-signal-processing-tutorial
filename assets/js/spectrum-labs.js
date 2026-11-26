@@ -172,6 +172,17 @@ draw(tru,"#147f80");draw(app,"#d06d4d");
 text(svg,4,20,"sin");text(svg,290,200,"角度 −π/2 → π/2");
 let maxe=0;for(let i=0;i<H;i++)maxe=Math.max(maxe,Math.abs(tru[i]-app[i]));
 out.textContent=iters+" 次迭代：整段最大误差 "+maxe.toExponential(2)+"（只做移位与加法，无乘法器）。迭代越多误差越小，但每加一级就多一份流水线资源。";
+},
+peq(qt,svg,out){
+ const q=qt/10,fs=48000,f0=1000,series=[];
+ const A=Math.pow(10,12/40),w0=2*PI*f0/fs,al=Math.sin(w0)/(2*q);
+ const b0=1+al*A,b1=-2*Math.cos(w0),b2=1-al*A,a0=1+al/A,a1=b1,a2=1-al/A;
+ for(let i=0;i<=120;i++){const f=20*Math.pow(1000,i/120),w=2*PI*f/fs;
+  const nr=b0+b1*Math.cos(w)+b2*Math.cos(2*w),ni=-b1*Math.sin(w)-b2*Math.sin(2*w);
+  const dr=a0+a1*Math.cos(w)+a2*Math.cos(2*w),di=-a1*Math.sin(w)-a2*Math.sin(2*w);
+  series.push(20*Math.log10(Math.hypot(nr,ni)/Math.hypot(dr,di)));}
+ chart(svg,series,{color:"#147f80",labels:"频率 20 Hz → 20 kHz（对数）"});
+ out.textContent="Q="+q.toFixed(1)+"：中心 1 kHz 提升 12 dB，近似带宽 f0/Q ≈ "+(f0/q).toFixed(0)+" Hz。Q 越大峰越窄，极点越靠近单位圆，对系数量化也越敏感。";
 }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});
