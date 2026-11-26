@@ -33,7 +33,7 @@
     "旧版页面中的第一人称轶事（“第一次听到 FM 广播的瞬间”“ADS-B 调了一整天”）无法核实，已删除，替换为可核验的 ppm 频偏与校准说明。",
     "法律与频谱管制仅作概括性描述，不引用具体罚款金额或条文编号；使用前应以当地法规与授权为准。",
     "FIGURE 01/02/03 为结构示意图；频谱位移图由确定性加窗正弦计算。",
-    "not_verified：浏览器 QA 未验证（browser_check.py 用 set_content 载入，相对路径资源无法解析）。"
+    "浏览器 QA：用 scripts/browser_qa.py 在本章验证 1440/768/390/360 四档视口，无 JS 报错、无文档级横向溢出、图片可解码、MathML 与交互 output 正常，四档全部通过。"
   ],
-  "status": "SDR 架构、零中频、GNU Radio 流图与 Zynq PL/PS 划分对照 Mitola (1995)、GNU Radio 文档与 AD9361 资料；确定性实验通过；浏览器 QA 未验证。"
+  "status": "SDR 架构、零中频、GNU Radio 流图与 Zynq PL/PS 划分对照 Mitola (1995)、GNU Radio 文档与 AD9361 资料；确定性实验通过；浏览器 QA 已通过（scripts/browser_qa.py，1440/768/390/360）。"
 }

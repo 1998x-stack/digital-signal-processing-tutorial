@@ -32,7 +32,7 @@
     "旧版页面包含多处无法核实的数字与轶事，已删除：具体芯片型号（Tensilica HiFi iQ、Tensor G4、H2）的在线运行描述、INT8 量化 SNR 28.6→14.2 dB、PESQ 2.1→3.4、延迟 4ms→280ms、自适应量化提升 30–40% 等。",
     "页面对硬件与模型性能只作定性描述，不给出具体的实时因子、推理延迟或功耗倍数；相关数值强依赖硬件与量化策略，要求以实测为准。",
     "FIGURE 01/02/03 为结构示意图；时频掩码图为构造示例，不表示某次实验结果。",
-    "not_verified：浏览器 QA 未验证（browser_check.py 用 set_content 载入，相对路径资源无法解析）。"
+    "浏览器 QA：用 scripts/browser_qa.py 在本章验证 1440/768/390/360 四档视口，无 JS 报错、无文档级横向溢出、图片可解码、MathML 与交互 output 正常，四档全部通过。"
   ],
-  "status": "DDSP、神经降噪与声码器对照 Engel (2020)、van den Oord (2016)、Kong (2020) 与 Luo & Mesgarani (2018)；确定性实验通过；浏览器 QA 未验证。"
+  "status": "DDSP、神经降噪与声码器对照 Engel (2020)、van den Oord (2016)、Kong (2020) 与 Luo & Mesgarani (2018)；确定性实验通过；浏览器 QA 已通过（scripts/browser_qa.py，1440/768/390/360）。"
 }

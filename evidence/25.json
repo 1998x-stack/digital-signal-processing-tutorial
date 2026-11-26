@@ -32,7 +32,7 @@
     "旧版页面中的第一人称轶事（“我做文档扫描 App 时被投诉”“Q 因子踩坑”）无法核实，已删除，替换为可核验的 JPEG 标准与压缩特性说明（量化表规定于 Annex K、质量因子与主观质量非线性相关）。",
     "未给出 JPEG/JPEG XL 的具体压缩比或“自适应量化提升 30–40%”一类无法核实的数字；自适应量化仅作定性方法描述。",
     "FIGURE 01/02/03 为结构示意图；DCT 能量曲线由确定性 8×8 块计算，不表示自然图像统计。",
-    "not_verified：浏览器 QA 未验证（browser_check.py 用 set_content 载入，相对路径资源无法解析）。"
+    "浏览器 QA：用 scripts/browser_qa.py 在本章验证 1440/768/390/360 四档视口，无 JS 报错、无文档级横向溢出、图片可解码、MathML 与交互 output 正常，四档全部通过。"
   ],
-  "status": "JPEG、Canny、LoG 与可分离卷积对照 ITU-T T.81、Canny (1986)、Marr & Hildreth (1980) 与 MIT OCW 6.341；确定性实验通过；浏览器 QA 未验证。"
+  "status": "JPEG、Canny、LoG 与可分离卷积对照 ITU-T T.81、Canny (1986)、Marr & Hildreth (1980) 与 MIT OCW 6.341；确定性实验通过；浏览器 QA 已通过（scripts/browser_qa.py，1440/768/390/360）。"
 }

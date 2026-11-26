@@ -32,7 +32,7 @@
     "旧版页面中的第一人称工程事故（车载 DSP 项目、TWS 耳机朋友等轶事）无法核实，已删除，替换为可从公开来源核验的通用设计约束（低频高 Q 极点贴近单位圆导致系数量化敏感）。",
     "采样率“为什么是 44.1 kHz”的历史细节（与早期录像设备行频的关系）未展开，避免无法核实的量化断言；页面对各参数的说明以 Nyquist 与工程对齐需求为准。",
     "FIGURE 01/02 由 examples/23_audio.py 同一系数模型计算生成；FIGURE 03 为结构框图，不表示某次具体测量。",
-    "not_verified：浏览器 QA 未验证（browser_check.py 用 set_content 载入，相对路径资源无法解析）。"
+    "浏览器 QA：用 scripts/browser_qa.py 在本章验证 1440/768/390/360 四档视口，无 JS 报错、无文档级横向溢出、图片可解码、MathML 与交互 output 正常，四档全部通过。"
   ],
-  "status": "参数、RBJ 双二阶、动态曲线与 AEC 流程对照 MIT OCW 6.341、RBJ Audio-EQ-Cookbook 与 ITU-T G.168；确定性实验通过；浏览器 QA 未验证。"
+  "status": "参数、RBJ 双二阶、动态曲线与 AEC 流程对照 MIT OCW 6.341、RBJ Audio-EQ-Cookbook 与 ITU-T G.168；确定性实验通过；浏览器 QA 已通过（scripts/browser_qa.py，1440/768/390/360）。"
 }

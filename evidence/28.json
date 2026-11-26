@@ -27,7 +27,7 @@
     "页面对验收只给出测试项与关注点，不给出具体通过门限：它们强依赖编解码器与板级设计，应以实测为准。",
     "定点 SNR 约 65 dB 低于 16 位理想动态范围，已如实标注其来源（系数量化与每位舍入），并说明提高位宽可提升。",
     "FIGURE 01/02/03 为结构示意图；交互曲线由确定性公式绘制。",
-    "not_verified：浏览器 QA 未验证（browser_check.py 用 set_content 载入，相对路径资源无法解析）。"
+    "浏览器 QA：用 scripts/browser_qa.py 在本章验证 1440/768/390/360 四档视口，无 JS 报错、无文档级横向溢出、图片可解码、MathML 与交互 output 正常，四档全部通过。"
   ],
-  "status": "项目链路、双二阶与定点实现对照 RBJ Audio-EQ-Cookbook、ARM CMSIS-DSP 与 MIT OCW 6.341；确定性实验通过；浏览器 QA 未验证。"
+  "status": "项目链路、双二阶与定点实现对照 RBJ Audio-EQ-Cookbook、ARM CMSIS-DSP 与 MIT OCW 6.341；确定性实验通过；浏览器 QA 已通过（scripts/browser_qa.py，1440/768/390/360）。"
 }
