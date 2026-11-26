@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 380" role="img" aria-labelledby="t24f2 d24f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t24f2">Gardner 定时误差检测器的采样点</title>
+<desc id="d24f2">一条升余弦成形波形上标出符号判决点 y[n-1]、y[n] 与它们中间的过渡点 y[n-1/2]。定时准确时过渡点落在零期望处，误差 e=(y[n]-y[n-1])·y[n-1/2] 的统计均值为零；定时偏早或偏晚时过渡点偏离零点，误差符号指示调整方向。</desc>
+<rect width="920" height="380" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">Gardner 检测：用中间过渡点判定时早/晚</text>
+<line x1="60" y1="230" x2="880" y2="230" stroke="#9fb8b2"/>
+<line x1="60" y1="70" x2="60" y2="330" stroke="#9fb8b2"/>
+<path d="M70 230 Q150 90 235 190 T400 230 Q480 330 560 240 T730 230 Q810 120 880 210" fill="none" stroke="#147f80" stroke-width="2.6"/>
+<line x1="235" y1="190" x2="235" y2="230" stroke="#8fb5ae" stroke-dasharray="3 3"/>
+<circle cx="235" cy="190" r="5.5" fill="#147f80"/>
+<line x1="400" y1="230" x2="400" y2="230" stroke="#8fb5ae"/>
+<circle cx="400" cy="230" r="5.5" fill="#d06d4d"/>
+<line x1="560" y1="240" x2="560" y2="230" stroke="#8fb5ae" stroke-dasharray="3 3"/>
+<circle cx="560" cy="240" r="5.5" fill="#147f80"/>
+<text x="205" y="176" font-size="13" fill="#0d7779">y[n−1]</text>
+<text x="362" y="256" font-size="13" fill="#b55c3e">y[n−1/2]（过渡点）</text>
+<text x="532" y="226" font-size="13" fill="#0d7779">y[n]</text>
+<text x="70" y="360" font-size="13" fill="#53676d">误差 e[n] = ( y[n] − y[n−1] ) · y[n−1/2]：对载波相位不敏感，可在载波未锁定时先行工作。</text>
+</svg>

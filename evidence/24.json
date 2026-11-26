@@ -1,0 +1,38 @@
+{
+  "chapter": "24",
+  "title": "通信数字信号处理：定时、载波与信道",
+  "sources": [
+    {
+      "id": "gardner",
+      "claim": "Gardner 定时误差检测器 e[n]=(y[n]-y[n-1])·y[n-1/2] 对载波相位不敏感；在满足第一 Nyquist 准则的脉冲下自噪声为零，信道失真与群延迟会引入定时偏置",
+      "url": "https://ocw.mit.edu/courses/6-450-principles-of-digital-communications-i-fall-2006/",
+      "scope": "F. M. Gardner (1986), IEEE Trans. Commun.；经 MIT OCW 6.450 脉冲成形背景核验"
+    },
+    {
+      "id": "nco-cic",
+      "claim": "数字下变频用相位累加器加查表/CORDIC 生成正交本振，输出频率 f=FTW/2^B·fs；大倍数抽取常用 CIC + FIR 补偿结构",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "多速率抽取与 CIC 结构（第 13 章同源）"
+    },
+    {
+      "id": "carrier",
+      "claim": "Costas 环的相位误差对 BPSK 为 sign(I)·Q，对 QPSK 为 sign(I)Q−sign(Q)I；高阶 QAM 常用判决导向恢复",
+      "url": "https://ocw.mit.edu/courses/6-450-principles-of-digital-communications-i-fall-2006/",
+      "scope": "MIT OCW 6.450：载波恢复结构"
+    },
+    {
+      "id": "channel-eq",
+      "claim": "导频信道估计有 LS/MMSE/LMMSE 等方法；OFDM 将频率选择性信道化为子载波平坦衰落，均衡为单抽头除法 X[k]=Y[k]/H[k]",
+      "url": "https://ocw.mit.edu/courses/6-450-principles-of-digital-communications-i-fall-2006/",
+      "scope": "OFDM 频域均衡与导频插值基础"
+    }
+  ],
+  "notes": [
+    "确定性实验 examples/24_communication.py 仅用标准库：归一化到单位平均功率后，16QAM 最小距离为 QPSK 的 0.447 倍、64QAM 为 0.218 倍；QPSK 四点硬判决全部正确；已知信道 H 时 OFDM 单抽头均衡最大误差 8.5e-18；NCO 在 B=32、FTW=2^28、fs=100 MHz 时输出 6.250 MHz。",
+    "旧版页面中的第一人称入行轶事（“老工程师”“我在 QPSK 接收机定时同步时的发现”）无法核实，已删除，替换为可核验的通用性质（Nyquist 脉冲下自噪声为零、信道失真引入偏置）。",
+    "未给出具体系统的 SNR 门限或误码率曲线数字（如“64QAM 需 24 dB”一类），避免无法核实的量化断言；调制阶数与最小距离的关系仅以归一化距离比表达。",
+    "FIGURE 01/02 为结构示意图；FIGURE 03 由构造的星座点绘制，不表示某次实测。",
+    "not_verified：浏览器 QA 未验证（browser_check.py 用 set_content 载入，相对路径资源无法解析）。"
+  ],
+  "status": "定时/载波/信道模块对照 Gardner (1986) 与 MIT OCW 6.450/6.341；确定性实验通过；浏览器 QA 未验证。"
+}

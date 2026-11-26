@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 380" role="img" aria-labelledby="t24f1 d24f1" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t24f1">数字下变频（DDC）的信号链</title>
+<desc id="d24f1">中频采样信号进入数字混频器，与 NCO 产生的正交本振相乘得到 I/Q 两路；混频后含有的二倍频分量由抽取滤波滤除，CIC 高效完成大倍数抽取，FIR 补偿 CIC 的幅频滚降，输出低采样率的基带 I/Q。</desc>
+<rect width="920" height="380" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">数字下变频：混频 → 抽取 → 补偿</text>
+<text x="24" y="150" font-size="13" fill="#0d7779">中频 x[n]</text>
+<polygon points="104,138 124,150 104,162" fill="#147f80"/>
+<line x1="124" y1="150" x2="196" y2="150" stroke="#9fb8b2" stroke-width="1.6"/>
+<circle cx="212" cy="150" r="16" fill="#fff" stroke="#147f80" stroke-width="1.6"/>
+<line x1="204" y1="142" x2="220" y2="158" stroke="#147f80" stroke-width="1.6"/>
+<line x1="220" y1="142" x2="204" y2="158" stroke="#147f80" stroke-width="1.6"/>
+<line x1="228" y1="150" x2="300" y2="150" stroke="#9fb8b2" stroke-width="1.6"/>
+<text x="252" y="140" font-size="12" fill="#53676d">×</text>
+<line x1="212" y1="166" x2="212" y2="238" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="206,238 212,226 218,238" fill="#7461ba"/>
+<rect x="120" y="238" width="184" height="64" rx="8" fill="#f3effa" stroke="#7461ba"/>
+<text x="140" y="264" font-size="13" fill="#5b48a0">NCO 相位累加器</text>
+<text x="140" y="286" font-size="12" fill="#53676d">LUT 或 CORDIC 生成 cos/sin</text>
+<rect x="300" y="114" width="176" height="72" rx="8" fill="#eef8f6" stroke="#147f80"/>
+<text x="320" y="142" font-size="13" fill="#0d7779">CIC 抽取滤波器</text>
+<text x="320" y="164" font-size="12" fill="#53676d">滤除 2f_c，降采样率</text>
+<line x1="476" y1="150" x2="548" y2="150" stroke="#9fb8b2" stroke-width="1.6"/>
+<rect x="548" y="114" width="176" height="72" rx="8" fill="#fbf1ec" stroke="#d06d4d"/>
+<text x="568" y="142" font-size="13" fill="#b55c3e">FIR 补偿滤波器</text>
+<text x="568" y="164" font-size="12" fill="#53676d">补偿 CIC 通带滚降</text>
+<line x1="724" y1="150" x2="800" y2="150" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="800,144 812,150 800,156" fill="#147f80"/>
+<text x="826" y="155" font-size="13" fill="#203035">基带 I/Q</text>
+<text x="30" y="348" font-size="13" fill="#53676d">NCO 频率分辨率 Δf = f_s / 2^B（B 为相位累加器位数）；DUC 是同一链条的逆过程：内插 → 混频上变频。</text>
+</svg>

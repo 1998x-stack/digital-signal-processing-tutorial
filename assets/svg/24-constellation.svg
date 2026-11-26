@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t24f3 d24f3" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t24f3">QPSK、16QAM 与 64QAM 的星座图</title>
+<desc id="d24f3">三种调制在复平面上的星座点布局。QPSK 只有 4 个点、幅度恒定；16QAM 每轴 4 个电平；64QAM 每轴 8 个电平。点越密，相邻点最小距离越小，要达到同样的误码率就需要越高的信噪比。</desc>
+<rect width="920" height="400" fill="#fffdf9"/>
+<text x="186" y="34" font-size="15" font-weight="700" fill="#203035">QPSK（每符号 2 bit）</text>
+<line x1="106" y1="200" x2="334" y2="200" stroke="#dbe7e3"/>
+<line x1="220" y1="200-R-18" x2="220" y2="200+R+18" stroke="#dbe7e3"/>
+<circle cx="124.0" cy="296.0" r="3.6" fill="#147f80"/>
+<circle cx="124.0" cy="104.0" r="3.6" fill="#147f80"/>
+<circle cx="316.0" cy="296.0" r="3.6" fill="#147f80"/>
+<circle cx="316.0" cy="104.0" r="3.6" fill="#147f80"/>
+<text x="108" y="382" font-size="12" fill="#53676d">I</text>
+<text x="228" y="82" font-size="12" fill="#53676d">Q</text>
+<text x="466" y="34" font-size="15" font-weight="700" fill="#203035">16QAM（每符号 4 bit）</text>
+<line x1="386" y1="200" x2="614" y2="200" stroke="#dbe7e3"/>
+<line x1="500" y1="200-R-18" x2="500" y2="200+R+18" stroke="#dbe7e3"/>
+<circle cx="371.2" cy="328.8" r="3.6" fill="#7461ba"/>
+<circle cx="371.2" cy="242.9" r="3.6" fill="#7461ba"/>
+<circle cx="371.2" cy="157.1" r="3.6" fill="#7461ba"/>
+<circle cx="371.2" cy="71.2" r="3.6" fill="#7461ba"/>
+<circle cx="457.1" cy="328.8" r="3.6" fill="#7461ba"/>
+<circle cx="457.1" cy="242.9" r="3.6" fill="#7461ba"/>
+<circle cx="457.1" cy="157.1" r="3.6" fill="#7461ba"/>
+<circle cx="457.1" cy="71.2" r="3.6" fill="#7461ba"/>
+<circle cx="542.9" cy="328.8" r="3.6" fill="#7461ba"/>
+<circle cx="542.9" cy="242.9" r="3.6" fill="#7461ba"/>
+<circle cx="542.9" cy="157.1" r="3.6" fill="#7461ba"/>
+<circle cx="542.9" cy="71.2" r="3.6" fill="#7461ba"/>
+<circle cx="628.8" cy="328.8" r="3.6" fill="#7461ba"/>
+<circle cx="628.8" cy="242.9" r="3.6" fill="#7461ba"/>
+<circle cx="628.8" cy="157.1" r="3.6" fill="#7461ba"/>
+<circle cx="628.8" cy="71.2" r="3.6" fill="#7461ba"/>
+<text x="388" y="382" font-size="12" fill="#53676d">I</text>
+<text x="508" y="82" font-size="12" fill="#53676d">Q</text>
+<text x="756" y="34" font-size="15" font-weight="700" fill="#203035">64QAM（每符号 6 bit）</text>
+<line x1="676" y1="200" x2="904" y2="200" stroke="#dbe7e3"/>
+<line x1="790" y1="200-R-18" x2="790" y2="200+R+18" stroke="#dbe7e3"/>
+<circle cx="643.4" cy="346.6" r="3.6" fill="#b55c3e"/>
+<circle cx="643.4" cy="304.7" r="3.6" fill="#b55c3e"/>
+<circle cx="643.4" cy="262.8" r="3.6" fill="#b55c3e"/>
+<circle cx="643.4" cy="220.9" r="3.6" fill="#b55c3e"/>
+<circle cx="643.4" cy="179.1" r="3.6" fill="#b55c3e"/>
+<circle cx="643.4" cy="137.2" r="3.6" fill="#b55c3e"/>
+<circle cx="643.4" cy="95.3" r="3.6" fill="#b55c3e"/>
+<circle cx="643.4" cy="53.4" r="3.6" fill="#b55c3e"/>
+<circle cx="685.3" cy="346.6" r="3.6" fill="#b55c3e"/>
+<circle cx="685.3" cy="304.7" r="3.6" fill="#b55c3e"/>
+<circle cx="685.3" cy="262.8" r="3.6" fill="#b55c3e"/>
+<circle cx="685.3" cy="220.9" r="3.6" fill="#b55c3e"/>
+<circle cx="685.3" cy="179.1" r="3.6" fill="#b55c3e"/>
+<circle cx="685.3" cy="137.2" r="3.6" fill="#b55c3e"/>
+<circle cx="685.3" cy="95.3" r="3.6" fill="#b55c3e"/>
+<circle cx="685.3" cy="53.4" r="3.6" fill="#b55c3e"/>
+<circle cx="727.2" cy="346.6" r="3.6" fill="#b55c3e"/>
+<circle cx="727.2" cy="304.7" r="3.6" fill="#b55c3e"/>
+<circle cx="727.2" cy="262.8" r="3.6" fill="#b55c3e"/>
+<circle cx="727.2" cy="220.9" r="3.6" fill="#b55c3e"/>
+<circle cx="727.2" cy="179.1" r="3.6" fill="#b55c3e"/>
+<circle cx="727.2" cy="137.2" r="3.6" fill="#b55c3e"/>
+<circle cx="727.2" cy="95.3" r="3.6" fill="#b55c3e"/>
+<circle cx="727.2" cy="53.4" r="3.6" fill="#b55c3e"/>
+<circle cx="769.1" cy="346.6" r="3.6" fill="#b55c3e"/>
+<circle cx="769.1" cy="304.7" r="3.6" fill="#b55c3e"/>
+<circle cx="769.1" cy="262.8" r="3.6" fill="#b55c3e"/>
+<circle cx="769.1" cy="220.9" r="3.6" fill="#b55c3e"/>
+<circle cx="769.1" cy="179.1" r="3.6" fill="#b55c3e"/>
+<circle cx="769.1" cy="137.2" r="3.6" fill="#b55c3e"/>
+<circle cx="769.1" cy="95.3" r="3.6" fill="#b55c3e"/>
+<circle cx="769.1" cy="53.4" r="3.6" fill="#b55c3e"/>
+<circle cx="810.9" cy="346.6" r="3.6" fill="#b55c3e"/>
+<circle cx="810.9" cy="304.7" r="3.6" fill="#b55c3e"/>
+<circle cx="810.9" cy="262.8" r="3.6" fill="#b55c3e"/>
+<circle cx="810.9" cy="220.9" r="3.6" fill="#b55c3e"/>
+<circle cx="810.9" cy="179.1" r="3.6" fill="#b55c3e"/>
+<circle cx="810.9" cy="137.2" r="3.6" fill="#b55c3e"/>
+<circle cx="810.9" cy="95.3" r="3.6" fill="#b55c3e"/>
+<circle cx="810.9" cy="53.4" r="3.6" fill="#b55c3e"/>
+<circle cx="852.8" cy="346.6" r="3.6" fill="#b55c3e"/>
+<circle cx="852.8" cy="304.7" r="3.6" fill="#b55c3e"/>
+<circle cx="852.8" cy="262.8" r="3.6" fill="#b55c3e"/>
+<circle cx="852.8" cy="220.9" r="3.6" fill="#b55c3e"/>
+<circle cx="852.8" cy="179.1" r="3.6" fill="#b55c3e"/>
+<circle cx="852.8" cy="137.2" r="3.6" fill="#b55c3e"/>
+<circle cx="852.8" cy="95.3" r="3.6" fill="#b55c3e"/>
+<circle cx="852.8" cy="53.4" r="3.6" fill="#b55c3e"/>
+<circle cx="894.7" cy="346.6" r="3.6" fill="#b55c3e"/>
+<circle cx="894.7" cy="304.7" r="3.6" fill="#b55c3e"/>
+<circle cx="894.7" cy="262.8" r="3.6" fill="#b55c3e"/>
+<circle cx="894.7" cy="220.9" r="3.6" fill="#b55c3e"/>
+<circle cx="894.7" cy="179.1" r="3.6" fill="#b55c3e"/>
+<circle cx="894.7" cy="137.2" r="3.6" fill="#b55c3e"/>
+<circle cx="894.7" cy="95.3" r="3.6" fill="#b55c3e"/>
+<circle cx="894.7" cy="53.4" r="3.6" fill="#b55c3e"/>
+<circle cx="936.6" cy="346.6" r="3.6" fill="#b55c3e"/>
+<circle cx="936.6" cy="304.7" r="3.6" fill="#b55c3e"/>
+<circle cx="936.6" cy="262.8" r="3.6" fill="#b55c3e"/>
+<circle cx="936.6" cy="220.9" r="3.6" fill="#b55c3e"/>
+<circle cx="936.6" cy="179.1" r="3.6" fill="#b55c3e"/>
+<circle cx="936.6" cy="137.2" r="3.6" fill="#b55c3e"/>
+<circle cx="936.6" cy="95.3" r="3.6" fill="#b55c3e"/>
+<circle cx="936.6" cy="53.4" r="3.6" fill="#b55c3e"/>
+<text x="678" y="382" font-size="12" fill="#53676d">I</text>
+<text x="798" y="82" font-size="12" fill="#53676d">Q</text>
+<text x="30" y="382" font-size="12" fill="#53676d">归一化到单位平均功率后，相邻点最小距离 d ∝ 1/(√M−1)：16QAM 约为 QPSK 的 0.45 倍，64QAM 约为 0.22 倍。</text>
+</svg>

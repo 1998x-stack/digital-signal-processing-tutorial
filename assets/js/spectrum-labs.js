@@ -183,6 +183,21 @@ peq(qt,svg,out){
   series.push(20*Math.log10(Math.hypot(nr,ni)/Math.hypot(dr,di)));}
  chart(svg,series,{color:"#147f80",labels:"频率 20 Hz → 20 kHz（对数）"});
  out.textContent="Q="+q.toFixed(1)+"：中心 1 kHz 提升 12 dB，近似带宽 f0/Q ≈ "+(f0/q).toFixed(0)+" Hz。Q 越大峰越窄，极点越靠近单位圆，对系数量化也越敏感。";
+},
+costas(dt,svg,out){
+ const step=dt/50*0.6, cx=280, cy=108, R=82;
+ let seed=24680; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647*2-1};
+ const sym=[[1,1],[-1,1],[-1,-1],[1,-1]].map(z=>[z[0]/Math.SQRT2,z[1]/Math.SQRT2]);
+ svg.replaceChildren();svg.setAttribute("viewBox","0 0 560 215");
+ add(svg,"circle",{cx,cy,r:R,fill:"none",stroke:"#e2ece8"});
+ line(svg,cx-R-16,cy,cx+R+16,cy,"#dbe7e3");line(svg,cx,cy-R-16,cx,cy+R+16,"#dbe7e3");
+ for(let k=0;k<160;k++){const s=sym[Math.floor((rnd()+1)*2)%4];
+  const ph=k*step, c=Math.cos(ph), si=Math.sin(ph);
+  const re=s[0]*c-s[1]*si, im=s[0]*si+s[1]*c;
+  add(svg,"circle",{cx:cx+(re+0.05*rnd())*R/1.2,cy:cy-(im+0.05*rnd())*R/1.2,r:2.4,fill:"#147f80","fill-opacity":0.75});}
+ add(svg,"circle",{cx:cx+Math.cos(step)*R/1.2,cy:cy-Math.sin(step)*R/1.2,r:4,fill:"#d06d4d"});
+ text(svg,36,22,"I/Q 星座图（160 个符号）");text(svg,cx+94,cy+15,"I");text(svg,cx+6,cy-R-6,"Q");
+ out.textContent="残余频偏每符号 "+step.toFixed(3)+" rad："+(step<0.05?"四个点集中，相位基本锁定。":(step<0.25?"每个点向圆弧方向拖尾，载波环路可继续收敛。":"星座已旋转成圆环，无法判决：需先粗同步或加大环路带宽。"));
 }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});
