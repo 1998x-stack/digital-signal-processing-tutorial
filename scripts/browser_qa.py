@@ -67,8 +67,8 @@ def check(path, width, out, browser):
         after = output.inner_text()
         if not after or before == after:
             errors.append("Interactive lab did not update accessible output")
-        if page.locator(".lab svg circle").count() == 0:
-            errors.append("Interactive stem plot missing")
+        if page.locator(".lab svg circle, .lab svg path, .lab svg rect, .lab svg polyline").count() == 0:
+            errors.append("Interactive lab rendered no data geometry")
     elif width == 390:
         search = page.locator("#course-search")
         search.fill("卷积")

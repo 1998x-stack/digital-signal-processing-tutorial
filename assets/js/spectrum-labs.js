@@ -61,7 +61,7 @@ const registry={
  },
  cic(N,svg,out){
  const M=8,H=180,left=44,right=536,top=29,bottom=173;
- const db=w=>{const s=Math.abs(Math.sin(M*w/2)/Math.sin(w/2))**N;return 20*Math.log10(Math.max(s,1e-9))-N*20*Math.log10(M)};
+ const db=w=>{const s=Math.abs(w===0?M:Math.sin(M*w/2)/Math.sin(w/2))**N;return 20*Math.log10(Math.max(s,1e-9))-N*20*Math.log10(M)};
  const pts=Array.from({length:H+1},(_,i)=>db(PI*i/H));
  svg.replaceChildren();svg.setAttribute("viewBox","0 0 560 215");
  line(svg,left,bottom,right,bottom);line(svg,left,top,left,bottom);
