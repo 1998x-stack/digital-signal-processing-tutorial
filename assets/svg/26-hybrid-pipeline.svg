@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t26f2 d26f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t26f2">DSP 与 AI 的三段式混合处理架构</title>
+<desc id="d26f2">第一段是硬实时的 DSP 前端（采样、抽取、高通、VAD、AGC），第二段是较慢的 AI 语义增强（波束形成后滤波、神经降噪、场景分类），第三段回到硬实时的 DSP 后端（参量均衡、压缩、回声抑制、DAC）。AI 作为控制路径的慢速调节层，不影响实时信号路径的延迟。</desc>
+<rect width="920" height="400" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">混合架构：DSP 管实时路径，AI 管控制路径</text>
+<rect x="70" y="70" width="240" height="180" rx="10" fill="#eef8f6" stroke="#147f80"/>
+<text x="90" y="98" font-size="13" font-weight="700" fill="#0d7779">Stage 1 · DSP 前端</text>
+<text x="90" y="122" font-size="12" fill="#53676d">ADC 采样</text>
+<text x="90" y="144" font-size="12" fill="#53676d">抗混叠 / 抽取滤波</text>
+<text x="90" y="166" font-size="12" fill="#53676d">高通去直流</text>
+<text x="90" y="188" font-size="12" fill="#53676d">VAD 语音活动检测</text>
+<text x="90" y="210" font-size="12" fill="#53676d">AGC 自动增益</text>
+<text x="90" y="236" font-size="12" fill="#0d7779">延迟 &lt; 1 ms（硬实时）</text>
+<rect x="340" y="70" width="240" height="180" rx="10" fill="#f3effa" stroke="#7461ba"/>
+<text x="360" y="98" font-size="13" font-weight="700" fill="#5b48a0">Stage 2 · AI 语义增强</text>
+<text x="360" y="122" font-size="12" fill="#53676d">波束形成后滤波</text>
+<text x="360" y="144" font-size="12" fill="#53676d">神经噪声抑制（轻量 CRN）</text>
+<text x="360" y="166" font-size="12" fill="#53676d">场景分类</text>
+<text x="360" y="196" font-size="12" fill="#5b48a0">帧级处理 · 延迟 10–50 ms</text>
+<text x="360" y="222" font-size="12" fill="#5b48a0">或挂到控制路径慢速刷新</text>
+<rect x="610" y="70" width="240" height="180" rx="10" fill="#eef8f6" stroke="#147f80"/>
+<text x="630" y="98" font-size="13" font-weight="700" fill="#0d7779">Stage 3 · DSP 后端</text>
+<text x="630" y="122" font-size="12" fill="#53676d">参量均衡 PEQ</text>
+<text x="630" y="144" font-size="12" fill="#53676d">动态范围压缩</text>
+<text x="630" y="166" font-size="12" fill="#53676d">回声残留抑制</text>
+<text x="630" y="188" font-size="12" fill="#53676d">DAC 输出</text>
+<text x="630" y="236" font-size="12" fill="#0d7779">延迟 &lt; 1 ms（硬实时）</text>
+<line x1="310" y1="160" x2="340" y2="160" stroke="#9fb8b2" stroke-width="1.8"/><polygon points="340,154 352,160 340,166" fill="#7461ba"/>
+<line x1="580" y1="160" x2="610" y2="160" stroke="#9fb8b2" stroke-width="1.8"/><polygon points="610,154 622,160 610,166" fill="#147f80"/>
+<text x="30" y="300" font-size="13" fill="#53676d">关键设计原则：先用 DSP 锁死实时路径的延迟上限，再把 AI 挂到控制路径做慢速调节。</text>
+<text x="30" y="326" font-size="13" fill="#53676d">这样 AI 的推理延迟不再叠加到信号路径上，听感延迟由 DSP 前端决定。</text>
+<text x="30" y="360" font-size="13" fill="#53676d">芯片层面常把 DSP 核与 NPU 放在同一内存子系统，减少数据搬移开销。</text>
+</svg>

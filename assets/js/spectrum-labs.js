@@ -214,6 +214,20 @@ dctk(k,svg,out){
  chart(svg,curve,{color:"#147f80",labels:"Zig-zag 系数序号 k →"});
  const pct=curve[k-1]*100;
  out.textContent="保留前 "+k+" 个系数：累积能量约 "+pct.toFixed(1)+"%。Zig-zag 把低频排在前，量化后的长串零集中在尾部。";
+},
+specsub(at,svg,out){
+ const al=at/10,N=64;let seed=97531;
+ const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647*2-1};
+ const clean=n=>2*Math.cos(2*PI*5*n/N)+1.2*Math.cos(2*PI*12*n/N);
+ const noisy=[],pure=[];
+ for(let n=0;n<N;n++){pure.push(clean(n));noisy.push(clean(n)+0.6*rnd());}
+ const C=dft(pure).map(z=>Math.hypot(z.re,z.im));
+ const Y=dft(noisy).map(z=>Math.hypot(z.re,z.im));
+ const nest=0.6*Math.sqrt(N/2);
+ const enh=Y.map(v=>Math.max(0,v-al*nest));
+ chart(svg,enh,{color:"#7461ba",labels:"频率索引 k →"});
+ let err=0,sig=0;for(let k=0;k<N;k++){err+=Math.abs(enh[k]-C[k]);sig+=C[k];}
+ out.textContent="过减因子 α="+al.toFixed(1)+"：残余偏差/信号总量 ≈ "+(err/sig).toFixed(2)+"。α 太小噪声没减干净，太大则连信号一起减掉，导致语音失真与“音乐噪声”。";
 }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 440" role="img" aria-labelledby="t26f1 d26f1" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t26f1">可微分数字信号处理（DDSP）的计算图</title>
+<desc id="d26f1">输入音高 F0 与梅尔频谱特征送入一个小型神经网络，网络预测谐波振荡器的振幅、噪声滤波器的系数与混响参数；这些 DSP 模块全部可微，梯度可以回传到网络参数，因此能端到端训练。</desc>
+<rect width="920" height="440" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">DDSP：神经网络预测参数，DSP 模块产生波形</text>
+<rect x="330" y="60" width="260" height="56" rx="8" fill="#eef8f6" stroke="#147f80"/>
+<text x="352" y="86" font-size="13" fill="#0d7779">输入：F0 + 梅尔频谱</text>
+<text x="352" y="105" font-size="12" fill="#53676d">音高与音色特征</text>
+<line x1="460" y1="116" x2="460" y2="146" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="454,146 460,158 466,146" fill="#147f80"/>
+<rect x="330" y="158" width="260" height="56" rx="8" fill="#f3effa" stroke="#7461ba"/>
+<text x="352" y="184" font-size="13" fill="#5b48a0">小型神经网络（CNN）</text>
+<text x="352" y="203" font-size="12" fill="#53676d">预测合成参数</text>
+<line x1="460" y1="214" x2="460" y2="252" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="454,252 460,264 466,252" fill="#7461ba"/>
+<rect x="150" y="264" width="230" height="64" rx="8" fill="#fbf1ec" stroke="#d06d4d"/>
+<text x="170" y="290" font-size="13" fill="#b55c3e">谐波振荡器</text>
+<text x="170" y="310" font-size="12" fill="#53676d">f0 与各次振幅可训练</text>
+<rect x="410" y="264" width="220" height="64" rx="8" fill="#fbf1ec" stroke="#d06d4d"/>
+<text x="430" y="290" font-size="13" fill="#b55c3e">滤波噪声</text>
+<text x="430" y="310" font-size="12" fill="#53676d">滤波系数由网络预测</text>
+<rect x="660" y="264" width="220" height="64" rx="8" fill="#fbf1ec" stroke="#d06d4d"/>
+<text x="680" y="290" font-size="13" fill="#b55c3e">可微分混响</text>
+<text x="680" y="310" font-size="12" fill="#53676d">冲激响应可训练</text>
+<line x1="265" y1="328" x2="265" y2="368" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="520" y1="328" x2="520" y2="368" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="770" y1="328" x2="770" y2="368" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="265" y1="368" x2="770" y2="368" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="518" y1="368" x2="518" y2="396" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="512,396 518,408 524,396" fill="#147f80"/>
+<text x="536" y="406" font-size="13" fill="#203035">输出波形</text>
+<text x="30" y="428" font-size="13" fill="#53676d">关键：各 DSP 模块对参数可微，梯度能回传到网络，因此可以端到端训练，而不是替代 DSP。</text>
+</svg>
