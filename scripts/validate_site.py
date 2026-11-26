@@ -55,6 +55,18 @@ def run():
    if not root.tag.endswith("svg") or not root.get("viewBox"):error(f"{path.name}: no viewBox")
    children=list(root)
    if not any(e.tag.endswith("title") for e in children) or not any(e.tag.endswith("desc") for e in children):error(f"{path.name}: missing title/desc")
+   vb=root.get("viewBox")
+   try: x0,y0,w0,h0=[float(v) for v in vb.split()]
+   except (AttributeError,ValueError): x0=y0=w0=h0=None
+   for el in root.iter():
+    for a in ("x","y","cx","cy","x1","y1","x2","y2"):
+     v=el.get(a)
+     if v is None:continue
+     try: num=float(v)
+     except ValueError:error(f"{path.name}: illegal length {a}=\"{v}\"");continue
+     if x0 is None:continue
+     if a in ("x","cx","x1","x2") and not x0-0.5<=num<=x0+w0+0.5:error(f"{path.name}: {a}={num} outside viewBox width")
+     if a in ("y","cy","y1","y2") and not y0-0.5<=num<=y0+h0+0.5:error(f"{path.name}: {a}={num} outside viewBox height")
   except ET.ParseError as exc:error(f"{path.name}: XML parse {exc}")
  for i in range(1,29):
   if not (ROOT/"evidence"/f"{i:02d}.json").exists():error(f"evidence missing {i:02d}")
