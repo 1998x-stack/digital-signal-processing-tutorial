@@ -9,7 +9,7 @@ import sys
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
-PAGES = ["index.html"] + [f"chapters/{i:02d}.html" for i in range(1, 11)]
+PAGES = ["index.html"] + [f"chapters/{i:02d}.html" for i in range(1, 29)]
 WIDTHS = (1440, 768, 390, 360)
 
 def check(path, width, out, browser):
