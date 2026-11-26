@@ -228,6 +228,13 @@ specsub(at,svg,out){
  chart(svg,enh,{color:"#7461ba",labels:"频率索引 k →"});
  let err=0,sig=0;for(let k=0;k<N;k++){err+=Math.abs(enh[k]-C[k]);sig+=C[k];}
  out.textContent="过减因子 α="+al.toFixed(1)+"：残余偏差/信号总量 ≈ "+(err/sig).toFixed(2)+"。α 太小噪声没减干净，太大则连信号一起减掉，导致语音失真与“音乐噪声”。";
+},
+ppm(pv,svg,out){
+ const fs=2.4e6,N=256,f0=1090e6,off=f0*pv*1e-6,f=off/fs;
+ const x=[];for(let n=0;n<N;n++){const win=.54-.46*Math.cos(2*PI*n/(N-1));x.push(win*Math.cos(2*PI*f*n));}
+ const X=dft(x).map(z=>Math.hypot(z.re,z.im)).slice(0,N/2);
+ chart(svg,X,{color:"#d06d4d",labels:"频率 bin →"});
+ out.textContent="晶振偏差 "+pv+" ppm：在 1090 MHz 下产生约 "+(off/1e3).toFixed(1)+" kHz 频偏（≈ "+(off/(fs/N)).toFixed(1)+" 个 bin）。ppm 较小时频偏可忽略，但达到几十 ppm 后载波环路需先做频率校准才能锁定。";
 }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});

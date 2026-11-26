@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t27f1 d27f1" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t27f1">超外差与零中频接收机结构对比</title>
+<desc id="d27f1">传统超外差接收机用多级混频器、本振与晶体滤波器逐级把射频降到中频再解调；零中频架构把射频经 LNA 后直接正交下变频到基带 I/Q，再由 ADC 采样、软件数字滤波与解调。ADC 越靠近天线，软件承担的功能越多。</desc>
+<rect width="920" height="400" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">越靠右，越多功能由软件承担</text>
+<text x="30" y="98" font-size="13" font-weight="700" fill="#53676d">超外差（多级硬件）</text>
+<g font-size="12" fill="#0d7779">
+<rect x="30" y="116" width="96" height="46" rx="7" fill="#eef8f6" stroke="#147f80"/><text x="44" y="144">天线 + BPF</text>
+<rect x="146" y="116" width="110" height="46" rx="7" fill="#eef8f6" stroke="#147f80"/><text x="160" y="138">混频 + LO</text><text x="160" y="155" fill="#53676d">→ 中频 IF</text>
+<rect x="276" y="116" width="120" height="46" rx="7" fill="#eef8f6" stroke="#147f80"/><text x="290" y="138">晶体滤波器</text><text x="290" y="155" fill="#53676d">+ 二级混频</text>
+<rect x="416" y="116" width="96" height="46" rx="7" fill="#eef8f6" stroke="#147f80"/><text x="430" y="144">ADC(IF)</text>
+<rect x="532" y="116" width="120" height="46" rx="7" fill="#fbf1ec" stroke="#d06d4d"/><text x="548" y="138">专用解调芯片</text><text x="548" y="155" fill="#53676d">FM/AM 固定</text>
+</g>
+<line x1="126" y1="139" x2="146" y2="139" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="256" y1="139" x2="276" y2="139" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="396" y1="139" x2="416" y2="139" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="512" y1="139" x2="532" y2="139" stroke="#9fb8b2" stroke-width="1.6"/>
+<text x="30" y="240" font-size="13" font-weight="700" fill="#53676d">零中频 / SDR（软件主导）</text>
+<g font-size="12" fill="#0d7779">
+<rect x="30" y="258" width="96" height="52" rx="7" fill="#eef8f6" stroke="#147f80"/><text x="44" y="280">天线 + BPF</text><text x="44" y="299" fill="#53676d">+ LNA</text>
+<rect x="146" y="258" width="150" height="52" rx="7" fill="#eef8f6" stroke="#147f80"/><text x="160" y="280">正交下变频</text><text x="160" y="299" fill="#53676d">→ 基带 I/Q</text>
+<rect x="316" y="258" width="96" height="52" rx="7" fill="#eef8f6" stroke="#147f80"/><text x="330" y="280">ADC</text><text x="330" y="299" fill="#53676d">宽带</text>
+<rect x="432" y="258" width="220" height="52" rx="7" fill="#f3effa" stroke="#7461ba"/><text x="448" y="280">软件数字滤波 / 解调</text><text x="448" y="299" fill="#53676d">FIR/CIC · AM/FM/PSK/QAM 可切换</text>
+</g>
+<line x1="126" y1="284" x2="146" y2="284" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="296" y1="284" x2="316" y2="284" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="412" y1="284" x2="432" y2="284" stroke="#9fb8b2" stroke-width="1.6"/>
+<text x="30" y="366" font-size="13" fill="#53676d">理想是 ADC 直接贴近天线（射频采样）；现实中受 ADC 采样率与动态范围限制，主流是零中频。</text>
+</svg>

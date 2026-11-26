@@ -1,0 +1,39 @@
+{
+  "chapter": "27",
+  "title": "软件无线电：用软件定义射频链路",
+  "sources": [
+    {
+      "id": "mitola",
+      "claim": "软件无线电把尽可能多的信号处理功能从硬件搬到软件，ADC 尽量靠近天线，后续滤波、调制/解调与编解码由可编程处理器完成",
+      "url": "https://wiki.gnuradio.org/",
+      "scope": "J. Mitola (1995), The software radio architecture；经 GNU Radio 文档核验流图与速率匹配"
+    },
+    {
+      "id": "zero-if",
+      "claim": "零中频架构把射频经 LNA 后直接正交下变频到基带 I/Q，避免了镜像频段硬件滤波，但引入直流偏移与 I/Q 不平衡，需数字域校准",
+      "url": "https://www.analog.com/en/products/ad9361.html",
+      "scope": "Analog Devices AD9361 射频捷变收发器结构"
+    },
+    {
+      "id": "gnuradio",
+      "claim": "GNU Radio 用流图模型连接信号源/滤波器/解调器/宿，运行时自动处理模块间采样率匹配",
+      "url": "https://wiki.gnuradio.org/",
+      "scope": "GNU Radio Wiki：流图与采样率约定"
+    },
+    {
+      "id": "zynq",
+      "claim": "Zynq 在单芯片内集成 ARM（PS）与可编程逻辑（PL），吞吐敏感处理放 PL、控制敏感处理放 PS，两者通过 AXI4-Stream 交换数据",
+      "url": "https://ocw.mit.edu/courses/6-450-principles-of-digital-communications-i-fall-2006/",
+      "scope": "数字通信与实时处理的划分原则；PL/PS 结构对照第 22 章 FPGA 上 DSP"
+    }
+  ],
+  "notes": [
+    "确定性实验 examples/27_sdr.py 仅用标准库：50 ppm @1090 MHz = 54.5 kHz（10 ppm @2400 MHz = 24 kHz）；正交混频下变频后主频分量的复幅度为 0.5000（二倍频分量被整周期平均抵消）；CIC 抽取直流增益为 M^N（(1,4),(2,4),(3,8) 三组校验）；50 kHz 频偏在 2.4 MHz/256 点下约 5.81 bin。",
+    "旧版页面中的具体硬件价格、频率范围、带宽与 ADC 位数（RTL-SDR、HackRF、USRP B210/X410、Zynq+AD9361 等）已删除或改为定性描述，因为它们随型号与版本变化；页面对硬件对比不给出具体数字，要求以厂商数据手册为准。",
+    "旧版页面中的第一人称轶事（“第一次听到 FM 广播的瞬间”“ADS-B 调了一整天”）无法核实，已删除，替换为可核验的 ppm 频偏与校准说明。",
+    "法律与频谱管制仅作概括性描述，不引用具体罚款金额或条文编号；使用前应以当地法规与授权为准。",
+    "FIGURE 01/02/03 为结构示意图；频谱位移图由确定性加窗正弦计算。",
+    "not_verified：浏览器 QA 未验证（browser_check.py 用 set_content 载入，相对路径资源无法解析）。"
+  ],
+  "status": "SDR 架构、零中频、GNU Radio 流图与 Zynq PL/PS 划分对照 Mitola (1995)、GNU Radio 文档与 AD9361 资料；确定性实验通过；浏览器 QA 未验证。"
+}
