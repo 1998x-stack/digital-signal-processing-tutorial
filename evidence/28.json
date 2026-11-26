@@ -1,0 +1,33 @@
+{
+  "chapter": "28",
+  "title": "综合项目：实时音频处理器",
+  "sources": [
+    {
+      "id": "rjb-cookbook",
+      "claim": "三段参量均衡的低搁架/峰值/高搁架双二阶系数由 RBJ Audio-EQ-Cookbook 给出，均经预畸变的双线性变换映射到数字域",
+      "url": "https://www.w3.org/TR/audio-eq-cookbook/",
+      "scope": "Robert Bristow-Johnson, Audio EQ Cookbook（W3C 归档）"
+    },
+    {
+      "id": "cmsis-dsp",
+      "claim": "ARM CMSIS-DSP 提供经优化的级联双二阶、FFT 与统计函数，用于 Cortex-M 上的实时 DSP",
+      "url": "https://www.keil.com/pack/doc/CMSIS/DSP/html/index.html",
+      "scope": "ARM CMSIS-DSP 文档（级联双二阶与滤波接口）"
+    },
+    {
+      "id": "fixedpoint",
+      "claim": "定点双二阶的系数量化步长 Δ=2^-14（Q2.14），|e|≤Δ/2；状态需更宽位宽并做舍入与饱和",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341：量化噪声与滤波器定点实现"
+    }
+  ],
+  "notes": [
+    "确定性实验 examples/28_project.py 仅用标准库：峰化段（1 kHz, Q=1, +6 dB）中心增益 6.0000 dB，DC 与 Nyquist 增益 0 dB；噪声门门限以上增益 0 dB、门限以下 -40 dB；4:1 压缩器高出阈值 12 dB 压掉 9 dB；定点（Q2.14 系数、32 位状态）相对浮点双二阶 SNR 约 64.9 dB（断言 > 60）；64 样本块实时预算 1.333 ms。",
+    "旧版页面中的具体性能门限与轶事已删除，因无法核实：THD+N < 0.05%、PEQ 频响误差 < 0.5 dB、SNR > 90 dB、24 小时零丢帧 / 温度 < 70°C、以及第一人称调试轶事与 CMSIS-DSP 处理时间的微秒级数字（约 30–50 μs）。",
+    "页面对验收只给出测试项与关注点，不给出具体通过门限：它们强依赖编解码器与板级设计，应以实测为准。",
+    "定点 SNR 约 65 dB 低于 16 位理想动态范围，已如实标注其来源（系数量化与每位舍入），并说明提高位宽可提升。",
+    "FIGURE 01/02/03 为结构示意图；交互曲线由确定性公式绘制。",
+    "not_verified：浏览器 QA 未验证（browser_check.py 用 set_content 载入，相对路径资源无法解析）。"
+  ],
+  "status": "项目链路、双二阶与定点实现对照 RBJ Audio-EQ-Cookbook、ARM CMSIS-DSP 与 MIT OCW 6.341；确定性实验通过；浏览器 QA 未验证。"
+}

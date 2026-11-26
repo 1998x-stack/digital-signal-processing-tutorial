@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 340" role="img" aria-labelledby="t28f1 d28f1" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t28f1">实时音频处理器的三模块串联链</title>
+<desc id="d28f1">输入样本依次通过噪声门、三段参量均衡（低搁架、峰化、高搁架三个双二阶串联）与动态压缩器，再输出。噪声门在低于阈值时削减，压缩器在高于阈值时削减，两者共用同一套电平检测与增益平滑结构。</desc>
+<rect width="920" height="340" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">从输入到输出：门 → 均衡 → 压缩</text>
+<g font-size="12" fill="#0d7779">
+<rect x="30" y="110" width="120" height="70" rx="8" fill="#eef8f6" stroke="#147f80"/><text x="52" y="142">输入样本</text><text x="52" y="162" fill="#53676d">48 kHz / Q1.15</text>
+<rect x="180" y="110" width="150" height="70" rx="8" fill="#fbf1ec" stroke="#d06d4d"/><text x="200" y="138" fill="#b55c3e">噪声门</text><text x="200" y="158" fill="#53676d">低于阈值削减</text><text x="200" y="174" fill="#53676d">起始/释放平滑</text>
+<rect x="360" y="110" width="300" height="70" rx="8" fill="#f3effa" stroke="#7461ba"/><text x="380" y="136" fill="#5b48a0">参量均衡（3 个双二阶串联）</text>
+<text x="380" y="156" fill="#53676d">低搁架 · 峰化 · 高搁架</text><text x="380" y="173" fill="#53676d">每个 Biquad 5 个系数 + 2 个状态变量</text>
+<rect x="690" y="110" width="160" height="70" rx="8" fill="#fbf1ec" stroke="#d06d4d"/><text x="710" y="138" fill="#b55c3e">压缩器</text><text x="710" y="158" fill="#53676d">高于阈值削减</text><text x="710" y="174" fill="#53676d">Ratio 4:1</text>
+<rect x="30" y="220" width="820" height="56" rx="8" fill="#eef8f6" stroke="#147f80"/><text x="52" y="246" fill="#0d7779">输出样本</text><text x="52" y="266" fill="#53676d">整条链路在同一个音频回调内逐样本完成，单块预算 64 / 48000 s ≈ 1.33 ms</text>
+</g>
+<g stroke="#9fb8b2" stroke-width="1.7" fill="none">
+<line x1="150" y1="145" x2="180" y2="145"/><line x1="330" y1="145" x2="360" y2="145"/><line x1="660" y1="145" x2="690" y2="145"/><line x1="770" y1="180" x2="770" y2="220"/>
+</g>
+<polygon points="180,139 192,145 180,151" fill="#d06d4d"/><polygon points="360,139 372,145 360,151" fill="#7461ba"/><polygon points="690,139 702,145 690,151" fill="#d06d4d"/><polygon points="764,220 770,232 776,220" fill="#147f80"/>
+<text x="30" y="316" font-size="13" fill="#53676d">门与压缩器结构相同、逻辑相反；均衡是级联双二阶，与第 23 章 PEQ 一致。</text>
+</svg>

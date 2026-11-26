@@ -235,6 +235,15 @@ ppm(pv,svg,out){
  const X=dft(x).map(z=>Math.hypot(z.re,z.im)).slice(0,N/2);
  chart(svg,X,{color:"#d06d4d",labels:"频率 bin →"});
  out.textContent="晶振偏差 "+pv+" ppm：在 1090 MHz 下产生约 "+(off/1e3).toFixed(1)+" kHz 频偏（≈ "+(off/(fs/N)).toFixed(1)+" 个 bin）。ppm 较小时频偏可忽略，但达到几十 ppm 后载波环路需先做频率校准才能锁定。";
+},
+gate(th,svg,out){
+ const floor=-80,K=6,series=[];
+ for(let i=0;i<=160;i++){const x=-10-i*0.5;
+  let y;
+  if(x>th)y=x; else if(x>th-K)y=th-K+(x-(th-K))*0.5; else y=floor;
+  series.push(y);}
+ chart(svg,series,{color:"#147f80",labels:"输入电平 −10 → −90 dBFS"});
+ out.textContent="门限 "+th+" dBFS：输入高于门限时增益为 0 dB（青线跟随输入）；低于门限时输出被压到地板 "+floor+" dBFS。软拐点宽度约 "+K+" dB，避免门限附近喘息式开关。";
 }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});

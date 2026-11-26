@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 380" role="img" aria-labelledby="t28f2 d28f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t28f2">直接 II 型转置（DF2T）双二阶的定点实现</title>
+<desc id="d28f2">输入样本与系数 b0 相乘后加状态 w1 得到输出 y；w1 由 b1·x 减 a1·y 加 w2 更新，w2 由 b2·x 减 a2·y 更新。定点实现中系数用 Q2.14，样本用 Q1.15，状态保持更宽位宽，乘积右移时用舍入并做饱和钳位。</desc>
+<rect width="920" height="380" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">DF2T 双二阶：状态少、数值稳定，适合定点</text>
+<text x="24" y="112" font-size="13" fill="#0d7779">x 输入 Q1.15</text>
+<polygon points="120,100 138,112 120,124" fill="#147f80"/>
+<line x1="138" y1="112" x2="220" y2="112" stroke="#9fb8b2" stroke-width="1.6"/>
+<circle cx="300" cy="112" r="15" fill="#fff" stroke="#147f80" stroke-width="1.6"/><text x="287" y="117" font-size="13" fill="#147f80">×b0</text>
+<line x1="315" y1="112" x2="400" y2="112" stroke="#9fb8b2" stroke-width="1.6"/>
+<circle cx="415" cy="112" r="14" fill="#fff" stroke="#7461ba" stroke-width="1.6"/><text x="409" y="117" font-size="14" fill="#5b48a0">+</text>
+<line x1="429" y1="112" x2="520" y2="112" stroke="#9fb8b2" stroke-width="1.6"/>
+<rect x="520" y="88" width="96" height="48" rx="7" fill="#fbf1ec" stroke="#d06d4d"/><text x="534" y="112" font-size="12" fill="#b55c3e">饱和 → y</text>
+<text x="626" y="117" font-size="13" fill="#53676d">Q1.15 输出</text>
+<line x1="415" y1="126" x2="415" y2="176" stroke="#7461ba" stroke-width="1.6"/>
+<rect x="352" y="176" width="126" height="42" rx="7" fill="#f3effa" stroke="#7461ba"/><text x="366" y="202" font-size="12" fill="#5b48a0">状态 w1</text>
+<line x1="352" y1="197" x2="300" y2="197" stroke="#9fb8b2" stroke-width="1.6"/>
+<line x1="300" y1="197" x2="300" y2="127" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="294,127 300,139 306,127" fill="#7461ba"/>
+<line x1="300" y1="127" x2="300" y2="112" stroke="#9fb8b2" stroke-width="1.6"/>
+<rect x="150" y="252" width="540" height="42" rx="7" fill="#eef8f6" stroke="#147f80"/>
+<text x="166" y="278" font-size="12" fill="#0d7779">w1 ← b1·x − a1·y + w2　　w2 ← b2·x − a2·y</text>
+<text x="30" y="330" font-size="13" fill="#53676d">系数 Q2.14、样本 Q1.15，乘积右移 14 位时加 2^13 做舍入；高增益频段中间值可能超过 ±6 倍，须 32 位累加与饱和。</text>
+<text x="30" y="356" font-size="13" fill="#53676d">例程比较浮点与定点双二阶：本例 6 dB / Q=1 峰化段约 65 dB SNR，限制来自 Q2.14 系数量化与每位舍入。</text>
+</svg>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 360" role="img" aria-labelledby="t28f3 d28f3" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t28f3">中断驱动的前后台架构与 DMA 双缓冲</title>
+<desc id="d28f3">I2S 音频数据用 DMA 双缓冲轮流填充两块内存：DMA 填充缓冲 A 的半个周期时，中断触发处理缓冲 B，处理完成后互换。硬实时的滤波器在中断回调里完成，主循环只处理按键、LCD 与参数更新等软实时任务。</desc>
+<rect width="920" height="360" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">DMA 双缓冲：硬实时在中断，软实时在主循环</text>
+<rect x="60" y="64" width="360" height="70" rx="9" fill="#eef8f6" stroke="#147f80"/>
+<text x="80" y="90" font-size="13" fill="#0d7779">缓冲区 A（DMA 填入）</text>
+<text x="80" y="112" font-size="12" fill="#53676d">同时被处理的是缓冲区 B</text>
+<rect x="60" y="148" width="360" height="70" rx="9" fill="#f3effa" stroke="#7461ba"/>
+<text x="80" y="174" font-size="13" fill="#5b48a0">缓冲区 B（中断中处理）</text>
+<text x="80" y="196" font-size="12" fill="#53676d">处理完成后半周期互换角色</text>
+<path d="M430 99 Q470 99 470 140 Q470 183 430 183" fill="none" stroke="#9fb8b2" stroke-width="1.8"/>
+<polygon points="424,177 436,183 424,189" fill="#147f80"/>
+<text x="486" y="128" font-size="12" fill="#53676d">ping-pong</text>
+<text x="486" y="146" font-size="12" fill="#53676d">角色互换</text>
+<rect x="60" y="248" width="360" height="76" rx="9" fill="#fbf1ec" stroke="#d06d4d"/>
+<text x="80" y="274" font-size="13" fill="#b55c3e">中断回调（硬实时）</text>
+<text x="80" y="296" font-size="12" fill="#53676d">门 → 均衡 → 压缩，逐样本处理整块</text>
+<text x="80" y="314" font-size="12" fill="#53676d">预算 64 / 48000 s ≈ 1.33 ms</text>
+<rect x="500" y="248" width="360" height="76" rx="9" fill="#eef8f6" stroke="#147f80"/>
+<text x="520" y="274" font-size="13" fill="#0d7779">主循环（软实时）</text>
+<text x="520" y="296" font-size="12" fill="#53676d">按键扫描、LCD 刷新、参数更新</text>
+<text x="520" y="314" font-size="12" fill="#53676d">更新系数前先软复位滤波器状态</text>
+<line x1="240" y1="218" x2="240" y2="248" stroke="#9fb8b2" stroke-width="1.6"/>
+<polygon points="234,248 240,236 246,248" fill="#d06d4d"/>
+<line x1="420" y1="286" x2="500" y2="286" stroke="#9fb8b2" stroke-width="1.6" stroke-dasharray="4 4"/>
+<text x="600" y="128" font-size="13" fill="#53676d">DMA 在处理一个缓冲区时填充另一个，</text>
+<text x="600" y="148" font-size="13" fill="#53676d">数据搬移不占用 CPU 时间。</text>
+</svg>
