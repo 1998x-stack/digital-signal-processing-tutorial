@@ -1,442 +1,158 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第19章 MATLAB/Python DSP仿真</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="把 DSP 算法从公式变成可验证的实现：用 Python/MATLAB 建立浮点参考模型，讲清 freqz 归一化、firwin 的 -6 dB 与巴特沃斯的 -3 dB 约定、lfilter 与 filtfilt 的区别，并用浮点→定点→硬件三级验证定位误差来源。">
+<title>第 19 章 · DSP 仿真：参考模型、频率约定与三级验证</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/spectrum-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🎛️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数字信号处理导论</a></li>
-            <li><a href="02.html">第2章 离散时间信号</a></li>
-            <li><a href="03.html">第3章 离散时间系统</a></li>
-            <li><a href="04.html">第4章 采样定理</a></li>
-            <li><a href="05.html">第5章 Z变换</a></li>
-            <li><a href="06.html">第6章 频域分析</a></li>
-            <li><a href="07.html">第7章 离散傅里叶变换 (DFT)</a></li>
-            <li><a href="08.html">第8章 快速傅里叶变换 (FFT)</a></li>
-            <li><a href="09.html">第9章 FIR滤波器设计</a></li>
-            <li><a href="10.html">第10章 IIR滤波器设计</a></li>
-            <li><a href="11.html">第11章 滤波器结构</a></li>
-            <li><a href="12.html">第12章 多速率信号处理 (一)</a></li>
-            <li><a href="13.html">第13章 多速率信号处理 (二)</a></li>
-            <li><a href="14.html">第14章 统计信号处理基础</a></li>
-            <li><a href="15.html">第15章 自适应滤波器</a></li>
-            <li><a href="16.html">第16章 高级自适应算法</a></li>
-            <li><a href="17.html">第17章 谱估计进阶</a></li>
-            <li><a href="18.html">第18章 时频分析</a></li>
-            <li><a href="19.html" class="active">第19章 MATLAB/Python DSP仿真</a></li>
-            <li><a href="20.html">第20章 定点DSP实现</a></li>
-            <li><a href="21.html">第21章 嵌入式DSP芯片开发</a></li>
-            <li><a href="22.html">第22章 FPGA上的DSP</a></li>
-            <li><a href="23.html">第23章 音频信号处理</a></li>
-            <li><a href="24.html">第24章 通信数字信号处理</a></li>
-            <li><a href="25.html">第25章 图像信号处理</a></li>
-            <li><a href="26.html">第26章 AI+DSP融合</a></li>
-            <li><a href="27.html">第27章 软件无线电 (SDR)</a></li>
-            <li><a href="28.html">第28章 综合项目：实时音频处理器</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-
-        <h2>第19章 MATLAB/Python DSP仿真</h2>
-
-        <p>讲到这里，我们花了整整18章把DSP的理论基础全部铺开——从离散时间信号到采样定理，从Z变换到FFT，从FIR/IIR滤波器到自适应算法，从谱估计到时频分析。我知道你内心可能在呐喊："老师，讲得好，但我怎么用这些东西？！"</p>
-
-        <p>好，从这一章开始，我们进入<strong>实现技术</strong>模块。第19-22章的目标非常明确：教会你如何把之前学到的DSP算法，在仿真环境和真实硬件上跑起来。本章先聚焦<strong>仿真</strong>——用Python和MATLAB搭建DSP算法的快速原型环境。</p>
-
-        <p>为什么仿真如此重要？因为<strong>没有仿真就直接上硬件，约等于蒙眼射箭</strong>。我在职业生涯中犯过的最昂贵的错误之一，就是在一款DSP芯片上直接写了300行定点FIR滤波器，烧进去之后发现输出全是噪声。排查了整整两天，最后发现是系数换了Q格式之后没做归一化——这种问题如果在MATLAB里先仿真一遍，10分钟就能找到。</p>
-
-        <h3>19.1 Python DSP工具箱生态</h3>
-
-        <p>2026年的今天，Python已经成为DSP算法原型开发的事实标准。原因很简单：<strong>开发速度快、生态齐全、社区庞大</strong>。我们来盘点一下DSP相关的核心库。</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>库名</th>
-                    <th>主要功能</th>
-                    <th>典型子模块</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>NumPy</strong></td>
-                    <td>基础数组运算、FFT、线性代数</td>
-                    <td><code>numpy.fft</code>、<code>numpy.linalg</code>、数组切片与广播</td>
-                </tr>
-                <tr>
-                    <td><strong>SciPy</strong></td>
-                    <td>科学计算核心，含全套DSP函数</td>
-                    <td><code>scipy.signal</code>（滤波/频谱/窗函数）、<code>scipy.fft</code></td>
-                </tr>
-                <tr>
-                    <td><strong>Matplotlib</strong></td>
-                    <td>信号可视化——时域波形、频谱图、瀑布图</td>
-                    <td><code>matplotlib.pyplot</code>、specgram、cohere</td>
-                </tr>
-                <tr>
-                    <td><strong>commpy</strong></td>
-                    <td>通信系统DSP专用</td>
-                    <td>调制/解调、信道编码、脉冲成形</td>
-                </tr>
-                <tr>
-                    <td><strong>PyAudio / sounddevice</strong></td>
-                    <td>音频信号采集与回放</td>
-                    <td>实时音频流处理、录音/播放</td>
-                </tr>
-                <tr>
-                    <td><strong>pyfilter / filterpy</strong></td>
-                    <td>卡尔曼滤波、粒子滤波</td>
-                    <td>自适应/统计滤波专用</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="tip">
-            <strong>🔧 环境配置建议：</strong><code>conda create -n dsp python=3.12</code> 然后 <code>conda install numpy scipy matplotlib</code>。如果做音频处理再加 <code>pip install sounddevice</code>。请务必在继续之前装好环境，后面的代码示例都要用到。
-        </div>
-
-        <h3>19.2 信号生成与可视化</h3>
-
-        <p>仿真的第一步是"制造"信号。在Python里生成各种测试信号是再简单不过的事情。我们来看几个最常用的模式。</p>
-
-        <pre><code>import numpy as np
-import matplotlib.pyplot as plt
+<a class="skip" href="#main">跳转至正文</a>
+<header class="topbar"><a class="brand" href="../index.html">∿ Digital Signal Processing</a><span>CHAPTER 19 / 28</span><a href="../index.html#curriculum">课程地图</a></header>
+<div class="layout">
+<nav class="toc" aria-label="本章目录">
+<div class="back"><a href="../index.html">← 返回课程首页</a></div>
+<p>本章路径</p>
+<div class="toc-items">
+<a href="#problem">仿真到底在验证什么？</a>
+<a href="#ecosystem">Python DSP 工具箱的分工</a>
+<a href="#signals">生成信号并精确控制信噪比</a>
+<a href="#conventions">频率轴与“截止频率”的约定</a>
+<a href="#filters">lfilter 与 filtfilt：因果与零相位</a>
+<a href="#verify">三级验证：浮点 → 定点 → 硬件</a>
+<a href="#experiment">交互：系数量化与幅度响应</a>
+<a href="#limits">边界与失效模式</a>
+<a href="#sources">参考资料与接口</a>
+</div>
+</nav>
+<main id="main">
+<article class="article">
+<header class="article-header">
+<p class="kicker">Implementation · Verification / 19</p>
+<h1>DSP 仿真：参考模型、频率约定与三级验证</h1>
+<p class="dek">同一个滤波器在浮点、定点与硬件上给出不同结果。仿真先建立“黄金基准”，再逐级比较，才能把算法缺陷与实现误差分开。</p>
+<div class="read-meta"><span>问题 → 约定 → 实验 → 验证</span><span>2 张独立 SVG 与离线 MathML</span><span>可运行实验</span></div>
+</header>
+<section id="problem" aria-labelledby="h-problem">
+<h2 id="h-problem">仿真到底在验证什么？</h2>
+<p class="lead">一个在纸上推导正确的滤波器，写成定点代码、烧进芯片之后可能输出噪声。问题往往不在公式，而在实现：系数量化、累加器位宽、饱和与舍入。仿真要做的，是在接触硬件之前先建立一个可以被信任的参考结果，并把“算法错”与“实现误差”分开定位。</p>
+<p>具体可检验的问题：给定同一组滤波器系数，双精度浮点输出 <code>y_float[n]</code> 与 16 位定点输出 <code>y_fixed[n]</code> 之间到底有多大差异？这个差异是否超过半个量化步长？如果不先算出浮点参考，就无从回答，更无法判断定点实现是否正确。</p>
+<p>因此本章把“仿真”定义为一条可比较的链路：<strong>生成或导入信号 → 施加算法 → 与上一级参考逐样本比较</strong>。数值本身不构成结论，能对齐到参考的误差才构成结论。</p>
+<figure class="figure"><img src="../assets/svg/19-sim-workflow.svg" alt="三级验证流水线：浮点参考、定点模型、硬件输出，相邻级之间做逐样本比较" width="920" height="430" loading="lazy"><figcaption><span class="fig-no">FIGURE 01</span>　浮点参考模型是黄金基准；定点模型与硬件输出分别与上一级逐样本比较。不一致时回退到对应级别修正，而不是继续往下一级推进。</figcaption></figure>
+</section>
+<section id="ecosystem" aria-labelledby="h-ecosystem">
+<h2 id="h-ecosystem">Python DSP 工具箱的分工</h2>
+<p>原型阶段的事实标准是 Python，但不同库承担不同职责。把职责分清，能避免“用 FFT 做本该系统设计的事”这类接口错配。</p>
+<div class="table-wrap"><table><thead><tr><th>库</th><th>职责</th><th>典型接口</th></tr></thead><tbody>
+<tr><td>NumPy</td><td>基础数组运算、<code>numpy.fft</code>、线性代数</td><td><code>np.fft.fft</code>、数组广播</td></tr>
+<tr><td>SciPy <code>signal</code></td><td>滤波器设计、频率响应、滤波、谱估计</td><td><code>firwin</code>、<code>butter</code>、<code>freqz</code>、<code>lfilter</code>、<code>sosfilt</code></td></tr>
+<tr><td>SciPy <code>fft</code></td><td>更快的 FFT 与实数变换</td><td><code>scipy.fft.rfft</code></td></tr>
+<tr><td>Matplotlib</td><td>时域 / 频域 / 语谱图可视化</td><td><code>plot</code>、<code>specgram</code></td></tr>
+</tbody></table></div>
+<p>MATLAB 的 Signal Processing Toolbox 在系统级仿真（Simulink）中仍有位置。常用函数与 SciPy 基本一一对应，但<strong>频率参数约定并不总是一致</strong>，下一节专门处理这一点。</p>
+</section>
+<section id="signals" aria-labelledby="h-signals">
+<h2 id="h-signals">生成信号并精确控制信噪比</h2>
+<p>仿真第一步是“制造”可复现的输入。正弦、线性调频（chirp）、白噪声是最常用的三类。加噪时不要把噪声幅度写成魔数：给定信号功率 <code>P_s</code> 与目标信噪比 SNR（dB），噪声标准差应由公式反解。</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="按目标信噪比反解噪声标准差"><math display="block" aria-label="按目标信噪比反解噪声标准差"><mrow><mi>σ</mi><mo>=</mo><msqrt><mfrac><msub><mi>P</mi><mi>s</mi></msub><msup><mn>10</mn><mrow><mtext>SNR</mtext><mo>/</mo><mn>10</mn></mrow></msup></mfrac></msqrt></mrow></math></div><p class="equation-caption">式（1）：<code>P_s</code> 为信号平均功率，SNR 以 dB 计；生成后再用 <code>10·log10(P_s/P_n)</code> 回测，确认标定无误。</p></div>
+<pre><code>import numpy as np
 from scipy import signal
 
-# 参数设置
-fs = 1000          # 采样率 1kHz
-T = 1.0            # 时长 1秒
-t = np.linspace(0, T, int(fs*T), endpoint=False)
+fs, T = 1000.0, 1.0
+t = np.arange(int(fs * T)) / fs
+x_sin = np.sin(2 * np.pi * 50 * t)
+x_chirp = signal.chirp(t, 10, T, 200, method="linear")
+rng = np.random.default_rng(42)
+noise = rng.standard_normal(t.size)
 
-# 1. 正弦信号
-f0 = 50
-x_sin = np.sin(2 * np.pi * f0 * t)
+snr_db = 10.0
+sigma = np.sqrt(np.var(x_sin) / (10 ** (snr_db / 10)))
+x_meas = x_sin + sigma * noise</code></pre>
+<p>频率分析用 <code>np.fft.rfft</code> 只算正频率侧即可。这里关心的是<strong>算法层面</strong>的频谱形状；具体窗与重叠参数需要按信号选择，没有普适最佳值。</p>
+</section>
+<section id="conventions" aria-labelledby="h-conventions">
+<h2 id="h-conventions">频率轴与“截止频率”的约定</h2>
+<p>仿真里最容易出错的往往不是算法，而是频率轴。SciPy 的 <code>freqz</code> 默认返回数字角频率 <code>ω∈[0,π]</code>（rad/sample）；MATLAB 的 <code>freqz</code> 常以归一化频率 <code>f∈[0,1]</code> 给出，其中 1.0 对应 Nyquist 频率 <code>f_s/2</code>。两者相差一个 π 因子。</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="归一化频率、数字角频率与模拟频率的换算"><math display="block" aria-label="归一化频率、数字角频率与模拟频率的换算"><mrow><mi>ω</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>π</mi><mi>f</mi></mrow><msub><mi>f</mi><mi>s</mi></msub></mfrac><mo>=</mo><mi>π</mi><mfrac><mi>f</mi><mrow><msub><mi>f</mi><mi>s</mi></msub><mo>/</mo><mn>2</mn></mrow></mfrac></mrow></math></div><p class="equation-caption">式（2）：<code>f</code> 为模拟频率（Hz）；<code>f/(f_s/2)</code> 是 [0,1] 的归一化频率，也是 <code>firwin</code>/<code>butter</code> 的 cutoff 参数。设计 200 Hz、<code>f_s</code>=1000 Hz 时归一化值为 0.4、<code>ω</code>=0.4π。</p></div>
+<p>第二个陷阱是“截止频率”本身的定义：<strong><code>firwin</code> 的频带边界对应 -6 dB 半幅点</strong>（幅度 0.5），而 <strong><code>butter</code> 的临界频率对应 -3 dB 半功率点</strong>（幅度 1/√2）。把两者混用会带来约 3 dB 的增益误差。</p>
+<figure class="figure"><img src="../assets/svg/19-freq-conventions.svg" alt="窗函数法 FIR 在截止点降到 0.5，巴特沃斯低通在临界点降到 0.707" width="920" height="420" loading="lazy"><figcaption><span class="fig-no">FIGURE 02</span>　同一条 <code>ω</code> 轴上，实线的窗函数法 FIR 在设计边界处降到约 0.5（-6 dB），虚线的巴特沃斯低通在临界频率处降到 0.707（-3 dB）。上图示意两种约定的区别，非某次具体设计的精确曲线。</figcaption></figure>
+<p>这一点可以用确定性程序验证：窗函数法设计、再归一化到单位直流增益的 FIR，在 cutoff 处幅度约 0.5；一阶数字巴特沃斯低通在临界频率处幅度约 0.7071。</p>
+</section>
+<section id="filters" aria-labelledby="h-filters">
+<h2 id="h-filters">lfilter 与 filtfilt：因果与零相位</h2>
+<p>滤波器系数只是描述，真正决定输出的是滤波方式。<code>lfilter</code> 实现因果差分方程：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="因果 IIR 滤波的差分方程"><math display="block" aria-label="因果 IIR 滤波的差分方程"><mrow><mi>y</mi><mo>[</mo><mi>n</mi><mo>]</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><msub><mi>N</mi><mi>b</mi></msub><mo>−</mo><mn>1</mn></mrow></munderover><msub><mi>b</mi><mi>k</mi></msub><mi>x</mi><mo>[</mo><mi>n</mi><mo>−</mo><mi>k</mi><mo>]</mo><mo>−</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mrow><msub><mi>N</mi><mi>a</mi></msub><mo>−</mo><mn>1</mn></mrow></munderover><msub><mi>a</mi><mi>k</mi></msub><mi>y</mi><mo>[</mo><mi>n</mi><mo>−</mo><mi>k</mi><mo>]</mo></mrow></math></div><p class="equation-caption">式（3）：输出只依赖于当前及过去的输入与输出。对线性相位 FIR（<code>a</code> 只有 0 阶），因果滤波引入 <code>(M−1)/2</code> 个样本的群延迟，M 为系数个数。</p></div>
+<p><code>filtfilt</code> 把信号正、反各滤一次，两次相位延迟相消，得到零相位结果。代价有两条：等效幅度响应被平方（等效阶数约翻倍），而且它需要整段信号，<strong>无法用于流式实时处理</strong>。因此“离线用 filtfilt、实时用 lfilter”是一条实际约束：用 filtfilt 验证过的相位指标，转到实时链路时必须重新评估。</p>
+<aside class="callout warn"><p><strong>不要直接搬系数到实时端：</strong>filtfilt 的零相位来自非因果的反向滤波。实时系统只能看到过去与当前样本，只能用 lfilter。</p></aside>
+<p>高阶 IIR 用二阶级联（SOS）实现更稳健：<code>sosfilt</code> 把高阶传递函数分解成多个二阶节，避免直接型系数对极点位置过于敏感。数值稳健不等于免除溢出与定点测试。</p>
+<pre><code>from scipy.signal import butter, sosfilt, filtfilt
+sos = butter(6, 0.2, btype="low", output="sos")
+y_rt = sosfilt(sos, x)      # 因果，可用于流式
+y_zp = filtfilt(sos, x)     # 零相位，非因果，仅离线</code></pre>
+</section>
+<section id="verify" aria-labelledby="h-verify">
+<h2 id="h-verify">三级验证：浮点 → 定点 → 硬件</h2>
+<p>工业流程把同一算法做三个版本，逐级比较。这样任何不一致都能定位到具体层级，而不是在硬件上盲猜。</p>
+<ol>
+<li><strong>Level 1 · 浮点参考：</strong>双精度实现，作为黄金基准，验证算法正确性。</li>
+<li><strong>Level 2 · 定点模型：</strong>用整数模拟 Q 格式、舍入与饱和，验证有限精度下的鲁棒性。</li>
+<li><strong>Level 3 · 硬件输出：</strong>芯片 / FPGA 实测回传，与定点模型做 bit-true（逐位相等）比较，验证实现正确性。</li>
+</ol>
+<p>定点模型的判据来自量化误差上界。用步长 <code>Δ</code> 的最近邻舍入，未过载时误差绝对值不超过半个步长：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="最近邻量化误差绝对值不超过半个量化步长"><math display="block" aria-label="最近邻量化误差绝对值不超过半个量化步长"><mrow><mo>|</mo><msub><mi>e</mi><mi>q</mi></msub><mo>[</mo><mi>n</mi><mo>]</mo><mo>|</mo><mo>≤</mo><mfrac><mi>Δ</mi><mn>2</mn></mfrac></mrow></math></div><p class="equation-caption">式（4）：若实测偏差远超 <code>Δ/2</code> 量级，首先怀疑溢出或极限环，而不是“算法本身不精确”。</p></div>
+<pre><code>def level1_float(x, sos):
+    return sosfilt(sos, x)                 # 黄金基准
 
-# 2. 线性扫频信号 (chirp)
-f_start, f_end = 10, 200
-x_chirp = signal.chirp(t, f_start, T, f_end, method='linear')
+def level2_fixed(x, sos_q, bits):          # 定点仿真：整数 MAC
+    return fixed_point_filter(x, sos_q, bits)
 
-# 3. 白噪声
-np.random.seed(42)
-x_noise = np.random.randn(len(t))
-
-# 4. 正弦 + 噪声 (实测信号模拟)
-snr_db = 10     # 信噪比 10dB
-x_meas = x_sin + np.sqrt(np.var(x_sin) / (10**(snr_db/10))) * x_noise
-
-# 时域绘图
-plt.figure(figsize=(10, 4))
-plt.plot(t[:200], x_sin[:200], label='50Hz sine')
-plt.plot(t[:200], x_meas[:200], label='Noisy (SNR=10dB)', alpha=0.7)
-plt.xlabel('Time [s]'); plt.ylabel('Amplitude')
-plt.legend(); plt.grid(True); plt.show()
-
-# 频域绘图
-X = np.fft.fft(x_meas)
-freqs = np.fft.fftfreq(len(x_meas), 1/fs)
-plt.figure(figsize=(10, 4))
-plt.plot(freqs[:len(freqs)//2], 20*np.log10(np.abs(X[:len(X)//2]) + 1e-10))
-plt.xlabel('Frequency [Hz]'); plt.ylabel('Magnitude [dB]')
-plt.grid(True); plt.show()</code></pre>
-
-        <p>这段代码演示了一个非常标准的仿真工作流：<strong>生成信号 → 加入噪声模拟真实环境 → 时域观察 → 频谱分析</strong>。那个 <code>np.sqrt(np.var(x_sin) / (10**(snr_db/10)))</code> 是控制信噪比的精确公式——很多初学者直接用 <code>sigma=0.1</code> 之类的魔数，这种做法在写Demo时可以，但做正式仿真时一定要用SNR控制。</p>
-
-        <h3>19.3 scipy.signal 核心函数实战</h3>
-
-        <p><code>scipy.signal</code> 是整个DSP仿真生态的中枢。掌握了它，你就掌握了数字滤波器的"乐高积木"。我们来逐一过一遍最核心的函数。</p>
-
-        <h4>频率响应分析：freqz</h4>
-
-        <pre><code>from scipy.signal import freqz, firwin, butter, lfilter
-
-# FIR低通滤波器设计
-b = firwin(31, 0.2)  # 31阶，归一化截止频率0.2
-w, h = freqz(b, worN=8192)
-
-plt.figure(figsize=(8, 4))
-plt.subplot(121)
-plt.plot(w/np.pi, 20*np.log10(np.abs(h) + 1e-10))
-plt.ylim(-80, 5); plt.grid(True)
-plt.title('Magnitude Response (dB)')
-plt.xlabel('Normalized Frequency (×π rad/sample)')
-
-plt.subplot(122)
-angles = np.unwrap(np.angle(h))
-plt.plot(w/np.pi, angles)
-plt.grid(True); plt.title('Phase Response')
-plt.xlabel('Normalized Frequency (×π rad/sample)')
-plt.tight_layout(); plt.show()</code></pre>
-
-        <p><code>freqz</code> 返回的 <code>w</code> 是归一化频率（单位是 π rad/sample），<code>h</code> 是复数频率响应。记住：<strong>归一化频率1.0对应fs/2</strong>，即Nyquist频率。如果你设计的滤波器截止频率是200Hz而采样率是1000Hz，那归一化频率就是 200/(1000/2) = 0.4。</p>
-
-        <h4>FIR滤波器设计：firls / remez</h4>
-
-        <p><code>firls</code> 使用最小二乘法设计FIR滤波器，<code>remez</code> 使用Parks-McClellan算法（等波纹法）。两者都支持任意形状的频率响应。</p>
-
-        <pre><code>from scipy.signal import firls, remez
-
-# 最小二乘法：多频带滤波器
-bands = [0, 0.2, 0.25, 0.45, 0.5, 1.0]   # 频带边界
-desired = [1, 1, 0, 0, 1, 1]             # 对应的理想增益
-b_ls = firls(63, bands, desired)
-
-# Parks-McClellan等波纹法（结果更优，但需要更多迭代）
-b_pm = remez(63, bands, [1, 0, 1], fs=2)
-w_ls, h_ls = freqz(b_ls)
-w_pm, h_pm = freqz(b_pm)
-
-plt.plot(w_ls/np.pi, 20*np.log10(np.abs(h_ls)), label='FIRLS')
-plt.plot(w_pm/np.pi, 20*np.log10(np.abs(h_pm)), '--', label='REMEZ')
-plt.ylim(-60, 5); plt.grid(True); plt.legend()
-plt.title('FIRLS vs REMEZ: 多频带滤波器')
-plt.xlabel('Normalized Frequency'); plt.show()</code></pre>
-
-        <h4>IIR滤波器设计：butter / cheby1 / ellip</h4>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>函数</th>
-                    <th>滤波器类型</th>
-                    <th>特点</th>
-                    <th>适用场景</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>butter</code></td>
-                    <td>巴特沃斯</td>
-                    <td>通带最平坦，滚降最慢</td>
-                    <td>音频均衡、信号调理</td>
-                </tr>
-                <tr>
-                    <td><code>cheby1</code></td>
-                    <td>切比雪夫I型</td>
-                    <td>通带有纹波，滚降更快</td>
-                    <td>需要陡峭过渡带的场合</td>
-                </tr>
-                <tr>
-                    <td><code>cheby2</code></td>
-                    <td>切比雪夫II型</td>
-                    <td>阻带有纹波，通带平坦</td>
-                    <td>阻带衰减要求高的应用</td>
-                </tr>
-                <tr>
-                    <td><code>ellip</code></td>
-                    <td>椭圆</td>
-                    <td>通带阻带都有纹波，滚降最陡</td>
-                    <td>阶数受限时追求最陡过渡带</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <pre><code>from scipy.signal import butter, cheby1, ellip, lfilter
-
-# 4阶巴特沃斯低通滤波器
-b, a = butter(4, 0.2, btype='low')
-y_butter = lfilter(b, a, x_noise)
-
-# 4阶切比雪夫I型低通（通带纹波1dB）
-b1, a1 = cheby1(4, 1, 0.2, btype='low')
-y_cheby = lfilter(b1, a1, x_noise)
-
-# 4阶椭圆低通（通带纹波1dB，阻带衰减40dB）
-b2, a2 = ellip(4, 1, 40, 0.2, btype='low')
-y_ellip = lfilter(b2, a2, x_noise)</code></pre>
-
-        <h4>时域滤波：lfilter vs filtfilt</h4>
-
-        <p>有一件极其重要的事情你必须知道：<code>lfilter</code> 和 <code>filtfilt</code> 虽然都能做滤波，但行为完全不同。</p>
-
-        <ul>
-            <li><strong>lfilter</strong>：标准递推滤波（因果滤波）。输出依赖于过去的输入和输出，有固定的群延迟。适用于实时处理。</li>
-            <li><strong>filtfilt</strong>：零相位滤波（非因果）。把信号正向滤波一次，再反向滤波一次，相位延迟抵消为零。但代价是——<strong>有效滤波器阶数翻倍</strong>。</li>
-        </ul>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑实录：filtfilt不是"免费"的零相位</strong> 我曾经在一个语音降噪项目里用 <code>filtfilt</code> 处理离线音频，效果非常完美——相位失真为零，波形对齐得天衣无缝。然后我兴高采烈地把同样的滤波器系数移植到嵌入式DSP的实时处理链路上，结果一听，声音完全不对——相位畸变严重。原因？嵌入式端只能用因果滤波（<code>lfilter</code>），不能"看到未来的样本"去做反向滤波。filtfilt的零相位是用非因果性换来的——它在滤波前翻转了信号，这意味着它需要完整的信号序列，无法用于流式实时处理。请记住：<strong>离线仿真用filtfilt，实时系统用lfilter</strong>。用filtfilt验证过的算法转到实时平台时，相位指标一定要重新评估。
-        </div>
-
-        <h3>19.4 MATLAB Signal Processing Toolbox 速查对照</h3>
-
-        <p>很多老派DSP工程师（包括我）最早都是用MATLAB入门的。虽然Python已经后来居上，但MATLAB的Signal Processing Toolbox依然在某些领域（通信系统级仿真、Simulink建模）不可替代。下面是常用函数的对照表。</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>MATLAB函数</th>
-                    <th>Python/SciPy等价</th>
-                    <th>功能</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>fir1</code></td>
-                    <td><code>firwin</code></td>
-                    <td>窗函数法FIR设计</td>
-                </tr>
-                <tr>
-                    <td><code>firls</code></td>
-                    <td><code>firls</code>（同名）</td>
-                    <td>最小二乘FIR设计</td>
-                </tr>
-                <tr>
-                    <td><code>firpm</code></td>
-                    <td><code>remez</code></td>
-                    <td>Parks-McClellan最优FIR</td>
-                </tr>
-                <tr>
-                    <td><code>butter</code></td>
-                    <td><code>butter</code>（同名）</td>
-                    <td>巴特沃斯滤波器设计</td>
-                </tr>
-                <tr>
-                    <td><code>cheby1</code></td>
-                    <td><code>cheby1</code>（同名）</td>
-                    <td>切比雪夫I型</td>
-                </tr>
-                <tr>
-                    <td><code>ellip</code></td>
-                    <td><code>ellip</code>（同名）</td>
-                    <td>椭圆滤波器</td>
-                </tr>
-                <tr>
-                    <td><code>freqz</code></td>
-                    <td><code>freqz</code>（同名）</td>
-                    <td>数字频率响应</td>
-                </tr>
-                <tr>
-                    <td><code>filter</code></td>
-                    <td><code>lfilter</code></td>
-                    <td>因果数字滤波</td>
-                </tr>
-                <tr>
-                    <td><code>filtfilt</code></td>
-                    <td><code>filtfilt</code>（同名）</td>
-                    <td>零相位滤波（非因果）</td>
-                </tr>
-                <tr>
-                    <td><code>fft</code></td>
-                    <td><code>np.fft.fft</code></td>
-                    <td>快速傅里叶变换</td>
-                </tr>
-                <tr>
-                    <td><code>spectrogram</code></td>
-                    <td><code>signal.spectrogram</code></td>
-                    <td>短时傅里叶变换时频谱</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <p>有一个差异需要注意：MATLAB的滤波器系数约定和Python不同。MATLAB用 <code>[b, a]</code> 表示 <code>H(z) = (b0 + b1 z⁻¹ + ...)/(1 + a1 z⁻¹ + ...)</code>，而SciPy的 <code>lfilter</code> 也是这个约定，所以直接搬系数是兼容的。但MATLAB的 <code>freqz(b, a, N)</code> 默认返回的角频率单位是 rad/sample（0到π），而SciPy的 <code>freqz</code> 默认返回归一化频率（0到1.0，对应0到π）。把MATLAB代码转Python时，这个归一化因子是最容易踩的坑。</p>
-
-        <h3>19.5 三级验证方法学：浮点→定点→硬件</h3>
-
-        <p>仿真不只是"写代码画图"那么简单。在工业级DSP开发中，有一个标准的三级验证流程，我称之为<strong>"三级A/B对比"</strong>。</p>
-
-        <ol>
-            <li><strong>Level 1 — 浮点参考模型（Python/MATLAB）：</strong> 用双精度浮点实现算法。这是"黄金标准"（golden reference），所有后续实现都要与之对比。在这一级，你验证的是<strong>算法正确性</strong>。</li>
-            <li><strong>Level 2 — 定点模型（仿真级）：</strong> 在Python中模拟定点运算，包括量化、舍入、饱和。用 <code>np.int16</code> / <code>np.int32</code> 模拟DSP芯片的数值行为。在这一级，你验证的是<strong>算法在有限精度下的鲁棒性</strong>。</li>
-            <li><strong>Level 3 — 硬件输出（实测）：</strong> 把代码烧到真实的DSP芯片或FPGA上，采集输出信号，与Level 1/2的结果做 <code>bit-true</code> 对比。在这一级，你验证的是<strong>实现正确性</strong>。</li>
-        </ol>
-
-        <div class="highlight">
-            <strong>💡 核心认知：</strong>Level 2是整套流程中最容易被跳过的环节。很多团队直接从Level 1跳到Level 3，结果在硬件上发现了量化噪声、极限环、溢出等问题，然后返回Level 1改算法。这个来回一次至少一周。我强烈建议：<strong>任何定点DSP项目，必须在仿真环境中先做bit-true定点仿真</strong>。下一章我们会深入讨论定点实现的细节。
-        </div>
-
-        <pre><code># 三级验证的Python骨架
-def level1_float(x, b, a):
-    """双精度浮点参考模型"""
-    from scipy.signal import lfilter
-    return lfilter(b, a, x)
-
-def level2_fixed(x, b_q, a_q, nbits=16):
-    """定点模拟模型：输入输出均为Q格式整数"""
-    # 模拟定点MAC累加
-    acc_bits = 2 * nbits  # 累加器位宽
-    y = np.zeros_like(x, dtype=np.int64)
-    for n in range(len(x)):
-        acc = 0
-        for k in range(len(b_q)):
-            if n >= k:
-                acc += b_q[k] * x[n - k]
-        for k in range(1, len(a_q)):
-            if n >= k:
-                acc -= a_q[k] * y[n - k]
-        # 饱和截位到nbits
-        max_val = (1 << (nbits - 1)) - 1
-        acc = np.clip(acc >> (acc_bits - nbits), -max_val-1, max_val)
-        y[n] = int(acc)
-    return y
-
-# Level 3: 在硬件上采集
-# y_hw = read_from_dac("/dev/i2c/channel0")
-# error_float = np.max(np.abs(y_hw.astype(float) - y_float))
-# print(f"Level 1 vs 3 max error: {error_float:.6f}")</code></pre>
-
-        <h3>19.6 仿真工作流总览</h3>
-
-        <p>一个标准的DSP算法仿真工作流大致是这样的：</p>
-
-        <pre><code>┌─────────────────┐
-	│ 1. 信号生成      │
-	│   · 合成信号     │
-	│   · 采集信号导入  │
-	└────────┬────────┘
-	         ▼
-	┌─────────────────┐
-	│ 2. 算法设计      │  ← 本章重点：scipy.signal
-	│   · 滤波器设计   │
-	│   · 频谱分析     │
-	│   · 自适应算法   │
-	└────────┬────────┘
-	         ▼
-	┌─────────────────┐
-	│ 3. 浮点仿真验证   │  ← Level 1
-	│   · 性能指标     │
-	│   · 收敛性分析   │
-	└────────┬────────┘
-	         ▼
-	┌─────────────────┐
-	│ 4. 定点化与仿真  │  ← Level 2 (第20章)
-	│   · Q格式选择    │
-	│   · 量化噪声分析 │
-	└────────┬────────┘
-	         ▼
-	┌─────────────────┐
-	│ 5. 硬件部署      │  ← Level 3 (第21-22章)
-	│   · 嵌入式DSP    │
-	│   · FPGA实现     │
-	└─────────────────┘</code></pre>
-
-        <p>这一章我们聚焦前三个步骤。从下一章开始，我们会逐步深入Level 2和Level 3。</p>
-
-        <h3>19.7 本章小结</h3>
-
-        <ul>
-            <li>掌握了Python DSP生态的核心库：NumPy/SciPy/Matplotlib，以及它们各自在DSP中的定位；</li>
-            <li>学会了用NumPy生成正弦、扫频、噪声等标准测试信号，并做时域和频域可视化；</li>
-            <li>深入实战了 <code>scipy.signal</code> 的核心函数：<code>freqz</code>、<code>firls</code>/<code>remez</code>、<code>butter</code>/<code>cheby1</code>/<code>ellip</code>、<code>lfilter</code>/<code>filtfilt</code>；</li>
-            <li>掌握了MATLAB Signal Processing Toolbox到Python/SciPy的函数对照关系，以及需要注意的约定差异；</li>
-            <li>理解了"浮点→定点→硬件"三级验证方法学，这是工业级DSP开发的必由之路。</li>
-        </ul>
-
-        <p>仿真只是第一步。下一章我们要进入DSP实现中最容易踩坑也最考验功力的领域——<strong>定点DSP实现</strong>。你会明白为什么一个在Python里跑得好好的滤波器，到了定点芯片上就变成了噪音发生器。我们第20章见。</p>
-
-        <div class="footer-nav">
-            <a href="18.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="20.html">下一章 →</a>
-        </div>
-    </div>
+# Level 3：硬件回采，与 Level 2 做 bit-true 比较
+# err = max(abs(y_hw - y_fixed))
+# assert err == 0, "逐位不等，先查位宽与时序"</code></pre>
+<aside class="callout"><p><strong>最易被跳过的环节是 Level 2：</strong>直接从浮点跳到硬件，一旦不符，很难区分算法缺陷与量化/位宽问题。任何定点项目，先在仿真里做 bit-true 定点模型，成本远低于一次硬件返工。</p></aside>
+</section>
+<section id="experiment" aria-labelledby="h-experiment">
+<h2 id="h-experiment">交互：系数量化与幅度响应</h2>
+<p>下面的实验把一段 33 点窗函数法低通（cutoff 0.35π）的系数按 Q 格式量化到指定位宽。滑块改变位数：青线是浮点参考的幅度响应，赭线是量化后的响应。位数越低，网格步长 Δ 越大，响应偏差越明显。</p>
+<div class="lab" data-spectrum-lab="sim">
+<h3>动手验证：选择系数量化位宽</h3>
+<label for="range-19">量化位宽（6 – 16 bit）</label>
+<input id="range-19" type="range" min="6" max="16" step="1" value="8">
+<output for="range-19" aria-live="polite">改变位宽，观察幅度响应偏差。</output>
+<svg role="img" aria-label="浮点与量化系数下滤波器幅度响应的对比" viewBox="0 0 560 215" width="560" height="215"><title>系数量化对幅度响应的影响</title></svg>
+<p class="muted">交互仅辅助观察；FIGURE 01/02、式（3）（4）与下方的确定性程序在 JS 关闭时仍可独立理解。</p>
 </div>
+<pre><code># 完整可运行版（仅标准库）见 examples/19_simulation.py
+h_q = [round(c * 2**15) / 2**15 for c in h]   # Q15
+assert max(abs(a - b) for a, b in zip(h, h_q)) <= 2**-16</code></pre>
+<p><a href="../examples/19_simulation.py">完整可执行例程（19_simulation.py）</a>：断言 FIR 截止点幅度约 0.5、巴特沃斯临界点 0.7071、因果群延迟 (M−1)/2、零相位滤波峰值回到原位且支撑长度为 2(M−1)+1、Q15 量化误差 ≤ 2⁻¹⁶、SNR 标定与实测一致。</p>
+</section>
+<section id="limits" aria-labelledby="h-limits">
+<h2 id="h-limits">边界与失效模式</h2>
+<ul>
+<li><strong>magic number 加噪：</strong>直接写噪声幅度会隐式改变 SNR；应先用式（1）反解标准差再回测。</li>
+<li><strong>频率约定混用：</strong><code>freqz</code> 的 0–π 与 MATLAB 的 0–1 相差 π；cutoff 的 -6 dB / -3 dB 定义不同，不能直接对换。</li>
+<li><strong>把 filtfilt 当实时滤波：</strong>它需要整段信号且非因果；实时链路只能用 lfilter/sosfilt。</li>
+<li><strong>高阶直接型 IIR：</strong>量化会使极点偏移、甚至移到单位圆外；优先用 SOS 并做定点验证。</li>
+<li><strong>跳过定点级：</strong>没有 Level 2，就无法区分算法缺陷与位宽/饱和问题。</li>
+</ul>
+<p>自检：同一组系数下，浮点与 Q15 定点的输出差异上界是多少？为什么这个上界不能直接当作硬件实测误差的期望值？</p>
+</section>
+<section id="sources" aria-labelledby="h-sources">
+<h2 id="h-sources">参考资料与接口</h2>
+<ol class="refs">
+<li><a href="https://docs.scipy.org/doc/scipy/reference/signal.html">SciPy · Signal processing</a>：滤波器设计、滤波与谱估计接口总览。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html">SciPy · firwin</a>：窗函数法设计，cutoff 为 Nyquist 归一化频率（-6 dB 约定）。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.butter.html">SciPy · butter</a>：巴特沃斯设计，临界频率为 -3 dB 半功率点。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html">SciPy · filtfilt</a>：前向-反向滤波与零相位，等效阶数翻倍。</li>
+<li><a href="https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/">MIT OCW · Discrete-Time Signal Processing</a>：量化、有限字长效应与滤波器结构。</li>
+</ol>
+</section>
+<nav class="chapter-nav"><a href="18.html">← 第 18 章</a><a href="../index.html#curriculum">课程地图</a><a href="20.html">第 20 章 →</a></nav>
+</article>
+</main>
 </div>
 </body>
 </html>

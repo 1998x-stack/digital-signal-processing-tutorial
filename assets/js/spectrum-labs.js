@@ -125,7 +125,24 @@ const registry={
  text(svg,300,200,"迭代块 →");
  text(svg,360,py(floor)-5,"噪声底");
  out.textContent="μ̃="+mu.toFixed(2)+"：最终 MSE ≈ "+(10*Math.log10(Math.max(tail,1e-12))).toFixed(1)+" dB，噪声底 ≈ "+(10*Math.log10(floor)).toFixed(1)+" dB，失调 ≈ "+(100*mis).toFixed(1)+"%。"+(mu>=1.95?"步长接近上界 2：曲线振荡、难以收敛。":"μ̃ 越大收敛越快，但噪声底上方的失调也越大。");
- }
+ },
+sim(bits,svg,out){
+const M=33,wc=.35*PI,h=hamming(M,wc),step=2**(bits-1);
+const hq=h.map(c=>Math.round(c*step)/step),H=121;
+const magH=Array.from({length:H},(_,i)=>mag(h,PI*i/(H-1)));
+const magQ=Array.from({length:H},(_,i)=>mag(hq,PI*i/(H-1)));
+svg.replaceChildren();svg.setAttribute("viewBox","0 0 560 215");
+const left=44,right=540,top=29,bottom=173,hi=1.15;
+const px=i=>left+i*(right-left)/(H-1),py=v=>bottom-(Math.max(0,Math.min(hi,v))/hi)*(bottom-top);
+line(svg,left,bottom,right,bottom);line(svg,left,top,left,bottom);
+[0,.25,.5,.75,1].forEach(g=>{const y=py(g);line(svg,left,y,right,y,"#eef3f1",1);text(svg,10,y+4,g.toFixed(2))});
+const draw=(arr,c)=>{add(svg,"path",{d:arr.map((v,i)=>(i?"L":"M")+px(i).toFixed(1)+" "+py(v).toFixed(1)).join(" "),fill:"none",stroke:c,"stroke-width":2.4})};
+draw(magH,"#147f80");draw(magQ,"#d06d4d");
+text(svg,4,20,"|H|");text(svg,300,200,"ω：0 → π");
+const maxerr=Math.max(...h.map((c,i)=>Math.abs(c-hq[i])));
+const dev=Math.max(...magH.map((v,i)=>Math.abs(v-magQ[i])));
+out.textContent=bits+" bit：Q("+(bits-1)+") 网格步长 Δ=2^-"+(bits-1)+"，最大系数误差 "+maxerr.toExponential(2)+" ≤ Δ/2="+(2**-bits).toExponential(2)+"；幅度响应最大偏差 "+dev.toFixed(4)+"。";
+}
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});
 })();

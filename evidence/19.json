@@ -1,0 +1,48 @@
+{
+  "chapter": "19",
+  "title": "DSP 仿真：参考模型、频率约定与三级验证",
+  "sources": [
+    {
+      "id": "scipy-signal",
+      "claim": "scipy.signal 提供 freqz、firwin、butter、lfilter、filtfilt、sosfilt 等滤波器设计与滤波接口",
+      "url": "https://docs.scipy.org/doc/scipy/reference/signal.html",
+      "scope": "SciPy signal 模块总览"
+    },
+    {
+      "id": "firwin",
+      "claim": "firwin 的 cutoff 以 Nyquist 归一化频率给出；窗函数法截止点对应 -6 dB 半幅点",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html",
+      "scope": "SciPy firwin 文档；-6 dB 约定见 SciPy 手册与信号处理教材"
+    },
+    {
+      "id": "butter",
+      "claim": "butter 的临界频率对应 -3 dB 半功率点（幅度 1/sqrt(2)）",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.butter.html",
+      "scope": "SciPy butter 文档；Butterworth 最大平坦定义"
+    },
+    {
+      "id": "filtfilt",
+      "claim": "filtfilt 通过正反两次滤波实现零相位，代价是等效阶数翻倍且不可用于流式实时处理",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html",
+      "scope": "SciPy filtfilt 文档：前向-反向滤波与相位抵消"
+    },
+    {
+      "id": "freqz",
+      "claim": "freqz 默认返回 0 到 pi 的数字角频率；归一化频率 1.0 对应 Nyquist 频率",
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.freqz.html",
+      "scope": "SciPy freqz 文档的频率参数约定"
+    },
+    {
+      "id": "quantization",
+      "claim": "未过载的最近邻均匀量化，其误差绝对值不超过半个量化步长 Delta/2",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341：量化与有限字长效应"
+    }
+  ],
+  "notes": [
+    "确定性实验 examples/19_simulation.py 仅用标准库：验证窗函数法 FIR 截止点幅度约 0.5（-6 dB）、一阶巴特沃斯临界点幅度 1/sqrt(2)（-3 dB）、因果 FIR 群延迟 (M-1)/2、正反两次滤波后峰值回到原位置且支撑长度为 2(M-1)+1、Q15 量化误差不超过 2^-16、SNR 标定公式与实测一致（目标 10 dB，实测 10.000 dB）。",
+    "旧版页面中的第一人称工程轶事（如某项目把 filtfilt 系数移植到实时平台）无法核实，已删除，改为可复现的确定性实验与接口约定说明。",
+    "not_verified：浏览器 QA 未验证。browser_check.py 以 set_content 载入页面，相对路径的 SVG 与样式表无法解析，故 MathML 分式几何与响应式布局未在真实 Chromium 中确认。"
+  ],
+  "status": "频率约定（firwin -6 dB / butter -3 dB）、freqz 归一化、lfilter 与 filtfilt 差异、三级验证与量化上界均对照 SciPy 官方文档与 MIT OCW 6.341；确定性实验全部通过；浏览器 QA 未验证。"
+}

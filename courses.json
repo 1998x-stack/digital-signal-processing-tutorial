@@ -205,14 +205,14 @@
     },
     {
       "num": "19",
-      "title": "MATLAB/Python DSP仿真",
+      "title": "DSP仿真与三级验证",
       "topics": [
         "NumPy/SciPy",
-        "信号生成",
-        "滤波器设计函数"
+        "频率约定",
+        "三级验证"
       ],
       "file": "chapters/19.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "20",

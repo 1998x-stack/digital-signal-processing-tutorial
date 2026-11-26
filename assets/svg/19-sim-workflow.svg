@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 430" width="920" height="430" role="img" aria-labelledby="t19a d19a">
+<title id="t19a">DSP 实现的三级验证流水线</title>
+<desc id="d19a">Level 1 浮点参考模型作为黄金基准；Level 2 定点模型把量化误差引入；Level 3 硬件输出为实测。相邻两级之间做逐样本比较，误差超过容限时回退到上一级修正。</desc>
+<rect x="0" y="0" width="920" height="430" fill="#fbfdfc"/>
+<text x="30" y="34" font-family="system-ui,PingFang SC,sans-serif" font-size="15" font-weight="600" fill="#33474d">同一算法，三种实现：每级都要能与上一级逐样本对齐</text>
+
+<rect x="30" y="60" width="300" height="86" rx="10" fill="#e6f2f0" stroke="#147f80" stroke-width="1.6"/>
+<text x="48" y="88" font-family="system-ui,PingFang SC,sans-serif" font-size="13.5" font-weight="600" fill="#147f80">Level 1 · 浮点参考模型</text>
+<text x="48" y="110" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">双精度 / float64，验证算法正确性</text>
+<text x="48" y="130" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">产出：黄金基准 y_ref[n]</text>
+
+<rect x="30" y="172" width="300" height="86" rx="10" fill="#fbeee9" stroke="#d06d4d" stroke-width="1.6"/>
+<text x="48" y="200" font-family="system-ui,PingFang SC,sans-serif" font-size="13.5" font-weight="600" fill="#b1592f">Level 2 · 定点模型</text>
+<text x="48" y="222" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">Q 格式、舍入、饱和，验证鲁棒性</text>
+<text x="48" y="242" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">产出：y_fixed[n]（整数）</text>
+
+<rect x="30" y="284" width="300" height="86" rx="10" fill="#efeaf7" stroke="#7461ba" stroke-width="1.6"/>
+<text x="48" y="312" font-family="system-ui,PingFang SC,sans-serif" font-size="13.5" font-weight="600" fill="#5c4aa0">Level 3 · 硬件输出</text>
+<text x="48" y="334" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">DSP / FPGA 实测，验证实现正确性</text>
+<text x="48" y="354" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">产出：y_hw[n]（采集回传）</text>
+
+<line x1="210" y1="146" x2="210" y2="172" stroke="#147f80" stroke-width="2"/>
+<line x1="210" y1="258" x2="210" y2="284" stroke="#d06d4d" stroke-width="2"/>
+<line x1="204" y1="164" x2="210" y2="172" stroke="#147f80" stroke-width="2" fill="none"/>
+<polygon points="210,172 205,162 215,162" fill="#147f80"/>
+<polygon points="210,284 205,274 215,274" fill="#d06d4d"/>
+
+<rect x="400" y="66" width="240" height="74" rx="10" fill="#ffffff" stroke="#c5d6ce" stroke-width="1.4"/>
+<text x="418" y="94" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">逐样本比较</text>
+<text x="418" y="116" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">max|y − y_ref| ≤ 容限？</text>
+
+<rect x="400" y="178" width="240" height="74" rx="10" fill="#ffffff" stroke="#c5d6ce" stroke-width="1.4"/>
+<text x="418" y="206" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">bit-true 比较</text>
+<text x="418" y="228" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">整数码字是否完全相等？</text>
+
+<line x1="330" y1="103" x2="400" y2="103" stroke="#53676d" stroke-width="1.6"/>
+<polygon points="400,103 390,99 390,107" fill="#53676d"/>
+<line x1="330" y1="215" x2="400" y2="215" stroke="#53676d" stroke-width="1.6"/>
+<polygon points="400,215 390,211 390,219" fill="#53676d"/>
+
+<rect x="680" y="66" width="210" height="186" rx="10" fill="#ffffff" stroke="#c5d6ce" stroke-width="1.4"/>
+<text x="698" y="96" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">不一致时回退：</text>
+<text x="698" y="122" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">定点误差 → 调 Q 格式</text>
+<text x="698" y="148" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">溢出/极限环 → 改结构</text>
+<text x="698" y="174" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">硬件不符 → 查位宽与时序</text>
+<text x="698" y="200" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">算法本身错 → 回到 Level 1</text>
+<text x="698" y="232" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#8a9aa0">修复后重跑整条链</text>
+
+<line x1="640" y1="159" x2="680" y2="159" stroke="#7461ba" stroke-width="1.6"/>
+<polygon points="680,159 670,155 670,163" fill="#7461ba"/>
+<text x="30" y="400" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#8a9aa0">跳级是常见错误：直接由浮点跳到硬件，一旦不符，很难判断是算法缺陷还是量化/位宽问题。</text>
+</svg>
