@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="920" height="400" role="img" aria-labelledby="t22b d22b">
+<title id="t22b">流水线 FFT 的 SDF 架构：每时钟一个样本</title>
+<desc id="d22b">数据以流式方式依次经过 log2(N) 级蝶形单元，每级用反馈寄存器缓存一半数据，配合旋转因子 ROM；各级同时工作，因此吞吐量为每时钟一个样本，与点数无关。</desc>
+<rect x="0" y="0" width="920" height="400" fill="#fbfdfc"/>
+<text x="30" y="32" font-family="system-ui,PingFang SC,sans-serif" font-size="15" font-weight="600" fill="#33474d">流水线 FFT：把 log₂(N) 级蝶形排成流水</text>
+
+<line x1="30" y1="150" x2="120" y2="150" stroke="#147f80" stroke-width="2.2"/><polygon points="120,150 110,146 110,154" fill="#147f80"/>
+<text x="30" y="140" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#147f80">样本流（1/时钟）</text>
+
+<g>
+<rect x="130" y="120" width="150" height="60" rx="8" fill="#e6f2f0" stroke="#147f80"/>
+<text x="150" y="146" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#147f80">Stage 1 蝶形</text>
+<text x="150" y="166" font-family="system-ui,PingFang SC,sans-serif" font-size="12" fill="#53676d">延迟 N/2</text>
+<rect x="200" y="196" width="80" height="30" rx="6" fill="#efeaf7" stroke="#7461ba"/><text x="212" y="216" font-family="ui-monospace,Menlo,monospace" font-size="11.5" fill="#5c4aa0">反馈 RAM</text>
+<line x1="205" y1="180" x2="240" y2="196" stroke="#7461ba" stroke-width="1.4"/>
+
+<rect x="330" y="120" width="150" height="60" rx="8" fill="#e6f2f0" stroke="#147f80"/>
+<text x="350" y="146" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#147f80">Stage 2 蝶形</text>
+<text x="350" y="166" font-family="system-ui,PingFang SC,sans-serif" font-size="12" fill="#53676d">延迟 N/4</text>
+<rect x="400" y="196" width="80" height="30" rx="6" fill="#efeaf7" stroke="#7461ba"/><text x="412" y="216" font-family="ui-monospace,Menlo,monospace" font-size="11.5" fill="#5c4aa0">反馈 RAM</text>
+<line x1="405" y1="180" x2="440" y2="196" stroke="#7461ba" stroke-width="1.4"/>
+
+<rect x="530" y="120" width="150" height="60" rx="8" fill="#e6f2f0" stroke="#147f80"/>
+<text x="550" y="146" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#147f80">Stage log₂N 蝶形</text>
+<text x="550" y="166" font-family="system-ui,PingFang SC,sans-serif" font-size="12" fill="#53676d">延迟 1</text>
+<rect x="600" y="196" width="80" height="30" rx="6" fill="#efeaf7" stroke="#7461ba"/><text x="612" y="216" font-family="ui-monospace,Menlo,monospace" font-size="11.5" fill="#5c4aa0">反馈 RAM</text>
+<line x1="605" y1="180" x2="640" y2="196" stroke="#7461ba" stroke-width="1.4"/>
+</g>
+<line x1="280" y1="150" x2="330" y2="150" stroke="#147f80" stroke-width="2.2"/><polygon points="330,150 320,146 320,154" fill="#147f80"/>
+<line x1="480" y1="150" x2="530" y2="150" stroke="#147f80" stroke-width="2.2"/><polygon points="530,150 520,146 520,154" fill="#147f80"/>
+<line x1="680" y1="150" x2="790" y2="150" stroke="#147f80" stroke-width="2.2"/><polygon points="790,150 780,146 780,154" fill="#147f80"/>
+<text x="700" y="140" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#147f80">变换结果</text>
+
+<text x="30" y="268" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">每一级含一个复数蝶形与一个旋转因子 ROM。数据流经 log₂(N) 级后输出；各级同时工作，</text>
+<text x="30" y="290" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">因此无论 N 多大，吞吐量都是每时钟一个样本，延迟为若干时钟的固定流水深度。</text>
+
+<rect x="30" y="316" width="16" height="16" fill="#e6f2f0" stroke="#147f80"/><text x="54" y="329" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">蝶形 / 数据通路</text>
+<rect x="230" y="316" width="16" height="16" fill="#efeaf7" stroke="#7461ba"/><text x="254" y="329" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">反馈存储（Block RAM）</text>
+<text x="30" y="366" font-family="system-ui,PingFang SC,sans-serif" font-size="12" fill="#8a9aa0">SDF/MDC/SDC 是三种经典流水线布局；旋转因子与延迟线会占用可观 Block RAM，需提前规划。</text>
+</svg>

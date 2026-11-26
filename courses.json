@@ -238,14 +238,14 @@
     },
     {
       "num": "22",
-      "title": "FPGA上的DSP",
+      "title": "FPGA 上的 DSP",
       "topics": [
-        "流水线设计",
-        "DA算法",
-        "HLS综合"
+        "DSP Slice",
+        "流水线FFT",
+        "CORDIC与HLS"
       ],
       "file": "chapters/22.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "23",

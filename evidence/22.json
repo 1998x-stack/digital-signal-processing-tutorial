@@ -1,0 +1,38 @@
+{
+  "chapter": "22",
+  "title": "FPGA 上的 DSP：并行、流水线与 CORDIC",
+  "sources": [
+    {
+      "id": "dsp-slice",
+      "claim": "FPGA 内置硬化的 DSP Slice（如 DSP48E2），含乘法器、累加器、预加器，并支持级联与拆分使用；流水线寄存器级数可配置",
+      "url": "https://docs.amd.com/r/en-US/ug579-ultrascale-dsp",
+      "scope": "AMD UG579 UltraScale Architecture DSP Slice"
+    },
+    {
+      "id": "cordic",
+      "claim": "CORDIC 用迭代的移位与加法逼近旋转，每次分解出角度 arctan(2^-i)；收敛后 (x,y) 正比于 (cosθ, sinθ)",
+      "url": "https://doi.org/10.1109/TEC.1959.5222697",
+      "scope": "J. E. Volder (1959), The CORDIC Trigonometric Computing Technique"
+    },
+    {
+      "id": "hls",
+      "claim": "Vitis HLS 用 PIPELINE/UNROLL/ARRAY_PARTITION/DATAFLOW 等 pragma 控制流水线化、展开与存储划分",
+      "url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls",
+      "scope": "AMD UG1399 Vitis HLS：pragma 语义"
+    },
+    {
+      "id": "fir-fft-structures",
+      "claim": "FIR 可用直接型、转置型或分布式算法实现；流水线 FFT 的 SDF/MDC/SDC 架构以每时钟一个样本吞吐为目标",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "MIT OCW 6.341：滤波与变换结构基础"
+    }
+  ],
+  "notes": [
+    "确定性实验 examples/22_fpga.py 仅用标准库：CORDIC 8 次迭代最大 sin 误差 7.03e-3、12 次 3.57e-4、16 次 cos(0)≈1；分布式算法 FIR 与直接型整型输出逐点相等（[21, -23, 74, -18, 26, 70, -38, 11]）；转置型与直接型 FIR 逐点相等。",
+    "旧版页面中的第一人称工程事故（“DSP48E2 级联延迟链不匹配”的故事）无法核实，已删除，改为流水线级数一致性的通用设计约束说明。",
+    "未给出具体器件的 DSP Slice 数量、时钟频率范围或 GFLOPS 数字，避免无法核实的量化断言；相关对比以定性方式描述并要求以数据手册为准。",
+    "FIGURE 01/02 为结构示意，不表示某次具体综合结果。",
+    "not_verified：浏览器 QA 未验证（browser_check.py 以 set_content 载入页面，相对路径资源无法解析）；已另用本地 HTTP 服务做补充检查（桌面 1440、移动 390/360 无横向溢出、无 JS 错误、MathML 分式正常、交互滑块可改变输出）。"
+  ],
+  "status": "DSP Slice 结构、CORDIC、HLS pragma 与流水线 FFT 对照 AMD UG579/UG1399、Volder (1959) 与 MIT OCW 6.341；确定性实验全部通过；浏览器 QA 未验证（本地 HTTP 补充检查通过）。"
+}

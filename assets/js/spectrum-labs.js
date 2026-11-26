@@ -157,6 +157,21 @@ const u=util(taps);
 add(svg,"circle",{cx:px((taps-16)/(1024-16)*(H-1)),cy:py(u),r:5,fill:"#d06d4d"});
 text(svg,4,20,"CPU 占用");text(svg,300,200,"抽头数 16 → 1024");
 out.textContent=taps+" 抽头：单 MAC/周期下每样本需 "+taps+" 个周期，100 MHz 时最大采样率 "+(clock/taps/1000).toFixed(1)+" kHz，按 48 kHz 工作则 CPU 占用约 "+(100*u).toFixed(1)+"%"+(u>=1?"：已超预算。":"。")+" 这是算术下界模型，忽略流水线与内存开销。";
+},
+cordic(iters,svg,out){
+const atan=Array.from({length:16},(_,i)=>Math.atan(2**-i));
+const cs=theta=>{let x=0.6072529350088813,y=0,z=theta;for(let i=0;i<iters;i++){const s=z>=0?1:-1,nx=x-s*y*2**-i,ny=y+s*x*2**-i;x=nx;y=ny;z=z-s*atan[i];}return y};
+const H=101,tru=[],app=[];
+for(let i=0;i<H;i++){const th=-PI/2+PI*i/(H-1);tru.push(Math.sin(th));app.push(cs(th));}
+svg.replaceChildren();svg.setAttribute("viewBox","0 0 560 215");
+const left=44,right=540,top=29,bottom=173,amp=1.15;
+const px=i=>left+i*(right-left)/(H-1),py=v=>bottom-(v+amp)/(2*amp)*(bottom-top);
+line(svg,left,bottom,right,bottom);line(svg,left,py(0),right,py(0),"#eef3f1",1);
+const draw=(arr,c)=>{add(svg,"path",{d:arr.map((v,i)=>(i?"L":"M")+px(i).toFixed(1)+" "+py(v).toFixed(1)).join(" "),fill:"none",stroke:c,"stroke-width":2.4})};
+draw(tru,"#147f80");draw(app,"#d06d4d");
+text(svg,4,20,"sin");text(svg,290,200,"角度 −π/2 → π/2");
+let maxe=0;for(let i=0;i<H;i++)maxe=Math.max(maxe,Math.abs(tru[i]-app[i]));
+out.textContent=iters+" 次迭代：整段最大误差 "+maxe.toExponential(2)+"（只做移位与加法，无乘法器）。迭代越多误差越小，但每加一级就多一份流水线资源。";
 }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});

@@ -1,459 +1,151 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第22章 FPGA上的DSP</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="FPGA 上的 DSP：用可定制并行度换取吞吐量，DSP Slice、FIR 的三种实现、流水线 FFT 的 SDF 架构、用移位与加法实现的 CORDIC，以及 HLS 高层次综合。">
+<title>第 22 章 · FPGA 上的 DSP：并行、流水线与 CORDIC</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/spectrum-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🎛️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数字信号处理导论</a></li>
-            <li><a href="02.html">第2章 离散时间信号</a></li>
-            <li><a href="03.html">第3章 离散时间系统</a></li>
-            <li><a href="04.html">第4章 采样定理</a></li>
-            <li><a href="05.html">第5章 Z变换</a></li>
-            <li><a href="06.html">第6章 频域分析</a></li>
-            <li><a href="07.html">第7章 离散傅里叶变换 (DFT)</a></li>
-            <li><a href="08.html">第8章 快速傅里叶变换 (FFT)</a></li>
-            <li><a href="09.html">第9章 FIR滤波器设计</a></li>
-            <li><a href="10.html">第10章 IIR滤波器设计</a></li>
-            <li><a href="11.html">第11章 滤波器结构</a></li>
-            <li><a href="12.html">第12章 多速率信号处理 (一)</a></li>
-            <li><a href="13.html">第13章 多速率信号处理 (二)</a></li>
-            <li><a href="14.html">第14章 统计信号处理基础</a></li>
-            <li><a href="15.html">第15章 自适应滤波器</a></li>
-            <li><a href="16.html">第16章 高级自适应算法</a></li>
-            <li><a href="17.html">第17章 谱估计进阶</a></li>
-            <li><a href="18.html">第18章 时频分析</a></li>
-            <li><a href="19.html">第19章 MATLAB/Python DSP仿真</a></li>
-            <li><a href="20.html">第20章 定点DSP实现</a></li>
-            <li><a href="21.html">第21章 嵌入式DSP芯片开发</a></li>
-            <li><a href="22.html" class="active">第22章 FPGA上的DSP</a></li>
-            <li><a href="23.html">第23章 音频信号处理</a></li>
-            <li><a href="24.html">第24章 通信数字信号处理</a></li>
-            <li><a href="25.html">第25章 图像信号处理</a></li>
-            <li><a href="26.html">第26章 AI+DSP融合</a></li>
-            <li><a href="27.html">第27章 软件无线电 (SDR)</a></li>
-            <li><a href="28.html">第28章 综合项目：实时音频处理器</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-
-        <h2>第22章 FPGA上的DSP</h2>
-
-        <p>上一章我们讨论了嵌入式DSP芯片——虽然高效，但本质上还是<strong>顺序执行指令</strong>的冯·诺依曼变体。无论硬件MAC多快、流水线多深，一个时钟周期能做的乘加次数是固定的。现在想象一个场景：你需要对8K超高清视频的每一帧做实时空域滤波——数据率高达约12 Gbps。或者你需要同时处理128通道的雷达回波信号——实时FFT计算量超过100 GFLOPS。</p>
-
-        <p>这种量级的计算需求，通用DSP芯片已经力不从心。这时候就需要<strong>FPGA（Field-Programmable Gate Array）</strong>上场了。</p>
-
-        <p>FPGA在DSP应用中的核心竞争力是：<strong>可定制的并行度</strong>。如果你需要同时做32个MAC操作，就在FPGA里"画"32个乘法器。如果你需要2048点FFT在1μs内完成，就设计一个全流水线FFT引擎。FPGA让你<strong>用硬件资源换计算速度</strong>——没有指令取指、没有流水线停顿、没有分支预测失败。每一个逻辑门都在为你计算，而不是在"等待下一条指令"。</p>
-
-        <div class="highlight">
-            <strong>💡 核心认知：</strong>用DSP芯片做算法像用厨师做菜——一个好厨师一次只能炒一个菜，但可以炒任意复杂的菜。用FPGA做算法像开一条流水线——每个工位只做一件事，但所有工位同时在做。DSP灵活但顺序，FPGA专一但并行。这就是DSP和FPGA在架构哲学上的根本差异。
-        </div>
-
-        <h3>22.1 FPGA DSP Slice架构</h3>
-
-        <p>现代FPGA内部并非全部由通用的逻辑单元（LUT+FF）组成。Xilinx和Intel都在FPGA中集成了专用的<strong>DSP Slice（DSP单元）</strong>——一个硬化的、可配置的乘加运算块。</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>厂商</th>
-                    <th>DSP Slice名称</th>
-                    <th>核心结构</th>
-                    <th>位宽</th>
-                    <th>典型数量</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Xilinx (AMD)</strong></td>
-                    <td>DSP48E2</td>
-                    <td>27×18 乘法器 + 48位累加器 + ALU</td>
-                    <td>27×18 或 18×18</td>
-                    <td>UltraScale+系列：多达12,288个</td>
-                </tr>
-                <tr>
-                    <td><strong>Intel (Altera)</strong></td>
-                    <td>Variable Precision DSP Block</td>
-                    <td>18×19×36 或 27×27 乘法器 + 64位累加</td>
-                    <td>可配置 9/18/27 位</td>
-                    <td>Stratix 10：多达5,760个</td>
-                </tr>
-                <tr>
-                    <td><strong>Lattice</strong></td>
-                    <td>DSP Block</td>
-                    <td>12×12 乘法器 + 32位累加</td>
-                    <td>12×12</td>
-                    <td>CrossLink系列：较少，面向视频桥接</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <p>Xilinx DSP48E2的典型结构如下：</p>
-
-        <pre><code>      ┌───────┐
-A ───▶│ 乘法器 │
-B ───▶│27×18  │──▶ X
-      └───────┘    │
-                   ▼
-      ┌───────────────────┐
-C ───▶│  加法器/累加器     │──▶ P (48位)
-      │  + 模式配置       │
-      │  + 级联输入PCIN   │
-      └───────────────────┘</code></pre>
-
-        <p>几个关键能力：</p>
-        <ul>
-            <li><strong>级联（Cascade）：</strong>多个DSP Slice可以串联形成更宽的乘法器（如用4个DSP48做64×64乘法）</li>
-            <li><strong>SIMD模式：</strong>一个DSP48E2可以拆成2个独立的12×12乘法器（用于低精度并行计算）</li>
-            <li><strong>预加器（Pre-adder）：</strong>在乘法之前做加法——对称FIR滤波器可以利用这一点节省一半乘法器</li>
-        </ul>
-
-        <h3>22.2 FIR滤波器的FPGA实现技术</h3>
-
-        <p>在FPGA上实现FIR滤波器，主要有三种方法，它们的硬件资源消耗和延迟特性各不相同。</p>
-
-        <h4>方法一：直接型（乘累加树）</h4>
-
-        <p>最容易理解的方式——把一个N阶FIR的所有MAC操作并行化。每个抽头需要一个乘法器，然后用加法树累加。延迟小，但资源消耗大（O(N)个乘法器）。</p>
-
-        <pre><code>// Verilog: 直接型FIR (8阶并行)
-module fir_direct (
-    input  clk,
-    input  signed [15:0] x,
-    output reg signed [15:0] y
-);
-    reg signed [15:0] delay_line [0:7];
-    wire signed [31:0] products [0:7];
-    wire signed [31:0] sum;
-
-    // 系数（由MATLAB/Python生成并量化）
-    localparam signed [15:0] coeffs [0:7] = {
-        16'h0034, 16'h0123, 16'h0456, 16'h0789,
-        16'h0789, 16'h0456, 16'h0123, 16'h0034
-    };
-
-    // 延迟线更新
-    integer i;
-    always @(posedge clk) begin
-        delay_line[0] <= x;
-        for (i = 1; i < 8; i = i + 1)
-            delay_line[i] <= delay_line[i-1];
-    end
-
-    // 并行乘法
-    generate
-        for (i = 0; i < 8; i = i + 1) begin
-            assign products[i] = delay_line[i] * coeffs[i];
-        end
-    endgenerate
-
-    // 加法树
-    assign sum = products[0] + products[1] + products[2] + products[3] +
-                 products[4] + products[5] + products[6] + products[7];
-
-    always @(posedge clk)
-        y <= sum[30:15];  // 截位回到16位
-
-endmodule</code></pre>
-
-        <h4>方法二：转置型（Transposed FIR）</h4>
-
-        <p>转置型FIR把加法器放在乘法器之间，形成流水线寄存器结构。优点是与阶数无关的关键路径延迟——无论多高阶，时钟频率只受单个MAC延迟的限制。这是高吞吐量FIR的标准实现方式。</p>
-
-        <h4>方法三：分布式算法（DA，Distributed Arithmetic）</h4>
-
-        <p>这是一个非常巧妙的技巧：<strong>用LUT查找表替代乘法器</strong>。DA算法的核心思想是将滤波运算重写为：</p>
-
-        <pre><code>// DA算法的核心思想
-// 传统: y[n] = Σ c[k] * x[n-k]  需要N个乘法器
-// DA改寫: 将x的每个bit位分开处理, 用LUT预计算所有系数组合的部分和
-// 对于B位输入、N阶FIR:
-// 资源: N个乘法器 → 2^N个LUT条目 (可分块处理降低LUT大小)
-
-// 4阶DA FIR的分块查找表示例 (N=4, B=8)
-// 每个DA块: 2^4 = 16个条目的LUT
-// 需要8个(bit位) × (ceil(N/4))个DA块
-// 总LUT: 8 × 1 × 16 = 128个LUT6, 零乘法器</code></pre>
-
-        <p>DA算法的优势是在乘法器稀缺的FPGA上（尤其是低端型号）高效实现FIR。缺点是数据吞吐量受串行bit处理速度限制，且LUT消耗较大。但对于16阶以下、信号位宽小于16位的滤波器，DA算法往往比直接型更节省资源。</p>
-
-        <h3>22.3 FFT的FPGA实现：流水线结构</h3>
-
-        <p>FPGA上实现FFT几乎不会用教科书里的"一次计算一个蝶形"的迭代方法——因为太慢了。工业标准的做法是<strong>流水线FFT架构</strong>。常见的有三种：</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>架构</th>
-                    <th>全称</th>
-                    <th>特点</th>
-                    <th>资源消耗</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>SDF</strong></td>
-                    <td>Single-path Delay Feedback</td>
-                    <td>单个数据通路，使用反馈寄存器</td>
-                    <td>低（最少RAM）</td>
-                </tr>
-                <tr>
-                    <td><strong>MDC</strong></td>
-                    <td>Multi-path Delay Commutator</td>
-                    <td>多个数据通路并行，更高速率</td>
-                    <td>高（更多RAM+乘法器）</td>
-                </tr>
-                <tr>
-                    <td><strong>SDC</strong></td>
-                    <td>Single-path Delay Commutator</td>
-                    <td>单数据通路，使用切换器</td>
-                    <td>中等</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <p>SDF架构是最常用的。对于一个N点FFT，SDF需要log₂(N)个蝶形处理单元，每个单元包含一个复数乘法器和一个旋转因子ROM。数据以流式方式进入，经过log₂(N)级流水，在固定延迟后输出变换结果。吞吐量是每时钟周期一个样本——意味着无论FFT点数多大，它都能以时钟频率连续处理数据。</p>
-
-        <p><strong>旋转因子（Twiddle Factor）存储</strong>是一个常被低估的问题。一个1024点FFT需要存储约512个复数旋转因子，每个因子至少16位宽度——即大约16Kbit的Block RAM。如果FIFO和延迟线的存储需求加起来，一个1024点流水线FFT会消耗大约4-8个36Kb Block RAM。在设计FPGA资源规划时，这一点必须提前考虑。</p>
-
-        <h3>22.4 CORDIC算法：用移位和加法实现三角函数</h3>
-
-        <p>在FPGA上做三角函数（sin/cos/atan）是个头疼的问题——因为乘法器可以硬化，但三角函数没有对应的硬件原语。这里有一个经典的解决方案：<strong>CORDIC（Coordinate Rotation Digital Computer）</strong>——用<strong>迭代移位和加法</strong>逼近三角函数。</p>
-
-        <p>CORDIC的核心思想很简单：把目标角度分解成一组可以预先计算的角度微小量（arctan(2⁻ⁱ)），每次迭代旋转这个微小量，同时用移位代替乘法更新坐标。</p>
-
-        <pre><code>// Verilog: CORDIC核心迭代单元 (16位, 12次迭代)
-module cordic_core (
-    input clk,
-    input [15:0] angle,      // 角度: Q15格式 [-π, π-2⁻¹⁵]
-    output reg [15:0] sin,
-    output reg [15:0] cos
-);
-    // 预计算的旋转角度表: arctan(2⁻ⁱ) × 2¹⁵/π
-    reg signed [15:0] atan_table [0:11];
-    initial begin
-        atan_table[0]  = 16'd8192;  // 45.000°
-        atan_table[1]  = 16'd4836;  // 26.565°
-        atan_table[2]  = 16'd2555;  // 14.036°
-        atan_table[3]  = 16'd1297;  // 7.125°
-        // ... 后续迭代角度越来越小
-    end
-
-    reg signed [15:0] x, y, z;
-    reg signed [15:0] x_next, y_next;
-    integer i;
-
-    always @(posedge clk) begin
-        x <= 16'd19898;  // CORDIC增益补偿: 1/∏cos(arctan(2⁻ⁱ))
-        y <= 0;
-        z <= angle;
-
-        for (i = 0; i < 12; i = i + 1) begin
-            if (z >= 0) begin
-                x_next = x - (y >>> i);
-                y_next = y + (x >>> i);
-                z <= z - atan_table[i];
-            end else begin
-                x_next = x + (y >>> i);
-                y_next = y - (x >>> i);
-                z <= z + atan_table[i];
-            end
-            x <= x_next;
-            y <= y_next;
-        end
-        cos <= x;
-        sin <= y;
-    end
-endmodule</code></pre>
-
-        <p>CORDIC在DSP领域应用广泛，不仅限于三角函数：</p>
-        <ul>
-            <li><strong>NCO（数字控制振荡器）：</strong> 利用CORDIC生成正弦/余弦波形，替代大容量的查找表ROM</li>
-            <li><strong>坐标变换：</strong> 直角坐标↔极坐标转换（用于数字下变频中的鉴相）</li>
-            <li><strong>幅度计算：</strong> sqrt(I²+Q²) 可以通过CORDIC的vector模式计算</li>
-        </ul>
-
-        <p>现代FPGA厂商提供了CORDIC的IP核（Xilinx的CORDIC IP、Intel的ALTMULT_ACCUM），直接拖拽使用即可，不建议自己从头写——除非你特别关注延迟或需要定制迭代次数。</p>
-
-        <h3>22.5 HLS高层次综合入门</h3>
-
-        <p>如果前面这些Verilog代码让你感到头晕——别担心，你不是一个人。用RTL（寄存器传输级）描述DSP算法确实痛苦：你要关心每个时钟周期的行为、每个信号的比特位宽、每个状态机的跳转。开发效率比用C语言写软件低了一个数量级。</p>
-
-        <p><strong>高层次综合（High-Level Synthesis，HLS）</strong> 就是来解决这个问题的。你写C/C++代码，HLS工具自动生成对应的RTL代码。Xilinx的Vivado HLS（现为Vitis HLS）和Intel的HLS Compiler是两大主流工具。</p>
-
-        <pre><code>// Vitis HLS: FIR滤波器的C++实现 + 优化pragma
-#include "ap_fixed.h"
-#include "hls_stream.h"
-
-// 使用任意精度定点类型
-typedef ap_fixed<16, 1> coeff_t;  // Q15
-typedef ap_fixed<32, 8> acc_t;
-
-#define N 32
-
-void fir_hls(hls::stream<coeff_t> &x,
-             hls::stream<coeff_t> &y,
-             const coeff_t coeffs[N]) {
-#pragma HLS INTERFACE axis port=x
-#pragma HLS INTERFACE axis port=y
-
-    static coeff_t shift_reg[N];
-
-    acc_t acc = 0;
-
-    // 关键：PIPELINE pragma 让循环流水化
-    FIR_LOOP: for (int i = N-1; i >= 0; i--) {
-#pragma HLS PIPELINE II=1
-        if (i == 0) {
-            shift_reg[0] = x.read();
-        } else {
-            shift_reg[i] = shift_reg[i-1];
-        }
-        acc += shift_reg[i] * coeffs[i];
-    }
-
-    y.write(acc.range(30, 15));  // Q30 → Q15截位
-}</code></pre>
-
-        <p>上面的代码中，几个pragma决定了最终硬件的性能：</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Pragma</th>
-                    <th>作用</th>
-                    <th>资源影响</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>PIPELINE II=1</code></td>
-                    <td>循环流水化，每个时钟周期启动一次新迭代</td>
-                    <td>需要寄存器重命名（register renaming）</td>
-                </tr>
-                <tr>
-                    <td><code>UNROLL</code></td>
-                    <td>完全展开循环，所有迭代并行执行</td>
-                    <td>资源乘N倍，延迟变为单周期</td>
-                </tr>
-                <tr>
-                    <td><code>ARRAY_PARTITION</code></td>
-                    <td>把数组拆分为多个独立BRAM，消除读写冲突</td>
-                    <td>BRAM数量增加，但吞吐量提升</td>
-                </tr>
-                <tr>
-                    <td><code>DATAFLOW</code></td>
-                    <td>函数级流水，不同函数之间的数据流并行</td>
-                    <td>需要FIFO做数据缓冲</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="tip">
-            <strong>🔧 HLS开发建议：</strong>新手常犯的错误是"用HLS写C代码，指望工具自动优化出高性能硬件"。实际上HLS的性能取决于你的代码风格和pragma配置。以下几条经验：1) 循环要有固定的边界（变量边界会使PIPELINE失效）；2) 尽量避免全局变量和动态内存分配（malloc在HLS中不可综合）；3) 用 <code>ap_fixed&lt;W,I&gt;</code> 而非 <code>float</code>——浮点综合出的硬件面积大约是定点的5-10倍；4) 先用C仿真验证功能，再跑C/RTL协同仿真验证精度，最后看latency/area报告迭代优化。
-        </div>
-
-        <h3>22.6 踩坑：DSP Slice复位后的延迟链不匹配</h3>
-
-        <p>最后分享一个我在FPGA DSP项目中遇到的真实事故——希望你能引以为戒。</p>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑实录：DSP Slice延迟链不匹配</strong> 我参与过一个数字下变频（DDC）项目，用三个DSP48E2级联实现一个CIC补偿滤波器。仿真通过、时序收敛、bitstream烧录——然后输出数据全是乱的。我们用ChipScope抓了内部信号，发现第一个DSP48的输出正常，第二个的输出和第一个之间有3个时钟周期的固定偏移。<br><br>
-            排查到最后发现：Xilinx DSP48E2的每个级联路径（A/B/C→P）都有固定的流水线寄存器延迟。工程师A在设计第一个DSP Slice时启用了两级流水寄存器（为了提升时钟频率），而工程师B在设计第二个Slice时只启用了一级。两个Slice的级联路径上的延迟链长度不匹配——数据到了第二个Slice时，对应的控制信号（如累加/清零）已经错过了正确的时钟沿。<br><br>
-            更糟糕的是，这个问题在复位后才暴露。因为FPGA上电后，所有寄存器的初始状态是0，第一个周期看起来"碰巧正确"。但一旦系统稳定运行，延迟差就显现了。修复方案：统一所有级联DSP Slice的流水线寄存器配置，并在设计文档中强制标注每个Slice的 pipeline stage 数量。从那以后，我在所有FPGA DSP设计中加入了 <code>属性（attribute）</code> 来强制同步：<br><br>
-            <code>// 强制所有级联DSP使用相同级数的流水线寄存器
-            (* keep = "true" *) logic [2:0] pipe_stage;</code>
-        </div>
-
-        <h3>22.7 FPGA vs DSP芯片：选型对比</h3>
-
-        <p>为了帮你在未来的项目中做出更明智的选择，这里做一个最终的总结对比。</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>维度</th>
-                    <th>FPGA</th>
-                    <th>DSP芯片（如TI C6000）</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>并行度</strong></td>
-                    <td>可定制，任意宽度</td>
-                    <td>固定（取决于MAC单元数）</td>
-                </tr>
-                <tr>
-                    <td><strong>时钟频率</strong></td>
-                    <td>200-800 MHz</td>
-                    <td>500-1500 MHz</td>
-                </tr>
-                <tr>
-                    <td><strong>峰值MAC</strong></td>
-                    <td>极高（数千MAC并行）</td>
-                    <td>高（8~32 MAC/cycle）</td>
-                </tr>
-                <tr>
-                    <td><strong>延迟</strong></td>
-                    <td>确定性，低（ns级）</td>
-                    <td>取决于中断调度</td>
-                </tr>
-                <tr>
-                    <td><strong>开发难度</strong></td>
-                    <td>高（RTL/HLS）</td>
-                    <td>中等（C语言）</td>
-                </tr>
-                <tr>
-                    <td><strong>功耗</strong></td>
-                    <td>较高</td>
-                    <td>较低</td>
-                </tr>
-                <tr>
-                    <td><strong>重新配置</strong></td>
-                    <td>重新烧录</td>
-                    <td>软件更新</td>
-                </tr>
-                <tr>
-                    <td><strong>适用场景</strong></td>
-                    <td>超高吞吐、极低延迟</td>
-                    <td>中等吞吐、灵活算法</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="highlight">
-            <strong>💡 趋势：</strong>2026年的趋势是<strong>异构融合</strong>——Xilinx的Zynq UltraScale+ RFSoC把ARM CPU、FPGA fabric和RF-ADC/DAC集成在单芯片上；Intel的Agilex FPGA内嵌了Tensor block做AI推理。未来的DSP系统不再是"要么DSP芯片要么FPGA"的二选一，而是"CPU负责控制+调度、FPGA负责高吞吐预处理、DSP核负责算法"的异构协作架构。这是第27章软无线电和第28章综合项目中的核心主题。
-        </div>
-
-        <h3>22.8 本章小结</h3>
-
-        <ul>
-            <li>理解了FPGA DSP Slice（DSP48E2）的内部结构——预加器、乘法器、累加器、级联链；</li>
-            <li>掌握了三种FIR FPGA实现方案的优劣：直接型（简单但耗乘法器）、转置型（高吞吐）、分布式算法DA（用LUT替代乘法器）；</li>
-            <li>了解了流水线FFT架构（SDF/MDC/SDC）的基本原理和旋转因子存储的资源估算；</li>
-            <li>学会了CORDIC算法——一组迭代的移位加，可用于sin/cos/atan/NCO等场景；</li>
-            <li>入门了HLS开发流程，掌握了PIPELINE/UNROLL/ARRAY_PARTITION等关键pragma的用法；</li>
-            <li>通过DSP Slice级联延迟不匹配的真实踩坑故事，理解了硬件设计的"bit-level确定性"要求。</li>
-        </ul>
-
-        <p>至此，我们完成了"实现技术"模块的全部四章——从Python仿真到定点实现，从嵌入式DSP到FPGA。你已经具备了将任意DSP算法在不同硬件平台上落地的全链路能力。接下来的五章（第23-27章）我们会把这些知识应用到具体的领域——音频、通信、图像、AI和软件无线电。而第28章，我们会做一个综合项目，把四门功课全部串起来。</p>
-
-        <p>我们第23章——<strong>音频信号处理</strong>——见。</p>
-
-        <div class="footer-nav">
-            <a href="21.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="23.html">下一章 →</a>
-        </div>
-    </div>
+<a class="skip" href="#main">跳转至正文</a>
+<header class="topbar"><a class="brand" href="../index.html">∿ Digital Signal Processing</a><span>CHAPTER 22 / 28</span><a href="../index.html#curriculum">课程地图</a></header>
+<div class="layout">
+<nav class="toc" aria-label="本章目录">
+<div class="back"><a href="../index.html">← 返回课程首页</a></div>
+<p>本章路径</p>
+<div class="toc-items">
+<a href="#problem">顺序执行与空间并行</a>
+<a href="#slice">DSP Slice：硬化的乘法器块</a>
+<a href="#fir">FIR 的三种 FPGA 实现</a>
+<a href="#fft">流水线 FFT</a>
+<a href="#cordic">CORDIC：移位加法算三角</a>
+<a href="#hls">HLS 高层次综合</a>
+<a href="#experiment">交互：CORDIC 迭代精度</a>
+<a href="#selection">FPGA 与 DSP 芯片的取舍</a>
+<a href="#limits">边界与失效模式</a>
+<a href="#sources">参考资料与接口</a>
 </div>
+</nav>
+<main id="main">
+<article class="article">
+<header class="article-header">
+<p class="kicker">Implementation · FPGA / 22</p>
+<h1>FPGA 上的 DSP：并行、流水线与 CORDIC</h1>
+<p class="dek">DSP 芯片每个周期能做的乘加是固定的；FPGA 让你“用逻辑资源换并行度”，代价是设计复杂度与确定性要求。</p>
+<div class="read-meta"><span>并行 → 结构 → 流水线 → 综合</span><span>2 张独立 SVG 与离线 MathML</span><span>可运行实验</span></div>
+</header>
+<section id="problem" aria-labelledby="h-problem">
+<h2 id="h-problem">顺序执行与空间并行</h2>
+<p class="lead">DSP 芯片本质上仍是顺序执行指令：无论硬件 MAC 多快、流水线多深，每个周期能完成的乘加次数是固定的。当算法需要的吞吐量超过这个上限时，只能增加芯片数量，或换一种计算模型。</p>
+<p>FPGA 提供的是另一种模型：<strong>空间并行</strong>。需要同时做 8 个 MAC，就在逻辑里放 8 个乘法器；需要每周期吞吐一个样本，就把运算排成流水线。它用硬件资源换计算速度：没有指令取指，也没有分支预测失败。</p>
+<p>代价同样明确：设计要落到每一个时钟周期与每一个比特；资源、时序与延迟都需自行规划。可检验的目标：本章程序用纯移位-加法实现 CORDIC 逼近三角函数，并证明分布式算法 FIR 与直接型逐点相等。</p>
+</section>
+<section id="slice" aria-labelledby="h-slice">
+<h2 id="h-slice">DSP Slice：硬化的乘法器块</h2>
+<p>现代 FPGA 并非只有通用逻辑单元（LUT + 触发器），还集成了硬化的 <strong>DSP Slice</strong>——一个可配置的乘加块。用它做乘法，比用 LUT 拼出乘法器更省资源、时序更好。</p>
+<div class="table-wrap"><table><thead><tr><th>厂商</th><th>名称</th><th>核心结构</th><th>可配置位宽</th></tr></thead><tbody>
+<tr><td><strong>AMD (Xilinx)</strong></td><td>DSP48E2</td><td>乘法器 + 累加器 + ALU + 预加器</td><td>支持宽乘法与拆分使用</td></tr>
+<tr><td><strong>Intel (Altera)</strong></td><td>Variable Precision DSP Block</td><td>乘法器 + 高宽累加 + 链式输入</td><td>可在几种精度间配置</td></tr>
+<tr><td><strong>Lattice</strong></td><td>DSP Block</td><td>小位宽乘法器 + 累加器</td><td>面向低功耗与视频桥接</td></tr>
+</tbody></table></div>
+<p>具体器件内 DSP Slice 的数量与位宽由型号决定，需查对应数据手册，不能用“多”或“少”一概而论。但几种通用能力值得记住：</p>
+<ul>
+<li><strong>级联（Cascade）：</strong>多个 Slice 可串接，拼出比单个乘法器更宽的乘法，或做长累加链。</li>
+<li><strong>拆分使用：</strong>一个宽乘法器可拆成几个低位宽乘法器并行，用于低精度高通量场景。</li>
+<li><strong>预加器（Pre-adder）：</strong>乘法之前先做加法；对称 FIR 可借此省下一半乘法器。</li>
+</ul>
+<aside class="callout"><p>DSP Slice 内部的流水线寄存器是可配置的。级联使用时，各段流水线级数必须一致，否则数据与控制信号会对齐错位——这类问题常在复位后才暴露，需要在设计中显式约定并检查。</p></aside>
+</section>
+<section id="fir" aria-labelledby="h-fir">
+<h2 id="h-fir">FIR 的三种 FPGA 实现</h2>
+<p>同一个 FIR，在 FPGA 上有多种结构，资源与延迟特性不同。先从定义出发：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="FIR 滤波器的卷积定义"><math display="block" aria-label="FIR 滤波器的卷积定义"><mrow><mi>y</mi><mo>[</mo><mi>n</mi><mo>]</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>N</mi><mo>−</mo><mn>1</mn></mrow></munderover><mi>h</mi><mo>[</mo><mi>k</mi><mo>]</mo><mi>x</mi><mo>[</mo><mi>n</mi><mo>−</mo><mi>k</mi><mo>]</mo></mrow></math></div><p class="equation-caption">式（1）：<code>N</code> 为抽头数。直接型与转置型都用 N 个乘法器，区别在于加法器与寄存器的摆放方式。</p></div>
+<p><strong>直接型：</strong>每个抽头一个乘法器，乘积汇入加法树。资源是 <code>O(N)</code> 个乘法器，关键路径随阶数增长，高阶时难以时序收敛。</p>
+<p><strong>转置型：</strong>寄存器夹在加法器之间，关键路径与阶数无关，只受单个乘累加限制；这是高吞吐 FIR 的标准做法。</p>
+<p><strong>分布式算法（DA）：</strong>把乘法改写为查表。把输入 <code>x[n−k]</code> 的每一位拆开，用 LUT 预存所有系数组合的部分和，再逐位加权累加：</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="分布式算法的加权求和形式"><math display="block" aria-label="分布式算法的加权求和形式"><mrow><mi>y</mi><mo>[</mo><mi>n</mi><mo>]</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>b</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>B</mi><mo>−</mo><mn>1</mn></mrow></munderover><msup><mn>2</mn><mi>b</mi></msup><mo>·</mo><mi>L</mi><mo>(</mo><mi>b</mi><mo>)</mo></mrow></math></div><p class="equation-caption">式（2）：<code>L(b)</code> 是以第 <code>b</code> 位组成的位向量为索引、预存系数组合的查找表输出。DA 不用乘法器，但吞吐受逐位串行处理限制。</p></div>
+<figure class="figure"><img src="../assets/svg/22-fir-parallel.svg" alt="直接型 FIR（并行乘法器加加法树）与转置型 FIR（寄存器分隔）的结构对比" width="920" height="420" loading="lazy"><figcaption><span class="fig-no">FIGURE 01</span>　直接型把 N 个乘积汇总到组合加法树，关键路径随阶数增长；转置型用寄存器把加法器分开，关键路径与阶数无关。三种结构没有绝对优劣，取决于资源与速率约束。</figcaption></figure>
+</section>
+<section id="fft" aria-labelledby="h-fft">
+<h2 id="h-fft">流水线 FFT</h2>
+<p>FPGA 上实现 FFT 几乎不会用“一次算一个蝶形”的迭代方法——那太慢。工业做法是<strong>流水线 FFT</strong>：把 <code>log₂(N)</code> 级蝶形排成流水线，每级处理完的数据立刻交给下一级。</p>
+<div class="table-wrap"><table><thead><tr><th>架构</th><th>全称</th><th>特点</th></tr></thead><tbody>
+<tr><td><strong>SDF</strong></td><td>Single-path Delay Feedback</td><td>单数据通路，用反馈寄存器缓存一半数据，RAM 最省</td></tr>
+<tr><td><strong>MDC</strong></td><td>Multi-path Delay Commutator</td><td>多数据通路并行，速率更高，RAM 与乘法器更多</td></tr>
+<tr><td><strong>SDC</strong></td><td>Single-path Delay Commutator</td><td>单通路 + 切换器，资源居中</td></tr>
+</tbody></table></div>
+<figure class="figure"><img src="../assets/svg/22-sdf-pipeline.svg" alt="SDF 流水线 FFT：样本依次经过 log2(N) 级蝶形与反馈存储" width="920" height="400" loading="lazy"><figcaption><span class="fig-no">FIGURE 02</span>　SDF 中数据流依次经过各级蝶形，每级用反馈存储缓存一半数据。各级同时工作，因此吞吐量为每时钟一个样本，与点数无关；代价是固定的流水线延迟与可观的 Block RAM 占用。</figcaption></figure>
+<p><strong>旋转因子（twiddle factor）存储</strong>常被低估：一个 N 点 FFT 需要约 <code>N/2</code> 个复数旋转因子，加上各级延迟线，可能占用可观的 Block RAM。资源规划时需提前把这些存储算进去。</p>
+</section>
+<section id="cordic" aria-labelledby="h-cordic">
+<h2 id="h-cordic">CORDIC：移位加法算三角</h2>
+<p>FPGA 里乘法器可以硬化，但三角函数没有硬件原语。CORDIC（Coordinate Rotation Digital Computer）用迭代的移位与加法逼近旋转：每次把目标角度分解为一个可预计算的角度 <code>arctan(2⁻ⁱ)</code>，沿固定方向旋转一小步。</p>
+<div class="math-equation"><div class="math-scroll" tabindex="0" role="region" aria-label="CORDIC 迭代的旋转递推式"><math display="block" aria-label="CORDIC 迭代的旋转递推式"><mtable><mtr><mtd><msub><mi>x</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><msub><mi>s</mi><mi>i</mi></msub><msup><mn>2</mn><mrow><mo>−</mo><mi>i</mi></mrow></msup><msub><mi>y</mi><mi>i</mi></msub><mo>,</mo></mtd></mtr><mtr><mtd><msub><mi>y</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>y</mi><mi>i</mi></msub><mo>+</mo><msub><mi>s</mi><mi>i</mi></msub><msup><mn>2</mn><mrow><mo>−</mo><mi>i</mi></mrow></msup><msub><mi>x</mi><mi>i</mi></msub><mo>,</mo></mtd></mtr><mtr><mtd><msub><mi>z</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>z</mi><mi>i</mi></msub><mo>−</mo><msub><mi>s</mi><mi>i</mi></msub><mi>arctan</mi><mo>(</mo><msup><mn>2</mn><mrow><mo>−</mo><mi>i</mi></mrow></msup><mo>)</mo><mo>.</mo></mtd></mtr></mtable></math></div><p class="equation-caption">式（3）：<code>s_i=±1</code> 由当前残余角 <code>z_i</code> 的符号决定。收敛后 <code>(x,y)</code> 正比于 <code>(cos θ, sin θ)</code>，比例因子为常数 <code>K</code>，可在初值中预先补偿。</p></div>
+<p>CORDIC 不只算三角函数。它还能实现：<strong>NCO</strong>（数字控制振荡器，替代大容量正弦 ROM）、直角坐标 ↔ 极坐标（数字下变频的鉴相）、以及幅度 <code>√(I²+Q²)</code>（vector 模式）。现代 FPGA 提供 CORDIC IP 核，一般直接调用即可，除非你特别关注延迟或需要定制迭代次数。</p>
+</section>
+<section id="hls" aria-labelledby="h-hls">
+<h2 id="h-hls">HLS 高层次综合</h2>
+<p>用 RTL 描述 DSP 很痛苦：每个周期、每个比特位宽、每个状态机都要手写。高层次综合（HLS）让你写 C/C++，工具生成 RTL。最终硬件性能取决于代码风格与 pragma，而不是自动变好。</p>
+<div class="table-wrap"><table><thead><tr><th>Pragma</th><th>作用</th><th>代价</th></tr></thead><tbody>
+<tr><td><code>PIPELINE II=1</code></td><td>循环流水化，每周期启动一次新迭代</td><td>需要额外寄存器（寄存器重命名）</td></tr>
+<tr><td><code>UNROLL</code></td><td>展开循环，所有迭代并行</td><td>资源乘 N 倍</td></tr>
+<tr><td><code>ARRAY_PARTITION</code></td><td>把数组拆成多块存储，消除读写冲突</td><td>存储块数量增加，吞吐提升</td></tr>
+<tr><td><code>DATAFLOW</code></td><td>函数级流水，不同阶段并行</td><td>需要 FIFO 缓冲</td></tr>
+</tbody></table></div>
+<p>几条实用经验：循环要有固定边界（变量边界会使流水化失效）；避免动态内存分配（<code>malloc</code> 不可综合）；用 <code>ap_fixed&lt;W,I&gt;</code> 而非 <code>float</code>，后者综合出的面积极大；先用 C 仿真验证功能，再做 C/RTL 协同仿真验证精度，最后看 latency/area 报告迭代。</p>
+</section>
+<section id="experiment" aria-labelledby="h-experiment">
+<h2 id="h-experiment">交互：CORDIC 迭代精度</h2>
+<p>下面用 CORDIC 算法（初值预先补偿增益 <code>1/K</code>）在 <code>−π/2</code> 到 <code>π/2</code> 上逼近 <code>sin</code>。滑块改变迭代次数：青线是真值，赭线是 CORDIC 输出。迭代越多误差越小，但每加一级就多一份流水线资源。</p>
+<div class="lab" data-spectrum-lab="cordic">
+<h3>动手验证：选择 CORDIC 迭代次数</h3>
+<label for="range-22">迭代次数（4 – 16）</label>
+<input id="range-22" type="range" min="4" max="16" step="1" value="10">
+<output for="range-22" aria-live="polite">改变迭代次数，观察误差。</output>
+<svg role="img" aria-label="CORDIC 逼近 sin 与真值的对比" viewBox="0 0 560 215" width="560" height="215"><title>CORDIC 迭代精度</title></svg>
+<p class="muted">交互仅辅助观察；式（3）与确定性程序在 JS 关闭时仍可独立理解。</p>
+</div>
+<p><a href="../examples/22_fpga.py">完整可执行例程（22_fpga.py）</a>：断言 CORDIC 12 次迭代 sin 误差 <code>&lt; 1e-3</code>、增益补偿后 <code>cos(0)≈1</code>、分布式算法 FIR 与直接型逐点相等、转置型与直接型等价。</p>
+</section>
+<section id="selection" aria-labelledby="h-selection">
+<h2 id="h-selection">FPGA 与 DSP 芯片的取舍</h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>FPGA</th><th>DSP 芯片</th></tr></thead><tbody>
+<tr><td><strong>并行度</strong></td><td>可定制，几乎任意宽度</td><td>固定（取决于硬件 MAC 单元数）</td></tr>
+<tr><td><strong>时钟频率</strong></td><td>通常较低</td><td>通常较高</td></tr>
+<tr><td><strong>延迟</strong></td><td>确定性，可做到 ns 级</td><td>取决于中断与调度</td></tr>
+<tr><td><strong>开发难度</strong></td><td>高（RTL/HLS）</td><td>中等（C）</td></tr>
+<tr><td><strong>重新配置</strong></td><td>重新编译/烧录</td><td>软件更新</td></tr>
+<tr><td><strong>典型场景</strong></td><td>超高吞吐、极低确定性延迟</td><td>中等吞吐、算法灵活</td></tr>
+</tbody></table></div>
+<p>表中不给出具体频率与 MAC 数：它们随型号大幅变化，应以所选器件的数据手册为准。一个可用的判断顺序是：先看吞吐与延迟的硬约束，再看开发周期与功耗，最后才比峰值指标。</p>
+<aside class="callout"><p><strong>趋势：异构融合。</strong>把 CPU、FPGA 逻辑与射频/ADC 集成到单芯片（如 RFSoC），或在内置 AI 引擎的 FPGA 上做推理，正在成为主流。未来更多是“CPU 控制 + FPGA 预处理 + DSP 核算法”的异构协作，而不是二选一。</p></aside>
+</section>
+<section id="limits" aria-labelledby="h-limits">
+<h2 id="h-limits">边界与失效模式</h2>
+<ul>
+<li><strong>流水线级数不匹配：</strong>级联 DSP 与流水线路径若级数不一致，数据与控制信号错位；复位后可能“碰巧”正确，掩盖问题。</li>
+<li><strong>资源估算遗漏：</strong>旋转因子 ROM、延迟线与 FIFO 都占 Block RAM；只数乘法器会大幅低估占用。</li>
+<li><strong>DA 的吞吐限制：</strong>逐位串行使位数越多越慢；LUT 大小随抽头数指数增长，抽头多时必须分块。</li>
+<li><strong>HLS 不是自动优化：</strong>变量循环边界、动态内存、<code>float</code> 类型都会使综合结果远差于预期。</li>
+<li><strong>关键路径与时钟：</strong>直接型高阶 FIR 的组合加法树会成为时序瓶颈，需改转置型或插入流水。 </li>
+<li><strong>比特级验证不可省：</strong>FPGA 输出必须与浮点/定点参考逐位或逐点对齐，不能靠听感判断。</li>
+</ul>
+<p>自检：一个 256 抽头的直接型 FIR 为何难时序收敛？改转置型或插入流水寄存器分别改变什么？DA 在高抽头数下为什么必须先分块？</p>
+</section>
+<section id="sources" aria-labelledby="h-sources">
+<h2 id="h-sources">参考资料与接口</h2>
+<ol class="refs">
+<li><a href="https://doi.org/10.1109/TEC.1959.5222697">J. E. Volder (1959) · The CORDIC Trigonometric Computing Technique</a>：移位-加法迭代算法的原始文献。</li>
+<li><a href="https://docs.amd.com/r/en-US/ug579-ultrascale-dsp">AMD · UltraScale Architecture DSP Slice (UG579)</a>：DSP48E2 的乘法器、累加器、预加器与级联。</li>
+<li><a href="https://docs.amd.com/r/en-US/ug1399-vitis-hls">AMD · Vitis HLS (UG1399)</a>：PIPELINE/UNROLL/ARRAY_PARTITION 等 pragma 的语义。</li>
+<li><a href="https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/">MIT OCW · Discrete-Time Signal Processing</a>：FIR/FFT 结构与定点实现的数学基础。</li>
+</ol>
+</section>
+<nav class="chapter-nav"><a href="21.html">← 第 21 章</a><a href="../index.html#curriculum">课程地图</a><a href="23.html">第 23 章 →</a></nav>
+</article>
+</main>
 </div>
 </body>
 </html>
