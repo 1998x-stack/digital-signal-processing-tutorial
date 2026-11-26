@@ -1,0 +1,32 @@
+{
+  "chapter": "21",
+  "title": "嵌入式 DSP 芯片开发：架构、CMSIS-DSP 与实时集成",
+  "sources": [
+    {
+      "id": "dsp-arch",
+      "claim": "DSP 处理器用哈佛架构、硬件 MAC、零开销循环、位反转寻址、饱和运算与模寻址针对乘累加与流式数据优化",
+      "url": "https://www.ti.com/processors/digital-signal-processors/c6000-dsp/overview.html",
+      "scope": "TI C6000 DSP 架构与文档；体系结构层面的能力描述"
+    },
+    {
+      "id": "cmsis-dsp",
+      "claim": "CMSIS-DSP 提供 arm_fir_* / arm_biquad_* / arm_cfft_* 等 C API，采用块处理，FIR 状态缓冲区长度为 numTaps + blockSize − 1",
+      "url": "https://arm-software.github.io/CMSIS-DSP/main/",
+      "scope": "ARM CMSIS-DSP 文档：FIR/IIR/FFT API、实例状态与块处理"
+    },
+    {
+      "id": "neon",
+      "claim": "ARM Neon（Cortex-A）与 Helium/MVE（Cortex-M55/M85）提供 SIMD 向量内在函数；点积模式为 vld1q + vmlaq + vaddvq 收束",
+      "url": "https://developer.arm.com/architectures/instruction-sets/intrinsics/",
+      "scope": "ARM Intrinsics reference：Neon 与 Helium 内在函数语义"
+    }
+  ],
+  "notes": [
+    "确定性实验 examples/21_embedded.py 仅用标准库：256 抽头在 100 MHz、单 MAC/周期下最大采样率 390625 Hz（48 kHz 占用 12.29%）；环形缓冲（模寻址）FIR 与直接卷积逐点相等；乒乓序列中读写缓冲区始终不同；n=1000、4 通道向量化把乘加次数降到 250 次。",
+    "旧版页面中的第一人称工程轶事（2019 年智能音箱项目、CMSIS-DSP FFT 输入位反转的‘踩坑’）无法核实，已删除，改为可复现的确定性模型与接口约定说明。",
+    "吞吐量交互为算术下界模型（1 MAC/周期、忽略流水线与内存开销），页面正文与图注均已标注‘真实占用更高’。",
+    "未给出具体的周期数或加速比倍数，以避免无法核实的量化断言；架构收益以定性方式描述。",
+    "not_verified：浏览器 QA 未验证（browser_check.py 以 set_content 载入页面，相对路径资源无法解析）；已另用本地 HTTP 服务做补充检查（桌面 1440、移动 390/360 无横向溢出、无 JS 错误、MathML 分式正常、交互滑块可改变输出）。"
+  ],
+  "status": "DSP 架构特性、CMSIS-DSP API 与状态缓冲区长度、Neon/Helium 向量化对照 TI、ARM 官方文档；确定性实验全部通过；浏览器 QA 未验证（本地 HTTP 补充检查通过）。"
+}

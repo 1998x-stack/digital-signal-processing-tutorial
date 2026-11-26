@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="920" height="400" role="img" aria-labelledby="t21b d21b">
+<title id="t21b">标量循环与 SIMD 向量化的点积计算对比</title>
+<desc id="d21b">标量版本每次处理一个元素，逐个乘累加；SIMD 版本一次加载 4 个 float32 到 128 位寄存器，用一条乘累加指令更新向量累加器，最后横向求和把各通道加成一个标量。</desc>
+<rect x="0" y="0" width="920" height="400" fill="#fbfdfc"/>
+<text x="30" y="32" font-family="system-ui,PingFang SC,sans-serif" font-size="15" font-weight="600" fill="#33474d">点积：从“一次一个”到“一次四个”</text>
+
+<text x="30" y="66" font-family="system-ui,PingFang SC,sans-serif" font-size="13.5" font-weight="600" fill="#53676d">标量：每轮 1 个元素</text>
+<g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#53676d">
+<rect x="30" y="76" width="34" height="28" fill="#f4f6f5" stroke="#c5d6ce"/><text x="41" y="95">a0</text>
+<rect x="64" y="76" width="34" height="28" fill="#f4f6f5" stroke="#c5d6ce"/><text x="75" y="95">a1</text>
+<rect x="98" y="76" width="34" height="28" fill="#f4f6f5" stroke="#c5d6ce"/><text x="109" y="95">a2</text>
+<rect x="132" y="76" width="34" height="28" fill="#f4f6f5" stroke="#c5d6ce"/><text x="143" y="95">a3</text>
+</g>
+<line x1="176" y1="90" x2="212" y2="90" stroke="#53676d" stroke-width="1.6"/><polygon points="212,90 202,86 202,94" fill="#53676d"/>
+<text x="220" y="95" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">4 次独立乘累加，逐元素串行</text>
+
+<text x="30" y="160" font-family="system-ui,PingFang SC,sans-serif" font-size="13.5" font-weight="600" fill="#33474d">SIMD：每轮 4 个元素（128 位寄存器）</text>
+<rect x="30" y="172" width="136" height="30" fill="#e6f2f0" stroke="#147f80"/>
+<g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#147f80">
+<text x="42" y="192">a0</text><text x="76" y="192">a1</text><text x="110" y="192">a2</text><text x="144" y="192">a3</text>
+</g>
+<text x="30" y="224" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#147f80">vld1q_f32 一次加载 4 个 float32</text>
+<rect x="30" y="240" width="136" height="30" fill="#fbeee9" stroke="#d06d4d"/>
+<g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#b1592f">
+<text x="42" y="260">b0</text><text x="76" y="260">b1</text><text x="110" y="260">b2</text><text x="144" y="260">b3</text>
+</g>
+<line x1="176" y1="255" x2="212" y2="255" stroke="#53676d" stroke-width="1.6"/><polygon points="212,255 202,251 202,259" fill="#53676d"/>
+<text x="220" y="238" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">vmlaq_f32：一条指令完成 4 路乘累加</text>
+<text x="220" y="260" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">更新向量累加器 sum（4 个通道各自累加）</text>
+
+<rect x="30" y="300" width="150" height="34" rx="6" fill="#efeaf7" stroke="#7461ba"/>
+<text x="42" y="322" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#5c4aa0">vaddvq_f32</text>
+<text x="196" y="322" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">横向求和：把 4 个通道加成一个标量结果</text>
+
+<text x="30" y="372" font-family="system-ui,PingFang SC,sans-serif" font-size="13" fill="#53676d">剩余不足 4 个的元素由尾部标量循环处理；数据预取与循环展开进一步隐藏访存延迟。</text>
+<text x="30" y="392" font-family="system-ui,PingFang SC,sans-serif" font-size="12" fill="#8a9aa0">实际加速比低于 4×：横向求和、对齐与内存带宽都会分摊掉一部分收益。</text>
+</svg>

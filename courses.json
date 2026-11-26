@@ -227,14 +227,14 @@
     },
     {
       "num": "21",
-      "title": "嵌入式DSP芯片开发",
+      "title": "嵌入式 DSP 芯片开发",
       "topics": [
-        "TI C6000",
-        "CMSIS-DSP库",
-        "ARM Neon"
+        "DSP架构",
+        "CMSIS-DSP",
+        "SIMD与DMA"
       ],
       "file": "chapters/21.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "22",
