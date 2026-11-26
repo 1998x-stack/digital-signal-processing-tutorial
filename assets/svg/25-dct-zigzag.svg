@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" role="img" aria-labelledby="t25f3 d25f3" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t25f3">8×8 DCT 系数网格与 Zig-zag 扫描顺序</title>
+<desc id="d25f3">二维 DCT 把 8×8 图像块变换为 8×8 频率系数，左上角 (0,0) 是直流分量，越往右下角水平与垂直空间频率越高。之字形扫描按从低频到高频的顺序把矩阵展成一维，使量化后的长串零集中在序列尾部，便于熵编码。</desc>
+<rect width="920" height="420" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">DCT 系数：能量集中在左上，Zig-zag 从低频走到高频</text>
+<rect x="120" y="60" width="40" height="40" fill="#147f80" opacity="0.06" stroke="#fff"/>
+<rect x="160" y="60" width="40" height="40" fill="#147f80" opacity="0.13" stroke="#fff"/>
+<rect x="200" y="60" width="40" height="40" fill="#147f80" opacity="0.19" stroke="#fff"/>
+<rect x="240" y="60" width="40" height="40" fill="#147f80" opacity="0.26" stroke="#fff"/>
+<rect x="280" y="60" width="40" height="40" fill="#147f80" opacity="0.33" stroke="#fff"/>
+<rect x="320" y="60" width="40" height="40" fill="#147f80" opacity="0.40" stroke="#fff"/>
+<rect x="360" y="60" width="40" height="40" fill="#147f80" opacity="0.46" stroke="#fff"/>
+<rect x="400" y="60" width="40" height="40" fill="#147f80" opacity="0.53" stroke="#fff"/>
+<rect x="120" y="100" width="40" height="40" fill="#147f80" opacity="0.13" stroke="#fff"/>
+<rect x="160" y="100" width="40" height="40" fill="#147f80" opacity="0.19" stroke="#fff"/>
+<rect x="200" y="100" width="40" height="40" fill="#147f80" opacity="0.26" stroke="#fff"/>
+<rect x="240" y="100" width="40" height="40" fill="#147f80" opacity="0.33" stroke="#fff"/>
+<rect x="280" y="100" width="40" height="40" fill="#147f80" opacity="0.40" stroke="#fff"/>
+<rect x="320" y="100" width="40" height="40" fill="#147f80" opacity="0.46" stroke="#fff"/>
+<rect x="360" y="100" width="40" height="40" fill="#147f80" opacity="0.53" stroke="#fff"/>
+<rect x="400" y="100" width="40" height="40" fill="#147f80" opacity="0.60" stroke="#fff"/>
+<rect x="120" y="140" width="40" height="40" fill="#147f80" opacity="0.19" stroke="#fff"/>
+<rect x="160" y="140" width="40" height="40" fill="#147f80" opacity="0.26" stroke="#fff"/>
+<rect x="200" y="140" width="40" height="40" fill="#147f80" opacity="0.33" stroke="#fff"/>
+<rect x="240" y="140" width="40" height="40" fill="#147f80" opacity="0.40" stroke="#fff"/>
+<rect x="280" y="140" width="40" height="40" fill="#147f80" opacity="0.46" stroke="#fff"/>
+<rect x="320" y="140" width="40" height="40" fill="#147f80" opacity="0.53" stroke="#fff"/>
+<rect x="360" y="140" width="40" height="40" fill="#147f80" opacity="0.60" stroke="#fff"/>
+<rect x="400" y="140" width="40" height="40" fill="#147f80" opacity="0.66" stroke="#fff"/>
+<rect x="120" y="180" width="40" height="40" fill="#147f80" opacity="0.26" stroke="#fff"/>
+<rect x="160" y="180" width="40" height="40" fill="#147f80" opacity="0.33" stroke="#fff"/>
+<rect x="200" y="180" width="40" height="40" fill="#147f80" opacity="0.40" stroke="#fff"/>
+<rect x="240" y="180" width="40" height="40" fill="#147f80" opacity="0.46" stroke="#fff"/>
+<rect x="280" y="180" width="40" height="40" fill="#147f80" opacity="0.53" stroke="#fff"/>
+<rect x="320" y="180" width="40" height="40" fill="#147f80" opacity="0.60" stroke="#fff"/>
+<rect x="360" y="180" width="40" height="40" fill="#147f80" opacity="0.66" stroke="#fff"/>
+<rect x="400" y="180" width="40" height="40" fill="#147f80" opacity="0.73" stroke="#fff"/>
+<rect x="120" y="220" width="40" height="40" fill="#147f80" opacity="0.33" stroke="#fff"/>
+<rect x="160" y="220" width="40" height="40" fill="#147f80" opacity="0.40" stroke="#fff"/>
+<rect x="200" y="220" width="40" height="40" fill="#147f80" opacity="0.46" stroke="#fff"/>
+<rect x="240" y="220" width="40" height="40" fill="#147f80" opacity="0.53" stroke="#fff"/>
+<rect x="280" y="220" width="40" height="40" fill="#147f80" opacity="0.60" stroke="#fff"/>
+<rect x="320" y="220" width="40" height="40" fill="#147f80" opacity="0.66" stroke="#fff"/>
+<rect x="360" y="220" width="40" height="40" fill="#147f80" opacity="0.73" stroke="#fff"/>
+<rect x="400" y="220" width="40" height="40" fill="#147f80" opacity="0.80" stroke="#fff"/>
+<rect x="120" y="260" width="40" height="40" fill="#147f80" opacity="0.40" stroke="#fff"/>
+<rect x="160" y="260" width="40" height="40" fill="#147f80" opacity="0.46" stroke="#fff"/>
+<rect x="200" y="260" width="40" height="40" fill="#147f80" opacity="0.53" stroke="#fff"/>
+<rect x="240" y="260" width="40" height="40" fill="#147f80" opacity="0.60" stroke="#fff"/>
+<rect x="280" y="260" width="40" height="40" fill="#147f80" opacity="0.66" stroke="#fff"/>
+<rect x="320" y="260" width="40" height="40" fill="#147f80" opacity="0.73" stroke="#fff"/>
+<rect x="360" y="260" width="40" height="40" fill="#147f80" opacity="0.80" stroke="#fff"/>
+<rect x="400" y="260" width="40" height="40" fill="#147f80" opacity="0.87" stroke="#fff"/>
+<rect x="120" y="300" width="40" height="40" fill="#147f80" opacity="0.46" stroke="#fff"/>
+<rect x="160" y="300" width="40" height="40" fill="#147f80" opacity="0.53" stroke="#fff"/>
+<rect x="200" y="300" width="40" height="40" fill="#147f80" opacity="0.60" stroke="#fff"/>
+<rect x="240" y="300" width="40" height="40" fill="#147f80" opacity="0.66" stroke="#fff"/>
+<rect x="280" y="300" width="40" height="40" fill="#147f80" opacity="0.73" stroke="#fff"/>
+<rect x="320" y="300" width="40" height="40" fill="#147f80" opacity="0.80" stroke="#fff"/>
+<rect x="360" y="300" width="40" height="40" fill="#147f80" opacity="0.87" stroke="#fff"/>
+<rect x="400" y="300" width="40" height="40" fill="#147f80" opacity="0.93" stroke="#fff"/>
+<rect x="120" y="340" width="40" height="40" fill="#147f80" opacity="0.53" stroke="#fff"/>
+<rect x="160" y="340" width="40" height="40" fill="#147f80" opacity="0.60" stroke="#fff"/>
+<rect x="200" y="340" width="40" height="40" fill="#147f80" opacity="0.66" stroke="#fff"/>
+<rect x="240" y="340" width="40" height="40" fill="#147f80" opacity="0.73" stroke="#fff"/>
+<rect x="280" y="340" width="40" height="40" fill="#147f80" opacity="0.80" stroke="#fff"/>
+<rect x="320" y="340" width="40" height="40" fill="#147f80" opacity="0.87" stroke="#fff"/>
+<rect x="360" y="340" width="40" height="40" fill="#147f80" opacity="0.93" stroke="#fff"/>
+<rect x="400" y="340" width="40" height="40" fill="#147f80" opacity="1.00" stroke="#fff"/>
+<polyline points="140.0,80.0 140.0,120.0 180.0,80.0 220.0,80.0 180.0,120.0 140.0,160.0 140.0,200.0 180.0,160.0 220.0,120.0 260.0,80.0 300.0,80.0 260.0,120.0 220.0,160.0 180.0,200.0 140.0,240.0 140.0,280.0 180.0,240.0 220.0,200.0 260.0,160.0 300.0,120.0 340.0,80.0 380.0,80.0 340.0,120.0 300.0,160.0 260.0,200.0 220.0,240.0 180.0,280.0 140.0,320.0 140.0,360.0 180.0,320.0 220.0,280.0 260.0,240.0 300.0,200.0 340.0,160.0 380.0,120.0 420.0,80.0 420.0,120.0 380.0,160.0 340.0,200.0 300.0,240.0 260.0,280.0 220.0,320.0 180.0,360.0 220.0,360.0 260.0,320.0 300.0,280.0 340.0,240.0 380.0,200.0 420.0,160.0 420.0,200.0 380.0,240.0 340.0,280.0 300.0,320.0 260.0,360.0 300.0,360.0 340.0,320.0 380.0,280.0 420.0,240.0 420.0,280.0 380.0,320.0 340.0,360.0 380.0,360.0 420.0,320.0 420.0,360.0" fill="none" stroke="#d06d4d" stroke-width="1.6" opacity="0.9"/>
+<circle cx="140.0" cy="80.0" r="4.5" fill="#d06d4d"/>
+<text x="122" y="52" font-size="12" fill="#0d7779">DC (0,0)</text>
+<text x="370" y="400" font-size="12" fill="#53676d">高频 →</text>
+<text x="30" y="392" font-size="13" fill="#53676d">量化后，高频系数大多被取整为零；Zig-zag 扫描让这些零连成长串，差分 + 游程 + Huffman 编码因此高效。</text>
+</svg>

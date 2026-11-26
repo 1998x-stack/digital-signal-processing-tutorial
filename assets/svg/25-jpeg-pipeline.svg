@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 340" role="img" aria-labelledby="t25f2 d25f2" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t25f2">JPEG 压缩流水线</title>
+<desc id="d25f2">RGB 图像先转为 YCbCr 并对色度降采样，再分成 8×8 块做二维 DCT；系数按量化表除法取整，这是唯一有损的一步；随后按之字形扫描展开为一维序列，最后做差分与 Huffman 熵编码。</desc>
+<rect width="920" height="340" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">JPEG：变换 + 心理视觉量化 + 熵编码</text>
+<g font-size="12">
+<rect x="30" y="70" width="120" height="58" rx="8" fill="#eef8f6" stroke="#147f80"/><text x="46" y="96" fill="#0d7779">RGB</text><text x="46" y="114" fill="#53676d">→ YCbCr</text>
+<rect x="180" y="70" width="120" height="58" rx="8" fill="#eef8f6" stroke="#147f80"/><text x="196" y="96" fill="#0d7779">8×8 分块</text><text x="196" y="114" fill="#53676d">tile</text>
+<rect x="330" y="70" width="120" height="58" rx="8" fill="#f3effa" stroke="#7461ba"/><text x="346" y="96" fill="#5b48a0">2D DCT</text><text x="346" y="114" fill="#53676d">8×8 系数</text>
+<rect x="480" y="70" width="120" height="58" rx="8" fill="#fbf1ec" stroke="#d06d4d"/><text x="496" y="96" fill="#b55c3e">量化</text><text x="496" y="114" fill="#53676d">÷ QM 取整</text>
+<rect x="630" y="70" width="120" height="58" rx="8" fill="#f3effa" stroke="#7461ba"/><text x="646" y="96" fill="#5b48a0">Zig-zag</text><text x="646" y="114" fill="#53676d">64 → 1D</text>
+<rect x="780" y="70" width="112" height="58" rx="8" fill="#eef8f6" stroke="#147f80"/><text x="796" y="96" fill="#0d7779">熵编码</text><text x="796" y="114" fill="#53676d">Huffman</text>
+</g>
+<g stroke="#9fb8b2" stroke-width="1.6" fill="none">
+<line x1="150" y1="99" x2="180" y2="99"/><line x1="300" y1="99" x2="330" y2="99"/><line x1="450" y1="99" x2="480" y2="99"/><line x1="600" y1="99" x2="630" y2="99"/><line x1="750" y1="99" x2="780" y2="99"/>
+</g>
+<rect x="480" y="170" width="250" height="70" rx="8" fill="#fff7ef" stroke="#d06d4d"/>
+<text x="496" y="196" font-size="12" fill="#b55c3e">量化表 QM</text>
+<text x="496" y="216" font-size="12" fill="#53676d">低频步长小、高频步长大</text>
+<line x1="540" y1="170" x2="540" y2="128" stroke="#d06d4d" stroke-width="1.4" stroke-dasharray="4 4"/>
+<text x="30" y="288" font-size="13" fill="#53676d">量化是整条流水线中唯一有损的步骤；色度 4:2:0 降采样进一步减少数据量。</text>
+<text x="30" y="314" font-size="13" fill="#53676d">8 bit/通道足以覆盖人眼对亮度的分辨力，这与音频需 16/24 bit 的原因（听觉动态范围要求）不同。</text>
+</svg>

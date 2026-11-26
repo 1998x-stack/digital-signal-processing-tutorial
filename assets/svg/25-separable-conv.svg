@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="t25f1 d25f1" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+<title id="t25f1">二维卷积核的可分离分解</title>
+<desc id="d25f1">一个 M×N 的二维核若秩为 1，可写成列向量与行向量的外积 h[m]·g[n]。于是二维卷积分解为两趟一维卷积：先沿列做一次，再沿行做一次，每次输出只需 M×N 次乘法降为 M+N 次。</desc>
+<rect width="920" height="400" fill="#fffdf9"/>
+<text x="30" y="34" font-size="15" font-weight="700" fill="#203035">可分离卷积：M×N 次乘法 → M+N 次</text>
+<text x="70" y="80" font-size="14" fill="#53676d">二维核 h[m,n]</text>
+<text x="70" y="100" font-size="13" fill="#7461ba">（灰度=权重，此处为 5×5 高斯）</text>
+<text x="352" y="80" font-size="14" fill="#53676d">=</text>
+<text x="410" y="80" font-size="14" fill="#53676d">列向量</text>
+<text x="560" y="80" font-size="14" fill="#53676d">⊗</text>
+<text x="640" y="80" font-size="14" fill="#53676d">行向量</text>
+<g transform="translate(70,120)">
+<g fill="#147f80">
+<rect x="0" y="0" width="34" height="34" opacity="0.14"/><rect x="34" y="0" width="34" height="34" opacity="0.24"/><rect x="68" y="0" width="34" height="34" opacity="0.36"/><rect x="102" y="0" width="34" height="34" opacity="0.24"/><rect x="136" y="0" width="34" height="34" opacity="0.14"/>
+<rect x="0" y="34" width="34" height="34" opacity="0.24"/><rect x="34" y="34" width="34" height="34" opacity="0.48"/><rect x="68" y="34" width="34" height="34" opacity="0.78"/><rect x="102" y="34" width="34" height="34" opacity="0.48"/><rect x="136" y="34" width="34" height="34" opacity="0.24"/>
+<rect x="0" y="68" width="34" height="34" opacity="0.36"/><rect x="34" y="68" width="34" height="34" opacity="0.78"/><rect x="68" y="68" width="34" height="34" opacity="1"/><rect x="102" y="68" width="34" height="34" opacity="0.78"/><rect x="136" y="68" width="34" height="34" opacity="0.36"/>
+<rect x="0" y="102" width="34" height="34" opacity="0.24"/><rect x="34" y="102" width="34" height="34" opacity="0.48"/><rect x="68" y="102" width="34" height="34" opacity="0.78"/><rect x="102" y="102" width="34" height="34" opacity="0.48"/><rect x="136" y="102" width="34" height="34" opacity="0.24"/>
+<rect x="0" y="136" width="34" height="34" opacity="0.14"/><rect x="34" y="136" width="34" height="34" opacity="0.24"/><rect x="68" y="136" width="34" height="34" opacity="0.36"/><rect x="102" y="136" width="34" height="34" opacity="0.24"/><rect x="136" y="136" width="34" height="34" opacity="0.14"/>
+</g></g>
+<g transform="translate(410,120)">
+<g fill="#d06d4d">
+<rect x="0" y="0" width="30" height="30" opacity="0.16"/><rect x="0" y="30" width="30" height="30" opacity="0.40"/><rect x="0" y="60" width="30" height="30" opacity="1"/><rect x="0" y="90" width="30" height="30" opacity="0.40"/><rect x="0" y="120" width="30" height="30" opacity="0.16"/>
+</g></g>
+<g transform="translate(640,120)">
+<g fill="#7461ba">
+<rect x="0" y="0" width="30" height="30" opacity="0.16"/><rect x="30" y="0" width="30" height="30" opacity="0.40"/><rect x="60" y="0" width="30" height="30" opacity="1"/><rect x="90" y="0" width="30" height="30" opacity="0.40"/><rect x="120" y="0" width="30" height="30" opacity="0.16"/>
+</g></g>
+<text x="70" y="330" font-size="13" fill="#53676d">第一趟：沿列方向用列向量卷积；第二趟：对结果沿行方向用行向量卷积。</text>
+<text x="70" y="356" font-size="13" fill="#53676d">充要条件：核矩阵秩为 1。一般核可用 SVD 分解为若干秩-1 分量之和，取前几项做低秩近似加速。</text>
+</svg>

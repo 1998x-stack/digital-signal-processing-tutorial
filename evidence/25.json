@@ -1,0 +1,38 @@
+{
+  "chapter": "25",
+  "title": "图像信号处理：从二维卷积到 JPEG 与 ISP",
+  "sources": [
+    {
+      "id": "jpeg",
+      "claim": "JPEG 流水线：RGB→YCbCr（色度可 4:2:0 降采样）→8×8 分块→二维 DCT→按量化表除法取整（唯一有损步骤）→Zig-zag 扫描→差分/游程/Huffman 熵编码",
+      "url": "https://www.w3.org/Graphics/JPEG/itu-t81.pdf",
+      "scope": "ITU-T T.81 / ISO 10918-1 JPEG 标准"
+    },
+    {
+      "id": "canny",
+      "claim": "Canny 边缘检测器由高斯平滑、梯度计算、非极大值抑制、双阈值与滞后跟踪组成，准则为好的检测率、定位精度与单响应",
+      "url": "https://doi.org/10.1109/TPAMI.1986.4767851",
+      "scope": "J. Canny (1986), A Computational Approach to Edge Detection"
+    },
+    {
+      "id": "log",
+      "claim": "LoG 边缘检测先高斯平滑再取拉普拉斯响应的过零点作为边缘",
+      "url": "https://doi.org/10.1098/rspb.1980.0020",
+      "scope": "D. Marr & E. Hildreth (1980), Theory of Edge Detection"
+    },
+    {
+      "id": "separable",
+      "claim": "二维核若秩为 1 可写成一维列向量与行向量的外积，从而把 M×N 次乘法降为 M+N 次；一般核可用 SVD 低秩近似",
+      "url": "https://ocw.mit.edu/courses/6-341-discrete-time-signal-processing-fall-2005/",
+      "scope": "可分离滤波与二维变换基础（与第 6/7 章同源）"
+    }
+  ],
+  "notes": [
+    "确定性实验 examples/25_image.py 仅用标准库：秩-1 高斯核下可分离卷积与直接二维卷积逐点相等（最大误差 < 1e-9）；正交二维 DCT-II 能量守恒（相对误差 < 1e-9）；平滑渐变块前 10 个 DCT 系数保留 100% 能量（即 >95%）；Zig-zag 恰覆盖 64 个系数且首尾为 DC 与 (7,7)；Sobel 对竖直边缘内部 |Gx|=400、Gy=0。",
+    "旧版页面中的第一人称轶事（“我做文档扫描 App 时被投诉”“Q 因子踩坑”）无法核实，已删除，替换为可核验的 JPEG 标准与压缩特性说明（量化表规定于 Annex K、质量因子与主观质量非线性相关）。",
+    "未给出 JPEG/JPEG XL 的具体压缩比或“自适应量化提升 30–40%”一类无法核实的数字；自适应量化仅作定性方法描述。",
+    "FIGURE 01/02/03 为结构示意图；DCT 能量曲线由确定性 8×8 块计算，不表示自然图像统计。",
+    "not_verified：浏览器 QA 未验证（browser_check.py 用 set_content 载入，相对路径资源无法解析）。"
+  ],
+  "status": "JPEG、Canny、LoG 与可分离卷积对照 ITU-T T.81、Canny (1986)、Marr & Hildreth (1980) 与 MIT OCW 6.341；确定性实验通过；浏览器 QA 未验证。"
+}

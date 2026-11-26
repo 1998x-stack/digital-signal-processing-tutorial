@@ -198,6 +198,22 @@ costas(dt,svg,out){
  add(svg,"circle",{cx:cx+Math.cos(step)*R/1.2,cy:cy-Math.sin(step)*R/1.2,r:4,fill:"#d06d4d"});
  text(svg,36,22,"I/Q 星座图（160 个符号）");text(svg,cx+94,cy+15,"I");text(svg,cx+6,cy-R-6,"Q");
  out.textContent="残余频偏每符号 "+step.toFixed(3)+" rad："+(step<0.05?"四个点集中，相位基本锁定。":(step<0.25?"每个点向圆弧方向拖尾，载波环路可继续收敛。":"星座已旋转成圆环，无法判决：需先粗同步或加大环路带宽。"));
+},
+dctk(k,svg,out){
+ const N=8,blk=[];
+ for(let m=0;m<N;m++){const row=[];for(let n=0;n<N;n++)row.push(70+4*m+2*n+18*Math.cos(PI*n/2));blk.push(row);}
+ const a2=q=>q===0?1/Math.SQRT2:1,coef=[];
+ for(let kk=0;kk<N;kk++)for(let ll=0;ll<N;ll++){let s=0;
+  for(let m=0;m<N;m++)for(let n=0;n<N;n++)s+=blk[m][n]*Math.cos(PI*kk*(2*m+1)/(2*N))*Math.cos(PI*ll*(2*n+1)/(2*N));
+  coef.push([kk,ll,(2/N)*a2(kk)*a2(ll)*s]);}
+ const total=coef.reduce((s,c)=>s+c[2]*c[2],0),zig=[],cmap={};
+ for(let su=0;su<2*N-1;su++){const d=[];for(let r=0;r<N;r++){const c=su-r;if(c>=0&&c<N)d.push([r,c]);}if(su%2)d.reverse();for(const x of d)zig.push(x);}
+ zig.forEach(([r,c],idx)=>cmap[r+","+c]=idx);
+ coef.sort((p,q)=>cmap[p[0]+","+p[1]]-cmap[q[0]+","+q[1]]);
+ let acc=0;const curve=coef.map(c=>{acc+=c[2]*c[2];return acc/total;});
+ chart(svg,curve,{color:"#147f80",labels:"Zig-zag 系数序号 k →"});
+ const pct=curve[k-1]*100;
+ out.textContent="保留前 "+k+" 个系数：累积能量约 "+pct.toFixed(1)+"%。Zig-zag 把低频排在前，量化后的长串零集中在尾部。";
 }
 };
 document.querySelectorAll('[data-spectrum-lab]').forEach(el=>{const kind=el.dataset.spectrumLab,run=registry[kind],slider=el.querySelector('input[type="range"]'),svg=el.querySelector("svg"),out=el.querySelector("output");if(!run||!slider||!svg||!out)return;const paint=()=>run(Number(slider.value),svg,out);slider.addEventListener("input",paint);paint();});
