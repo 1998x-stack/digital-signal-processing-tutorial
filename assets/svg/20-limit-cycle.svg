@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="920" height="400" role="img" aria-labelledby="t20b d20b">
+<title id="t20b">IIR 定点实现的两种失效：极限环与溢出振荡</title>
+<desc id="d20b">左图：浮点冲激响应衰减到零，带舍入的定点实现收敛到小幅极限环。右图：累加溢出时，饱和处理把结果钳在最大可表示值，环绕（wrap-around）却翻转到相反满量程。</desc>
+<rect x="0" y="0" width="920" height="400" fill="#fbfdfc"/>
+<text x="30" y="32" font-family="system-ui,PingFang SC,sans-serif" font-size="15" font-weight="600" fill="#33474d">反馈把量化误差累积：两种浮点仿真中看不到的失效</text>
+
+<text x="40" y="62" font-family="system-ui,PingFang SC,sans-serif" font-size="13.5" font-weight="600" fill="#33474d">① 极限环：输入归零后输出不衰减</text>
+<line x1="60" y1="320" x2="430" y2="320" stroke="#53676d" stroke-width="1.4"/>
+<line x1="60" y1="90" x2="60" y2="320" stroke="#53676d" stroke-width="1.4"/>
+<text x="20" y="200" font-family="system-ui,PingFang SC,sans-serif" font-size="12" fill="#8a9aa0">y[n]</text>
+<text x="230" y="344" font-family="system-ui,PingFang SC,sans-serif" font-size="12" fill="#8a9aa0">n →</text>
+<polygon points="70,110 96,150 122,180 148,202 174,218 200,229 226,236 252,240 278,243 304,244 356,246" fill="none" stroke="#147f80" stroke-width="2.3"/>
+<polygon points="70,110 96,150 122,182 148,214 174,246 200,272 226,290 252,302 278,310 304,315 330,312 356,316 382,312 408,315" fill="none" stroke="#d06d4d" stroke-width="2.3" stroke-dasharray="6 4"/>
+<text x="300" y="238" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#147f80">浮点：→ 0</text>
+<text x="300" y="300" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#b1592f">定点：停在极限环</text>
+<line x1="240" y1="308" x2="420" y2="308" stroke="#d06d4d" stroke-width="1" stroke-dasharray="3 3"/>
+
+<text x="490" y="62" font-family="system-ui,PingFang SC,sans-serif" font-size="13.5" font-weight="600" fill="#33474d">② 溢出：饱和 vs 环绕（Q4.12，范围 −8 … +7）</text>
+<line x1="510" y1="180" x2="880" y2="180" stroke="#53676d" stroke-width="1.6"/>
+<g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#8a9aa0">
+<text x="512" y="204">−8</text><text x="600" y="204">−4</text><text x="686" y="204">0</text><text x="766" y="204">+4</text><text x="836" y="204">+7</text>
+</g>
+<circle cx="845" cy="180" r="5" fill="#7461ba"/>
+<text x="800" y="160" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#5c4aa0">+7 + 1</text>
+<line x1="848" y1="150" x2="860" y2="110" stroke="#147f80" stroke-width="2.2"/>
+<polygon points="860,110 854,124 866,124" fill="#147f80"/>
+<text x="630" y="106" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#147f80">饱和：钳在 +7</text>
+<line x1="843" y1="212" x2="515" y2="212" stroke="#d06d4d" stroke-width="2.2"/>
+<polygon points="515,212 529,206 529,218" fill="#d06d4d"/>
+<text x="560" y="236" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#b1592f">环绕：翻转到 −8（符号突变）</text>
+
+<text x="490" y="290" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#53676d">环绕错误被反馈环路当作“正常”信号继续处理，</text>
+<text x="490" y="312" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#53676d">产生大振幅啸叫；浮点仿真完全不会出现。</text>
+<text x="490" y="334" font-family="system-ui,PingFang SC,sans-serif" font-size="12.5" fill="#53676d">对策：饱和累加 + 守卫位，并对每个节点做定点测试。</text>
+<text x="40" y="386" font-family="system-ui,PingFang SC,sans-serif" font-size="12" fill="#8a9aa0">曲线为定性示意：极限环幅度与频率由极点位置和量化步长决定，并非某次具体滤波器的实测。</text>
+</svg>

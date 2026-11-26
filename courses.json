@@ -216,14 +216,14 @@
     },
     {
       "num": "20",
-      "title": "定点DSP实现",
+      "title": "定点 DSP 实现",
       "topics": [
-        "定点数表示",
         "Q格式",
-        "量化效应"
+        "量化与SQNR",
+        "极限环与溢出"
       ],
       "file": "chapters/20.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "21",
