@@ -124,7 +124,7 @@
         "格型"
       ],
       "file": "chapters/11.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "12",
@@ -135,7 +135,7 @@
         "多相分解"
       ],
       "file": "chapters/12.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "13",
@@ -146,7 +146,7 @@
         "半带滤波器"
       ],
       "file": "chapters/13.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "14",
@@ -157,7 +157,7 @@
         "功率谱密度"
       ],
       "file": "chapters/14.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "15",
@@ -168,7 +168,7 @@
         "LMS"
       ],
       "file": "chapters/15.html",
-      "status": "legacy"
+      "status": "rewritten"
     },
     {
       "num": "16",
