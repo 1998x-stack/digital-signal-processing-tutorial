@@ -48,7 +48,7 @@
 <p>如果信号含有高于 <math class="math-inline" aria-label="pi 除以 M"><mi>π</mi><mo>/</mo><mi>M</mi></math> 的频率分量，它们就会折叠到低频，产生<strong>混叠</strong>——听起来像是多了一个“假信号”。所以真正的抽取系统必须在下采样<strong>之前</strong>接一个截止频率为 π/M 的<strong>抗混叠低通</strong>：</p>
 <pre><code>x[n] → [抗混叠 LPF：截止 π/M] → [↓M 下采样] → y[n]
  (fs)         (fs)                        (fs/M)</code></pre>
-<figure class="figure"><img src="../assets/svg/12-decimation-spectrum.svg" alt="下采样前后频谱展宽与带外分量折叠成混叠的过程" width="920" height="410" loading="lazy"><figcaption><span class="fig-no">FIGURE 01</span>　下采样把原频谱按 2π/M 的间隔复制并保曡；带外分量（青色）折叠到基带（赭色），成为无法与真实信号区分的混叠分量。</figcaption></figure>
+<figure class="figure"><img src="../assets/svg/12-decimation-spectrum.svg" alt="下采样前后频谱展宽与带外分量折叠成混叠的过程" width="920" height="410" loading="lazy"><figcaption><span class="fig-no">FIGURE 01</span>　下采样把原频谱按 2π/M 的间隔复制并叠加；带外分量（青色）折叠到基带（赭色），成为无法与真实信号区分的混叠分量。</figcaption></figure>
 <p>注意区分两个词：<strong>下采样</strong>（downsampling）只是抽取；<strong>抽取</strong>（decimation）通常指“抗混叠滤波＋下采样”的整体。仅写下采样不等于抽取。</p>
 </section>
 <section id="interpolation" aria-labelledby="h-interpolation">

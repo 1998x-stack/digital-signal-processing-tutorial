@@ -109,7 +109,7 @@ a1, a2 = -2 * r * cos(w0), r * r
 qa1, qa2 = quantize(a1, 8), quantize(a2, 8)
 print(round(max(abs(p) for p in poles(a1, a2)), 6),
       round(max(abs(p) for p in poles(qa1, qa2)), 6))</code></pre>
-<p><a href="../examples/11_structures.py">完整可运行测试（11_structures.py）</a>用标准库验证了两件事：直接型与转置型冲激响应完全一致；当极点为共轲复数时半径恰为 <math class="math-inline" aria-label="根号 a2"><msqrt><msub><mi>a</mi><mn>2</mn></msub></msqrt></math>，其量化偏移与式（6）一阶估计吻合（两者之差小于实际偏移的 5%）。</p>
+<p><a href="../examples/11_structures.py">完整可运行测试（11_structures.py）</a>用标准库验证了两件事：直接型与转置型冲激响应完全一致；当极点为共轭复数时半径恰为 <math class="math-inline" aria-label="根号 a2"><msqrt><msub><mi>a</mi><mn>2</mn></msub></msqrt></math>，其量化偏移与式（6）一阶估计吻合（两者之差小于实际偏移的 5%）。</p>
 </section>
 <section id="limits" aria-labelledby="h-limits">
 <h2 id="h-limits">结构选型的边界</h2>

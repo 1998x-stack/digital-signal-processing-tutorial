@@ -50,7 +50,7 @@
 <tr><td><strong>硬件 MAC</strong></td><td>专用乘法器 + 加法器流水</td><td>乘累加可在少数周期内完成，而非多指令实现</td></tr>
 <tr><td><strong>零开销循环</strong></td><td>硬件循环计数器</td><td>循环体无分支判断开销，适合 FIR/IIR 迭代</td></tr>
 <tr><td><strong>位反转寻址</strong></td><td>地址位反转硬件</td><td>FFT 蝶形索引无需软件重排</td></tr>
-<tr><td><strong>饱和运算</strong></td><td>溢出时自动锤位（非环绕）</td><td>直接防止第 20 章的溢出振荡</td></tr>
+<tr><td><strong>饱和运算</strong></td><td>溢出时自动钳位（非环绕）</td><td>直接防止第 20 章的溢出振荡</td></tr>
 <tr><td><strong>模寻址</strong></td><td>地址在环形缓冲中自动回绕</td><td>FIR 延迟线循环更新无软件开销</td></tr>
 </tbody></table></div>
 <p>这些特性是体系结构层面的能力，具体加速比取决于芯片型号、位宽与代码质量，不存在一个通用的倍数。下面用确定性程序验证“零开销循环”与“模寻址”想达到的效果：环形缓冲 FIR 与直接卷积必须得到完全相同的输出。</p>
