@@ -29,7 +29,9 @@ digital-signal-processing-tutorial/
 │   ├── css/site.css              # 门户设计
 │   ├── css/article.css           # 重构文章设计系统
 │   ├── js/site.js                # 章节本地过滤
-│   ├── js/spectrum-labs.js       # 交互图解，无外部依赖
+│   ├── js/labs.js                # 前 5 章交互图解（采样、移位、卷积等）
+│   ├── js/spectrum-labs.js       # 频域/滤波/结构交互图解，无外部依赖
+│   ├── js/adaptive-labs.js       # 自适应滤波与谱估计交互图解
 │   └── svg/                      # 章节概念图的独立 SVG
 ├── examples/                     # 可运行的 Python 标准库小实验
 ├── evidence/                     # 事实来源与公式假设台账
